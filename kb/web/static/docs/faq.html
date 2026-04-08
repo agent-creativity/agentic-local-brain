@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ & Troubleshooting - Agentic Local Brain Docs</title>
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+    <header class="doc-header">
+        <div class="doc-header-left">
+            <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+            <a href="/docs/index.html" class="doc-logo">⚛️ Agentic Local Brain</a>
+        </div>
+        <div class="doc-header-right">
+            <button class="doc-lang-toggle" id="langToggle">EN</button>
+        </div>
+    </header>
+    <nav class="doc-sidebar" id="docSidebar">
+        <div class="sidebar-header"><a href="/" class="back-to-app">← Back to App</a></div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="getting-started.html" class="nav-link">Getting Started</a>
+            <a href="skill-install.html" class="nav-link">Skill Installation</a>
+            <a href="core-concepts.html" class="nav-link">Core Concepts</a>
+            <a href="architecture.html" class="nav-link">Architecture</a>
+            <a href="configuration.html" class="nav-link">Configuration</a>
+            <a href="cli-reference.html" class="nav-link">CLI Reference</a>
+            <a href="api-reference.html" class="nav-link">API Reference</a>
+            <a href="roadmap.html" class="nav-link">Roadmap</a>
+            <a href="faq.html" class="nav-link active">FAQ</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+    </nav>
+    <main class="doc-content">
+        <article class="doc-article">
+            <div data-lang="en">
+                <h1>FAQ & Troubleshooting</h1>
+
+                <h2>Frequently Asked Questions</h2>
+
+                <h3>What data does Agentic Local Brain collect?</h3>
+                <p>Only the content you explicitly choose to collect. All data is stored locally on your machine. No data is sent to external services except for AI processing (embedding/LLM) when configured.</p>
+
+                <h3>Does it work without an internet connection?</h3>
+                <p>Yes, in degraded mode. Keyword search, built-in tag extraction, and file management all work offline. Semantic search and RAG require AI services.</p>
+
+                <h3>Which AI providers are supported?</h3>
+                <p>DashScope (Alibaba Cloud) and any OpenAI-compatible API (including Ollama for fully local AI).</p>
+
+                <h3>How much disk space does it use?</h3>
+                <p>Depends on your knowledge base size. Typical: 50-200MB for metadata + vectors for 1000 items. Original files are stored as Markdown.</p>
+
+                <h3>Can I export my data?</h3>
+                <p>Yes: <code>localbrain export</code> exports in Markdown or JSON format.</p>
+
+                <h3>Is my data private?</h3>
+                <p>All data stays on your local machine. AI API calls send only text content for processing. Use Ollama for fully local AI processing.</p>
+
+                <h2>Troubleshooting</h2>
+
+                <h3>"Command not found: localbrain"</h3>
+                <ul>
+                    <li>Ensure ~/.localbrain/bin is in your PATH</li>
+                    <li>Run: <code>export PATH="$HOME/.localbrain/bin:$PATH"</code></li>
+                    <li>Add to ~/.zshrc or ~/.bashrc for persistence</li>
+                </ul>
+
+                <h3>Embedding/LLM service errors</h3>
+                <ul>
+                    <li>Check API key: <code>localbrain config show</code></li>
+                    <li>Test connectivity: <code>localbrain test embedding</code> / <code>localbrain test llm</code></li>
+                    <li>Verify network access to the API endpoint</li>
+                </ul>
+
+                <h3>Web server won't start</h3>
+                <ul>
+                    <li>Check port availability: <code>lsof -i :8080</code></li>
+                    <li>Try different port: <code>localbrain web --port 9090</code></li>
+                    <li>Check logs: <code>~/.localbrain/logs/</code></li>
+                </ul>
+
+                <h3>Slow search performance</h3>
+                <ul>
+                    <li>Ensure ChromaDB is properly initialized</li>
+                    <li>Run <code>localbrain doctor</code> for diagnostics</li>
+                    <li>Consider adjusting chunk size for large documents</li>
+                </ul>
+
+                <h3>macOS Gatekeeper blocking binary</h3>
+                <ul>
+                    <li>Run: <code>xattr -cr ~/.localbrain/bin/localbrain</code></li>
+                </ul>
+
+                <h2>Performance Tips</h2>
+                <ul>
+                    <li>Use background web server mode for persistent access</li>
+                    <li>Configure appropriate chunk size for your content types</li>
+                    <li>Regularly run <code>localbrain doctor</code> to check system health</li>
+                </ul>
+            </div>
+            <div data-lang="zh">
+                <h1>常见问题与故障排除</h1>
+
+                <h2>常见问题</h2>
+
+                <h3>Agentic Local Brain 收集哪些数据？</h3>
+                <p>仅收集您明确选择采集的内容。所有数据都存储在您的本地机器上。除非配置了 AI 处理（嵌入/LLM），否则不会将数据发送到外部服务。</p>
+
+                <h3>没有互联网连接时能否使用？</h3>
+                <p>可以，在降级模式下工作。关键词搜索、内置标签提取和文件管理都可以离线使用。语义搜索和 RAG 需要 AI 服务。</p>
+
+                <h3>支持哪些 AI 提供商？</h3>
+                <p>DashScope（阿里云）和任何兼容 OpenAI 的 API（包括用于完全本地 AI 的 Ollama）。</p>
+
+                <h3>占用多少磁盘空间？</h3>
+                <p>取决于知识库大小。典型情况：1000 个项目需要 50-200MB 用于元数据 + 向量。原始文件以 Markdown 格式存储。</p>
+
+                <h3>我可以导出数据吗？</h3>
+                <p>可以：<code>localbrain export</code> 以 Markdown 或 JSON 格式导出。</p>
+
+                <h3>我的数据是否私密？</h3>
+                <p>所有数据都保留在您的本地机器上。AI API 调用仅发送文本内容进行处理。使用 Ollama 可实现完全本地的 AI 处理。</p>
+
+                <h2>故障排除</h2>
+
+                <h3>"Command not found: localbrain"</h3>
+                <ul>
+                    <li>确保 ~/.localbrain/bin 在您的 PATH 中</li>
+                    <li>运行：<code>export PATH="$HOME/.localbrain/bin:$PATH"</code></li>
+                    <li>添加到 ~/.zshrc 或 ~/.bashrc 以持久化</li>
+                </ul>
+
+                <h3>嵌入/LLM 服务错误</h3>
+                <ul>
+                    <li>检查 API 密钥：<code>localbrain config show</code></li>
+                    <li>测试连接：<code>localbrain test embedding</code> / <code>localbrain test llm</code></li>
+                    <li>验证对 API 端点的网络访问</li>
+                </ul>
+
+                <h3>Web 服务器无法启动</h3>
+                <ul>
+                    <li>检查端口可用性：<code>lsof -i :8080</code></li>
+                    <li>尝试不同端口：<code>localbrain web --port 9090</code></li>
+                    <li>检查日志：<code>~/.localbrain/logs/</code></li>
+                </ul>
+
+                <h3>搜索性能缓慢</h3>
+                <ul>
+                    <li>确保 ChromaDB 已正确初始化</li>
+                    <li>运行 <code>localbrain doctor</code> 进行诊断</li>
+                    <li>考虑为大型文档调整分块大小</li>
+                </ul>
+
+                <h3>macOS Gatekeeper 阻止二进制文件</h3>
+                <ul>
+                    <li>运行：<code>xattr -cr ~/.localbrain/bin/localbrain</code></li>
+                </ul>
+
+                <h2>性能提示</h2>
+                <ul>
+                    <li>使用后台 Web 服务器模式以持久访问</li>
+                    <li>为您的内容类型配置适当的分块大小</li>
+                    <li>定期运行 <code>localbrain doctor</code> 检查系统健康状况</li>
+                </ul>
+            </div>
+        </article>
+    </main>
+    <aside class="doc-outline" id="docOutline">
+        <div class="outline-title">On this page</div>
+        <div class="outline-links" id="outlineLinks"></div>
+    </aside>
+    <script src="layout.js"></script>
+</body>
+</html>

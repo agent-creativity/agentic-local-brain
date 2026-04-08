@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture - Agentic Local Brain Docs</title>
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+    <header class="doc-header">
+        <div class="doc-header-left">
+            <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+            <a href="/docs/index.html" class="doc-logo">⚛️ Agentic Local Brain</a>
+        </div>
+        <div class="doc-header-right">
+            <button class="doc-lang-toggle" id="langToggle">EN</button>
+        </div>
+    </header>
+    <nav class="doc-sidebar" id="docSidebar">
+        <div class="sidebar-header">
+            <a href="/" class="back-to-app">← Back to App</a>
+        </div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="getting-started.html" class="nav-link">Getting Started</a>
+            <a href="skill-install.html" class="nav-link">Skill Installation</a>
+            <a href="core-concepts.html" class="nav-link">Core Concepts</a>
+            <a href="architecture.html" class="nav-link active">Architecture</a>
+            <a href="configuration.html" class="nav-link">Configuration</a>
+            <a href="cli-reference.html" class="nav-link">CLI Reference</a>
+            <a href="api-reference.html" class="nav-link">API Reference</a>
+            <a href="roadmap.html" class="nav-link">Roadmap</a>
+            <a href="faq.html" class="nav-link">FAQ</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+    </nav>
+    <main class="doc-content">
+        <article class="doc-article">
+            <div data-lang="en">
+                <h1>Architecture</h1>
+
+                <h2>System Overview</h2>
+<pre>
+┌─────────────────────────────────────────────────────────┐
+│                    User Interfaces                       │
+│  ┌─────────────┐              ┌─────────────────────┐   │
+│  │    CLI      │              │    Web API (REST)   │   │
+│  │  (Click)    │              │     (FastAPI)       │   │
+│  └──────┬──────┘              └──────────┬──────────┘   │
+└─────────┼────────────────────────────────┼──────────────┘
+          │                                │
+          ▼                                ▼
+┌─────────────────────────────────────────────────────────┐
+│                    Core Modules                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │
+│  │ Collectors  │  │ Processors  │  │     Query       │  │
+│  │ - File      │  │ - Chunker   │  │ - Semantic      │  │
+│  │ - Webpage   │  │ - Embedder  │  │ - Keyword       │  │
+│  │ - Bookmark  │  │ - Tagger    │  │ - RAG           │  │
+│  │ - Paper     │  │             │  │                 │  │
+│  │ - Email     │  │             │  │                 │  │
+│  │ - Note      │  │             │  │                 │  │
+│  └─────────────┘  └─────────────┘  └─────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+          │                                │
+          ▼                                ▼
+┌─────────────────────────────────────────────────────────┐
+│                    Storage Layer                         │
+│  ┌─────────────────────┐    ┌─────────────────────────┐ │
+│  │   SQLite Storage    │    │    Chroma Storage       │ │
+│  │   (Metadata, Tags)  │    │    (Vector Embeddings)  │ │
+│  └─────────────────────┘    └─────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+</pre>
+
+                <h2>Data Flow</h2>
+
+                <h3>Collection Pipeline</h3>
+<pre>
+Source → Collector → Markdown File (YAML front matter)
+                   ↓
+           SQLite (metadata) + Chroma (embeddings)
+</pre>
+
+                <h3>Query Pipeline</h3>
+<pre>
+User Query → Embedding → Chroma Similarity Search → Ranked Results
+         or
+User Query → SQLite FTS5 → Matched Documents
+         or
+User Question → Semantic Search → Context → LLM → Answer
+</pre>
+
+                <h2>Module Structure</h2>
+<pre>
+kb/
+├── cli.py                 # CLI entry point (Click)
+├── config.py              # Configuration (YAML)
+├── version.py             # Version management
+├── collectors/            # Data collection
+│   ├── base.py            # Abstract BaseCollector
+│   ├── file_collector.py
+│   ├── webpage_collector.py
+│   ├── bookmark_collector.py
+│   ├── paper_collector.py
+│   ├── email_collector.py
+│   └── note_collector.py
+├── processors/            # Content processing
+│   ├── chunker.py         # Document chunking
+│   ├── embedder.py        # Vector embedding
+│   └── tag_extractor.py   # Tag/summary extraction
+├── query/                 # Search & retrieval
+│   ├── semantic_search.py
+│   ├── keyword_search.py
+│   └── rag.py
+├── storage/               # Persistence
+│   ├── sqlite_storage.py
+│   └── chroma_storage.py
+└── web/                   # REST API
+    ├── app.py
+    └── routes/
+</pre>
+
+                <h2>Technology Stack</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Technology</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CLI</td>
+                            <td>Click 8.0+</td>
+                            <td>Command-line interface</td>
+                        </tr>
+                        <tr>
+                            <td>Web</td>
+                            <td>FastAPI 0.95+</td>
+                            <td>REST API</td>
+                        </tr>
+                        <tr>
+                            <td>Server</td>
+                            <td>Uvicorn 0.20+</td>
+                            <td>ASGI server</td>
+                        </tr>
+                        <tr>
+                            <td>Vectors</td>
+                            <td>ChromaDB 0.4+</td>
+                            <td>Vector storage &amp; search</td>
+                        </tr>
+                        <tr>
+                            <td>Metadata</td>
+                            <td>SQLite (built-in)</td>
+                            <td>Metadata, tags, FTS</td>
+                        </tr>
+                        <tr>
+                            <td>PDF</td>
+                            <td>PyPDF2 3.0+</td>
+                            <td>PDF text extraction</td>
+                        </tr>
+                        <tr>
+                            <td>Web Scraping</td>
+                            <td>httpx, readability-lxml</td>
+                            <td>Web content extraction</td>
+                        </tr>
+                        <tr>
+                            <td>Embedding</td>
+                            <td>DashScope text-embedding-v4</td>
+                            <td>Vector generation</td>
+                        </tr>
+                        <tr>
+                            <td>LLM</td>
+                            <td>DashScope qwen-plus/qwen-max</td>
+                            <td>Tag extraction, RAG</td>
+                        </tr>
+                        <tr>
+                            <td>Config</td>
+                            <td>PyYAML 6.0+</td>
+                            <td>Configuration files</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2>Extension Points</h2>
+
+                <h3>Adding a New Collector</h3>
+                <ol>
+                    <li>Create new file in <code>kb/collectors/</code></li>
+                    <li>Inherit from <code>BaseCollector</code></li>
+                    <li>Implement <code>collect()</code>, <code>_extract_content()</code>, <code>_generate_metadata()</code></li>
+                    <li>Export in <code>kb/collectors/__init__.py</code></li>
+                    <li>Add CLI command in <code>kb/cli.py</code></li>
+                </ol>
+
+                <h3>Adding a New Provider</h3>
+                <p>The Embedder and TagExtractor support a provider pattern:</p>
+                <ul>
+                    <li>DashScope (default)</li>
+                    <li>OpenAI-compatible (Ollama, vLLM, etc.)</li>
+                    <li>Custom providers by extending the base classes</li>
+                </ul>
+
+                <h2>File Storage Layout</h2>
+<pre>
+~/.knowledge-base/
+├── 1_collect/           # Raw collected files
+│   ├── note/
+│   ├── bookmark/
+│   ├── webpage/
+│   ├── paper/
+│   ├── email/
+│   └── file/
+└── db/
+    ├── metadata.db      # SQLite database
+    └── chroma/          # ChromaDB vector store
+</pre>
+            </div>
+            <div data-lang="zh">
+                <h1>架构</h1>
+
+                <h2>系统概览</h2>
+<pre>
+┌─────────────────────────────────────────────────────────┐
+│                    User Interfaces                       │
+│  ┌─────────────┐              ┌─────────────────────┐   │
+│  │    CLI      │              │    Web API (REST)   │   │
+│  │  (Click)    │              │     (FastAPI)       │   │
+│  └──────┬──────┘              └──────────┬──────────┘   │
+└─────────┼────────────────────────────────┼──────────────┘
+          │                                │
+          ▼                                ▼
+┌─────────────────────────────────────────────────────────┐
+│                    Core Modules                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │
+│  │ Collectors  │  │ Processors  │  │     Query       │  │
+│  │ - File      │  │ - Chunker   │  │ - Semantic      │  │
+│  │ - Webpage   │  │ - Embedder  │  │ - Keyword       │  │
+│  │ - Bookmark  │  │ - Tagger    │  │ - RAG           │  │
+│  │ - Paper     │  │             │  │                 │  │
+│  │ - Email     │  │             │  │                 │  │
+│  │ - Note      │  │             │  │                 │  │
+│  └─────────────┘  └─────────────┘  └─────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+          │                                │
+          ▼                                ▼
+┌─────────────────────────────────────────────────────────┐
+│                    Storage Layer                         │
+│  ┌─────────────────────┐    ┌─────────────────────────┐ │
+│  │   SQLite Storage    │    │    Chroma Storage       │ │
+│  │   (Metadata, Tags)  │    │    (Vector Embeddings)  │ │
+│  └─────────────────────┘    └─────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+</pre>
+
+                <h2>数据流</h2>
+
+                <h3>收集流程</h3>
+<pre>
+Source → Collector → Markdown File (YAML front matter)
+                   ↓
+           SQLite (metadata) + Chroma (embeddings)
+</pre>
+
+                <h3>查询流程</h3>
+<pre>
+User Query → Embedding → Chroma Similarity Search → Ranked Results
+         or
+User Query → SQLite FTS5 → Matched Documents
+         or
+User Question → Semantic Search → Context → LLM → Answer
+</pre>
+
+                <h2>模块结构</h2>
+<pre>
+kb/
+├── cli.py                 # CLI entry point (Click)
+├── config.py              # Configuration (YAML)
+├── version.py             # Version management
+├── collectors/            # Data collection
+│   ├── base.py            # Abstract BaseCollector
+│   ├── file_collector.py
+│   ├── webpage_collector.py
+│   ├── bookmark_collector.py
+│   ├── paper_collector.py
+│   ├── email_collector.py
+│   └── note_collector.py
+├── processors/            # Content processing
+│   ├── chunker.py         # Document chunking
+│   ├── embedder.py        # Vector embedding
+│   └── tag_extractor.py   # Tag/summary extraction
+├── query/                 # Search & retrieval
+│   ├── semantic_search.py
+│   ├── keyword_search.py
+│   └── rag.py
+├── storage/               # Persistence
+│   ├── sqlite_storage.py
+│   └── chroma_storage.py
+└── web/                   # REST API
+    ├── app.py
+    └── routes/
+</pre>
+
+                <h2>技术栈</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>类别</th>
+                            <th>技术</th>
+                            <th>用途</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CLI</td>
+                            <td>Click 8.0+</td>
+                            <td>命令行界面</td>
+                        </tr>
+                        <tr>
+                            <td>Web</td>
+                            <td>FastAPI 0.95+</td>
+                            <td>REST API</td>
+                        </tr>
+                        <tr>
+                            <td>Server</td>
+                            <td>Uvicorn 0.20+</td>
+                            <td>ASGI 服务器</td>
+                        </tr>
+                        <tr>
+                            <td>Vectors</td>
+                            <td>ChromaDB 0.4+</td>
+                            <td>向量存储与搜索</td>
+                        </tr>
+                        <tr>
+                            <td>Metadata</td>
+                            <td>SQLite (built-in)</td>
+                            <td>元数据、标签、FTS</td>
+                        </tr>
+                        <tr>
+                            <td>PDF</td>
+                            <td>PyPDF2 3.0+</td>
+                            <td>PDF 文本提取</td>
+                        </tr>
+                        <tr>
+                            <td>Web Scraping</td>
+                            <td>httpx, readability-lxml</td>
+                            <td>网页内容提取</td>
+                        </tr>
+                        <tr>
+                            <td>Embedding</td>
+                            <td>DashScope text-embedding-v4</td>
+                            <td>向量生成</td>
+                        </tr>
+                        <tr>
+                            <td>LLM</td>
+                            <td>DashScope qwen-plus/qwen-max</td>
+                            <td>标签提取、RAG</td>
+                        </tr>
+                        <tr>
+                            <td>Config</td>
+                            <td>PyYAML 6.0+</td>
+                            <td>配置文件</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2>扩展点</h2>
+
+                <h3>添加新的收集器</h3>
+                <ol>
+                    <li>在 <code>kb/collectors/</code> 中创建新文件</li>
+                    <li>继承 <code>BaseCollector</code></li>
+                    <li>实现 <code>collect()</code>、<code>_extract_content()</code>、<code>_generate_metadata()</code></li>
+                    <li>在 <code>kb/collectors/__init__.py</code> 中导出</li>
+                    <li>在 <code>kb/cli.py</code> 中添加 CLI 命令</li>
+                </ol>
+
+                <h3>添加新的提供商</h3>
+                <p>Embedder 和 TagExtractor 支持提供商模式：</p>
+                <ul>
+                    <li>DashScope（默认）</li>
+                    <li>OpenAI 兼容（Ollama、vLLM 等）</li>
+                    <li>通过扩展基类创建自定义提供商</li>
+                </ul>
+
+                <h2>文件存储布局</h2>
+<pre>
+~/.knowledge-base/
+├── 1_collect/           # Raw collected files
+│   ├── note/
+│   ├── bookmark/
+│   ├── webpage/
+│   ├── paper/
+│   ├── email/
+│   └── file/
+└── db/
+    ├── metadata.db      # SQLite database
+    └── chroma/          # ChromaDB vector store
+</pre>
+            </div>
+        </article>
+    </main>
+    <aside class="doc-outline" id="docOutline">
+        <div class="outline-title">On this page</div>
+        <div class="outline-links" id="outlineLinks"></div>
+    </aside>
+    <script src="layout.js"></script>
+</body>
+</html>

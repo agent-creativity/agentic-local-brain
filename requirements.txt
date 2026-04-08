@@ -1,0 +1,43 @@
+# Agentic Local Brain 依赖
+
+# CLI 框架
+click>=8.0
+
+# YAML 配置文件解析
+pyyaml>=6.0
+
+# 进度条显示
+tqdm>=4.65
+
+# PDF 解析
+PyPDF2>=3.0.0
+
+# 中文拼音转换
+pypinyin>=0.49
+
+# URL 收集器依赖
+httpx>=0.24.0
+readability-lxml>=0.8.1
+markdownify>=0.11.0
+beautifulsoup4>=4.12.0
+
+# 书签收集器依赖（beautifulsoup4 已在上面）
+# plistlib 是 Python 标准库，无需额外安装
+
+# 标签提取器依赖
+dashscope>=1.14.0
+openai>=1.0.0
+litellm>=1.30.0
+
+# Knowledge Mining
+numpy>=1.24.0
+pydantic>=2.0.0
+scikit-learn>=1.3.0
+
+# 向量存储依赖
+chromadb>=0.4.0
+
+# Web API 依赖
+fastapi>=0.95.0
+uvicorn>=0.20.0
+python-multipart>=0.0.5

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLI Reference - Agentic Local Brain Docs</title>
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+    <header class="doc-header">
+        <div class="doc-header-left">
+            <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+            <a href="/docs/index.html" class="doc-logo">⚛️ Agentic Local Brain</a>
+        </div>
+        <div class="doc-header-right">
+            <button class="doc-lang-toggle" id="langToggle">EN</button>
+        </div>
+    </header>
+    <nav class="doc-sidebar" id="docSidebar">
+        <div class="sidebar-header"><a href="/" class="back-to-app">← Back to App</a></div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="getting-started.html" class="nav-link">Getting Started</a>
+            <a href="skill-install.html" class="nav-link">Skill Installation</a>
+            <a href="core-concepts.html" class="nav-link">Core Concepts</a>
+            <a href="architecture.html" class="nav-link">Architecture</a>
+            <a href="configuration.html" class="nav-link">Configuration</a>
+            <a href="cli-reference.html" class="nav-link active">CLI Reference</a>
+            <a href="api-reference.html" class="nav-link">API Reference</a>
+            <a href="roadmap.html" class="nav-link">Roadmap</a>
+            <a href="faq.html" class="nav-link">FAQ</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+    </nav>
+    <main class="doc-content">
+        <article class="doc-article">
+            <div data-lang="en">
+                <h1>CLI Reference</h1>
+                <p>The CLI uses an object-first (noun-verb) pattern. Primary command: <code>localbrain</code> (alias: <code>kb</code>).</p>
+
+                <h2>Collection Commands</h2>
+                <p>All collection commands support:</p>
+                <ul>
+                    <li><code>--tags, -t</code> — Provide tags manually (multiple allowed)</li>
+                    <li><code>--summary, -s</code> — Provide a summary manually</li>
+                    <li><code>--auto-extract / --no-auto-extract</code> — Toggle auto-extraction (default: enabled)</li>
+                    <li><code>--skip-existing</code> — Skip if already collected</li>
+                </ul>
+
+                <h3>File Collection</h3>
+                <pre><code class="language-bash">localbrain collect file add &lt;path&gt;
+localbrain collect file add ~/documents/paper.pdf
+localbrain collect file add ~/notes/ideas.md --tags "ideas"</code></pre>
+
+                <h3>Webpage Collection</h3>
+                <pre><code class="language-bash">localbrain collect webpage add &lt;url&gt;
+localbrain collect webpage add https://example.com/article --tags "reference"</code></pre>
+
+                <h3>Paper Collection</h3>
+                <pre><code class="language-bash">localbrain collect paper add &lt;source&gt;
+localbrain collect paper add arxiv:2401.12345
+localbrain collect paper add https://arxiv.org/abs/2401.12345</code></pre>
+
+                <h3>Email Collection</h3>
+                <pre><code class="language-bash">localbrain collect email add &lt;path&gt;
+localbrain collect email add ~/emails/message.eml
+localbrain collect email add ~/emails/archive.mbox</code></pre>
+
+                <h3>Bookmark Collection</h3>
+                <pre><code class="language-bash">localbrain collect bookmark add &lt;url&gt; --tags "tag1"
+localbrain collect bookmark import --browser chrome
+localbrain collect bookmark import --browser firefox
+localbrain collect bookmark import --file bookmarks.html</code></pre>
+
+                <h3>Note Collection</h3>
+                <pre><code class="language-bash">localbrain collect note add "Your note text" --tags "tag1,tag2" --summary "Brief summary"</code></pre>
+
+                <h2>Search Commands</h2>
+                <pre><code class="language-bash">localbrain search semantic &lt;query&gt;    # Vector-based semantic search
+localbrain search keyword &lt;keywords&gt;  # Full-text keyword search
+localbrain search rag &lt;question&gt;      # RAG-based Q&A
+localbrain search tags -t &lt;tag&gt;       # Find items by tag</code></pre>
+
+                <h2>Tag Management</h2>
+                <pre><code class="language-bash">localbrain tag list                    # List all tags
+localbrain tag merge &lt;source&gt; &lt;target&gt; # Merge tags
+localbrain tag delete &lt;name&gt;           # Delete a tag</code></pre>
+
+                <h2>System Commands</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>localbrain init</code></td>
+                            <td>Initialize knowledge base</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain init setup</code></td>
+                            <td>Guided setup wizard</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain config show</code></td>
+                            <td>Display configuration</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain stats</code></td>
+                            <td>Show statistics</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain doctor</code></td>
+                            <td>System diagnostics</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain export</code></td>
+                            <td>Export knowledge base</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain --version</code></td>
+                            <td>Show version</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2>Web Server</h2>
+                <pre><code class="language-bash">localbrain web              # Start foreground
+localbrain web -b           # Start background (daemon)
+localbrain web --status     # Check status
+localbrain web --stop       # Stop background server
+localbrain web --port 9090  # Custom port</code></pre>
+
+                <h2>Maintenance</h2>
+                <pre><code class="language-bash">localbrain self-update           # Update to latest
+localbrain self-update --check   # Check for updates
+localbrain self-update --rollback # Revert to previous
+localbrain uninstall             # Remove (preserves data)</code></pre>
+
+                <h2>Testing</h2>
+                <pre><code class="language-bash">localbrain test embedding  # Test embedding service
+localbrain test llm        # Test LLM service</code></pre>
+
+                <h2>Knowledge Mining</h2>
+                <pre><code class="language-bash">localbrain mine run                # Run all mining tasks (graph, relations, topics, recommendations)
+localbrain graph rebuild           # Rebuild knowledge graph
+localbrain graph stats             # Show graph statistics
+localbrain topics rebuild          # Rebuild topic clusters
+localbrain topics list             # List all topic clusters</code></pre>
+            </div>
+
+            <div data-lang="zh">
+                <h1>CLI 参考</h1>
+                <p>CLI 使用对象优先（名词-动词）模式。主命令：<code>localbrain</code>（别名：<code>kb</code>）。</p>
+
+                <h2>收集命令</h2>
+                <p>所有收集命令都支持：</p>
+                <ul>
+                    <li><code>--tags, -t</code> — 手动提供标签（可多次使用）</li>
+                    <li><code>--summary, -s</code> — 手动提供摘要</li>
+                    <li><code>--auto-extract / --no-auto-extract</code> — 切换自动提取（默认：启用）</li>
+                    <li><code>--skip-existing</code> — 如果已收集则跳过</li>
+                </ul>
+
+                <h3>文件收集</h3>
+                <pre><code class="language-bash">localbrain collect file add &lt;path&gt;
+localbrain collect file add ~/documents/paper.pdf
+localbrain collect file add ~/notes/ideas.md --tags "ideas"</code></pre>
+
+                <h3>网页收集</h3>
+                <pre><code class="language-bash">localbrain collect webpage add &lt;url&gt;
+localbrain collect webpage add https://example.com/article --tags "reference"</code></pre>
+
+                <h3>论文收集</h3>
+                <pre><code class="language-bash">localbrain collect paper add &lt;source&gt;
+localbrain collect paper add arxiv:2401.12345
+localbrain collect paper add https://arxiv.org/abs/2401.12345</code></pre>
+
+                <h3>邮件收集</h3>
+                <pre><code class="language-bash">localbrain collect email add &lt;path&gt;
+localbrain collect email add ~/emails/message.eml
+localbrain collect email add ~/emails/archive.mbox</code></pre>
+
+                <h3>书签收集</h3>
+                <pre><code class="language-bash">localbrain collect bookmark add &lt;url&gt; --tags "tag1"
+localbrain collect bookmark import --browser chrome
+localbrain collect bookmark import --browser firefox
+localbrain collect bookmark import --file bookmarks.html</code></pre>
+
+                <h3>笔记收集</h3>
+                <pre><code class="language-bash">localbrain collect note add "Your note text" --tags "tag1,tag2" --summary "Brief summary"</code></pre>
+
+                <h2>搜索命令</h2>
+                <pre><code class="language-bash">localbrain search semantic &lt;query&gt;    # 基于向量的语义搜索
+localbrain search keyword &lt;keywords&gt;  # 全文关键词搜索
+localbrain search rag &lt;question&gt;      # 基于 RAG 的问答
+localbrain search tags -t &lt;tag&gt;       # 按标签查找条目</code></pre>
+
+                <h2>标签管理</h2>
+                <pre><code class="language-bash">localbrain tag list                    # 列出所有标签
+localbrain tag merge &lt;source&gt; &lt;target&gt; # 合并标签
+localbrain tag delete &lt;name&gt;           # 删除标签</code></pre>
+
+                <h2>系统命令</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>命令</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>localbrain init</code></td>
+                            <td>初始化知识库</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain init setup</code></td>
+                            <td>引导式设置向导</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain config show</code></td>
+                            <td>显示配置</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain stats</code></td>
+                            <td>显示统计信息</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain doctor</code></td>
+                            <td>系统诊断</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain export</code></td>
+                            <td>导出知识库</td>
+                        </tr>
+                        <tr>
+                            <td><code>localbrain --version</code></td>
+                            <td>显示版本</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2>Web 服务器</h2>
+                <pre><code class="language-bash">localbrain web              # 前台启动
+localbrain web -b           # 后台启动（守护进程）
+localbrain web --status     # 检查状态
+localbrain web --stop       # 停止后台服务器
+localbrain web --port 9090  # 自定义端口</code></pre>
+
+                <h2>维护命令</h2>
+                <pre><code class="language-bash">localbrain self-update           # 更新到最新版本
+localbrain self-update --check   # 检查更新
+localbrain self-update --rollback # 回退到上一版本
+localbrain uninstall             # 卸载（保留数据）</code></pre>
+
+                <h2>测试命令</h2>
+                <pre><code class="language-bash">localbrain test embedding  # 测试嵌入服务
+localbrain test llm        # 测试大语言模型服务</code></pre>
+
+                <h2>知识挖掘</h2>
+                <pre><code class="language-bash">localbrain mine run                # 运行所有挖掘任务（图谱、关系、主题、推荐）
+localbrain graph rebuild           # 重建知识图谱
+localbrain graph stats             # 显示图谱统计信息
+localbrain topics rebuild          # 重建主题聚类
+localbrain topics list             # 列出所有主题聚类</code></pre>
+            </div>
+        </article>
+    </main>
+    <aside class="doc-outline" id="docOutline">
+        <div class="outline-title">On this page</div>
+        <div class="outline-links" id="outlineLinks"></div>
+    </aside>
+    <script src="layout.js"></script>
+</body>
+</html>

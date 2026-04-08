@@ -1,0 +1,96 @@
+# Agentic Local Brain 配置文件
+# 支持环境变量替换，格式: ${VAR_NAME}
+
+# 数据目录路径
+data_dir: ~/.knowledge-base
+
+# Update server URL (for self-update functionality)
+update_server_url: https://localbrain.io.alibaba-inc.com
+
+# 嵌入模型配置（通过 LiteLLM 统一调用）
+#
+# model 格式为 "provider/model"，详见 https://docs.litellm.ai/docs/embedding/supported_embedding
+#
+# ─── 配置示例 ───
+#
+# DashScope（阿里云百炼）：
+# embedding:
+#   provider: litellm
+#   model: openai/text-embedding-v4
+#   api_key: ${DASHSCOPE_API_KEY}
+#   base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+#   encoding_format: float
+#
+# OpenAI 官方：
+# embedding:
+#   provider: litellm
+#   model: openai/text-embedding-3-small
+#   api_key: ${OPENAI_API_KEY}
+#
+# 本地服务（如 Ollama）：
+# embedding:
+#   provider: litellm
+#   model: openai/nomic-embed-text
+#   api_key: not-needed
+#   base_url: http://localhost:11434/v1
+#
+embedding:
+  provider: litellm
+  model: openai/text-embedding-v4
+  api_key: ${DASHSCOPE_API_KEY}
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  encoding_format: float
+
+# 大语言模型配置（通过 LiteLLM 统一调用）
+#
+# model 格式为 "provider/model"，详见 https://docs.litellm.ai/docs/providers
+#
+# ─── 配置示例 ───
+#
+# DashScope（阿里云百炼）：
+# llm:
+#   provider: litellm
+#   model: dashscope/qwen-plus
+#   api_key: ${DASHSCOPE_API_KEY}
+#
+# OpenAI：
+# llm:
+#   provider: litellm
+#   model: openai/gpt-4o
+#   api_key: ${OPENAI_API_KEY}
+#
+# Anthropic Claude：
+# llm:
+#   provider: litellm
+#   model: anthropic/claude-3-5-sonnet-20241022
+#   api_key: ${ANTHROPIC_API_KEY}
+#
+# 本地服务（如 Ollama）：
+# llm:
+#   provider: litellm
+#   model: openai/qwen2.5:7b
+#   api_key: ollama
+#   base_url: http://localhost:11434/v1
+#
+llm:
+  provider: litellm
+  model: dashscope/qwen-plus
+  api_key: ${DASHSCOPE_API_KEY}
+
+# 文本分块配置
+chunking:
+  max_chunk_size: 1000
+  chunk_overlap: 100
+
+# 存储配置
+storage:
+  type: chroma
+  persist_directory: ~/.knowledge-base/db/chroma
+
+# Logging configuration (used for background web server mode)
+logging:
+  log_dir: ""              # Log directory (default: ~/.localbrain/logs/)
+  level: INFO              # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  max_bytes: 10485760      # Max log file size in bytes (default: 10MB)
+  backup_count: 5          # Number of rotated backup files to keep
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

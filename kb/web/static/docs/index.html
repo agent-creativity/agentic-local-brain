@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Local Brain Documentation</title>
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+    <header class="doc-header">
+        <div class="doc-header-left">
+            <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+            <a href="/docs/index.html" class="doc-logo">⚛️ Agentic Local Brain</a>
+        </div>
+        <div class="doc-header-right">
+            <button class="doc-lang-toggle" id="langToggle">EN</button>
+        </div>
+    </header>
+
+    <nav class="doc-sidebar" id="docSidebar">
+        <div class="sidebar-header">
+            <a href="/" class="back-to-app">← Back to App</a>
+        </div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-link active">Home</a>
+            <a href="getting-started.html" class="nav-link">Getting Started</a>
+            <a href="skill-install.html" class="nav-link">Skill Installation</a>
+            <a href="core-concepts.html" class="nav-link">Core Concepts</a>
+            <a href="architecture.html" class="nav-link">Architecture</a>
+            <a href="configuration.html" class="nav-link">Configuration</a>
+            <a href="cli-reference.html" class="nav-link">CLI Reference</a>
+            <a href="api-reference.html" class="nav-link">API Reference</a>
+            <a href="roadmap.html" class="nav-link">Roadmap</a>
+            <a href="faq.html" class="nav-link">FAQ</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+    </nav>
+
+    <main class="doc-content">
+        <article class="doc-article">
+            <div data-lang="en">
+                <h1>Agentic Local Brain</h1>
+                <p class="doc-subtitle">Your personal knowledge management system — collect, process, and intelligently retrieve knowledge from multiple sources, powered by your AI coding agent.</p>
+
+                <h2>What is Agentic Local Brain?</h2>
+                <p>Agentic Local Brain is a comprehensive local-first knowledge management system designed for developers and knowledge workers. It acts as an extended brain that:</p>
+                <ul>
+                    <li><strong>Collects</strong> knowledge from diverse sources: files (PDF, Markdown, text), webpages, bookmarks, academic papers, emails, and notes</li>
+                    <li><strong>Processes</strong> content intelligently: auto-extracts tags and summaries using a 3-tier strategy (user-provided → LLM → built-in algorithms)</li>
+                    <li><strong>Stores</strong> data locally with dual storage: SQLite for metadata/tags and ChromaDB for vector embeddings</li>
+                    <li><strong>Retrieves</strong> information through keyword search, semantic search, and RAG-based Q&A</li>
+                    <li><strong>Integrates</strong> with your AI coding agent via Skills for seamless knowledge capture during work</li>
+                </ul>
+
+                <h2>Quick Start</h2>
+                <p>Get up and running in minutes:</p>
+                <ol>
+                    <li><strong>Install</strong>: <code>curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh</code></li>
+                    <li><strong>Initialize</strong>: <code>localbrain init</code></li>
+                    <li><strong>Collect</strong>: <code>localbrain collect note add "My first knowledge item" --tags "test"</code></li>
+                    <li><strong>Search</strong>: <code>localbrain search keyword "first knowledge"</code></li>
+                    <li><strong>Web UI</strong>: <code>localbrain web</code> then visit http://127.0.0.1:8080</li>
+                </ol>
+
+                <h2>Documentation Guide</h2>
+                <div class="doc-card-grid">
+                    <a href="getting-started.html" class="doc-card">
+                        <span class="doc-card-icon">📚</span>
+                        <span class="doc-card-title">Getting Started</span>
+                        <span class="doc-card-desc">Installation, setup, and your first 5 minutes</span>
+                    </a>
+                    <a href="skill-install.html" class="doc-card">
+                        <span class="doc-card-icon">🔌</span>
+                        <span class="doc-card-title">Skill Installation</span>
+                        <span class="doc-card-desc">Connect your AI agent to Local Brain</span>
+                    </a>
+                    <a href="core-concepts.html" class="doc-card">
+                        <span class="doc-card-icon">💡</span>
+                        <span class="doc-card-title">Core Concepts</span>
+                        <span class="doc-card-desc">Knowledge items, collectors, processors, and queries</span>
+                    </a>
+                    <a href="architecture.html" class="doc-card">
+                        <span class="doc-card-icon">🏗️</span>
+                        <span class="doc-card-title">Architecture</span>
+                        <span class="doc-card-desc">System design, data flow, and tech stack</span>
+                    </a>
+                    <a href="configuration.html" class="doc-card">
+                        <span class="doc-card-icon">⚙️</span>
+                        <span class="doc-card-title">Configuration</span>
+                        <span class="doc-card-desc">Config file, providers, environment variables</span>
+                    </a>
+                    <a href="cli-reference.html" class="doc-card">
+                        <span class="doc-card-icon">💻</span>
+                        <span class="doc-card-title">CLI Reference</span>
+                        <span class="doc-card-desc">Complete command reference with examples</span>
+                    </a>
+                    <a href="api-reference.html" class="doc-card">
+                        <span class="doc-card-icon">🌐</span>
+                        <span class="doc-card-title">API Reference</span>
+                        <span class="doc-card-desc">REST API endpoints and usage</span>
+                    </a>
+                    <a href="roadmap.html" class="doc-card">
+                        <span class="doc-card-icon">🗺️</span>
+                        <span class="doc-card-title">Roadmap</span>
+                        <span class="doc-card-desc">What's coming next</span>
+                    </a>
+                    <a href="faq.html" class="doc-card">
+                        <span class="doc-card-icon">❓</span>
+                        <span class="doc-card-title">FAQ</span>
+                        <span class="doc-card-desc">Frequently asked questions and troubleshooting</span>
+                    </a>
+                    <a href="contact.html" class="doc-card">
+                        <span class="doc-card-icon">🤝</span>
+                        <span class="doc-card-title">Contact</span>
+                        <span class="doc-card-desc">Get in touch and contribute</span>
+                    </a>
+                </div>
+
+                <h2>Key Features</h2>
+                <ul class="feature-list">
+                    <li><strong>Multi-source Collection</strong> — 6 collector types: files, webpages, bookmarks, papers, emails, notes</li>
+                    <li><strong>Smart 3-tier Tag & Summary Extraction</strong> — User-provided → LLM → Built-in algorithms</li>
+                    <li><strong>Dual Storage</strong> — SQLite for metadata, ChromaDB for vector embeddings</li>
+                    <li><strong>Graceful Degradation</strong> — Works without AI services using built-in extraction</li>
+                    <li><strong>CLI + Web Interface</strong> — Command-line power with visual convenience</li>
+                    <li><strong>Agent Skill Integration</strong> — Capture knowledge seamlessly during work</li>
+                    <li><strong>Knowledge Mining</strong> — Knowledge graph, cross-document relations, topic clustering, smart recommendations</li>
+                    <li><strong>Cross-Platform</strong> — macOS, Linux, Windows support</li>
+                </ul>
+
+                <h2>Getting Help</h2>
+                <ul>
+                    <li>Run <code>localbrain doctor</code> for system diagnostics</li>
+                    <li>Check the <a href="faq.html">FAQ page</a> for common questions</li>
+                    <li>Visit the <a href="contact.html">Contact page</a> for community and support</li>
+                </ul>
+            </div>
+
+            <div data-lang="zh">
+                <h1>Agentic Local Brain</h1>
+                <p class="doc-subtitle">你的个人知识管理系统 —— 从多种来源收集、处理并智能检索知识，由你的 AI 编程助手驱动。</p>
+
+                <h2>什么是 Agentic Local Brain？</h2>
+                <p>Agentic Local Brain 是一个专为开发者和知识工作者设计的全面本地优先知识管理系统。它作为你的"第二大脑"：</p>
+                <ul>
+                    <li><strong>收集</strong>来自多种来源的知识：文件（PDF、Markdown、文本）、网页、书签、学术论文、邮件和笔记</li>
+                    <li><strong>处理</strong>内容智能化：使用三层策略（用户提供 → LLM → 内置算法）自动提取标签和摘要</li>
+                    <li><strong>存储</strong>数据在本地：SQLite 存储元数据/标签，ChromaDB 存储向量嵌入</li>
+                    <li><strong>检索</strong>信息：通过关键词搜索、语义搜索和基于 RAG 的问答</li>
+                    <li><strong>集成</strong>你的 AI 编程助手：通过 Skills 在工作中无缝捕获知识</li>
+                </ul>
+
+                <h2>快速开始</h2>
+                <p>几分钟内即可上手：</p>
+                <ol>
+                    <li><strong>安装</strong>：<code>curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh</code></li>
+                    <li><strong>初始化</strong>：<code>localbrain init</code></li>
+                    <li><strong>收集</strong>：<code>localbrain collect note add "我的第一条知识" --tags "测试"</code></li>
+                    <li><strong>搜索</strong>：<code>localbrain search keyword "第一条知识"</code></li>
+                    <li><strong>Web 界面</strong>：<code>localbrain web</code> 然后访问 http://127.0.0.1:8080</li>
+                </ol>
+
+                <h2>文档导航</h2>
+                <div class="doc-card-grid">
+                    <a href="getting-started.html" class="doc-card">
+                        <span class="doc-card-icon">📚</span>
+                        <span class="doc-card-title">入门指南</span>
+                        <span class="doc-card-desc">安装、设置和你的前 5 分钟</span>
+                    </a>
+                    <a href="skill-install.html" class="doc-card">
+                        <span class="doc-card-icon">🔌</span>
+                        <span class="doc-card-title">Skill 安装</span>
+                        <span class="doc-card-desc">将你的 AI 助手连接到 Local Brain</span>
+                    </a>
+                    <a href="core-concepts.html" class="doc-card">
+                        <span class="doc-card-icon">💡</span>
+                        <span class="doc-card-title">核心概念</span>
+                        <span class="doc-card-desc">知识条目、收集器、处理器和查询</span>
+                    </a>
+                    <a href="architecture.html" class="doc-card">
+                        <span class="doc-card-icon">🏗️</span>
+                        <span class="doc-card-title">架构设计</span>
+                        <span class="doc-card-desc">系统设计、数据流和技术栈</span>
+                    </a>
+                    <a href="configuration.html" class="doc-card">
+                        <span class="doc-card-icon">⚙️</span>
+                        <span class="doc-card-title">配置说明</span>
+                        <span class="doc-card-desc">配置文件、提供商和环境变量</span>
+                    </a>
+                    <a href="cli-reference.html" class="doc-card">
+                        <span class="doc-card-icon">💻</span>
+                        <span class="doc-card-title">CLI 参考</span>
+                        <span class="doc-card-desc">完整命令参考和示例</span>
+                    </a>
+                    <a href="api-reference.html" class="doc-card">
+                        <span class="doc-card-icon">🌐</span>
+                        <span class="doc-card-title">API 参考</span>
+                        <span class="doc-card-desc">REST API 端点和使用方法</span>
+                    </a>
+                    <a href="roadmap.html" class="doc-card">
+                        <span class="doc-card-icon">🗺️</span>
+                        <span class="doc-card-title">路线图</span>
+                        <span class="doc-card-desc">即将推出的功能</span>
+                    </a>
+                    <a href="faq.html" class="doc-card">
+                        <span class="doc-card-icon">❓</span>
+                        <span class="doc-card-title">常见问题</span>
+                        <span class="doc-card-desc">常见问题和故障排除</span>
+                    </a>
+                    <a href="contact.html" class="doc-card">
+                        <span class="doc-card-icon">🤝</span>
+                        <span class="doc-card-title">联系我们</span>
+                        <span class="doc-card-desc">获取帮助和参与贡献</span>
+                    </a>
+                </div>
+
+                <h2>核心特性</h2>
+                <ul class="feature-list">
+                    <li><strong>多源收集</strong> — 6 种收集器：文件、网页、书签、论文、邮件、笔记</li>
+                    <li><strong>智能三层标签和摘要提取</strong> — 用户提供 → LLM → 内置算法</li>
+                    <li><strong>双存储架构</strong> — SQLite 存储元数据，ChromaDB 存储向量嵌入</li>
+                    <li><strong>优雅降级</strong> — 无需 AI 服务也能使用内置提取功能</li>
+                    <li><strong>CLI + Web 界面</strong> — 命令行强大功能与可视化便捷操作</li>
+                    <li><strong>Agent Skill 集成</strong> — 工作中无缝捕获知识</li>
+                    <li><strong>知识挖掘</strong> — 知识图谱、跨文档关系、主题聚类、智能推荐</li>
+                    <li><strong>跨平台支持</strong> — macOS、Linux、Windows</li>
+                </ul>
+
+                <h2>获取帮助</h2>
+                <ul>
+                    <li>运行 <code>localbrain doctor</code> 进行系统诊断</li>
+                    <li>查看<a href="faq.html">常见问题页面</a>获取常见问题解答</li>
+                    <li>访问<a href="contact.html">联系我们页面</a>获取社区支持和帮助</li>
+                </ul>
+            </div>
+        </article>
+    </main>
+
+    <aside class="doc-outline" id="docOutline">
+        <div class="outline-title">On this page</div>
+        <div class="outline-links" id="outlineLinks"></div>
+    </aside>
+
+    <script src="layout.js"></script>
+</body>
+</html>

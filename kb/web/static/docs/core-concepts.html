@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Concepts - Agentic Local Brain Docs</title>
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+    <header class="doc-header">
+        <div class="doc-header-left">
+            <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+            <a href="/docs/index.html" class="doc-logo">⚛️ Agentic Local Brain</a>
+        </div>
+        <div class="doc-header-right">
+            <button class="doc-lang-toggle" id="langToggle">EN</button>
+        </div>
+    </header>
+    <nav class="doc-sidebar" id="docSidebar">
+        <div class="sidebar-header">
+            <a href="/" class="back-to-app">← Back to App</a>
+        </div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="getting-started.html" class="nav-link">Getting Started</a>
+            <a href="skill-install.html" class="nav-link">Skill Installation</a>
+            <a href="core-concepts.html" class="nav-link active">Core Concepts</a>
+            <a href="architecture.html" class="nav-link">Architecture</a>
+            <a href="configuration.html" class="nav-link">Configuration</a>
+            <a href="cli-reference.html" class="nav-link">CLI Reference</a>
+            <a href="api-reference.html" class="nav-link">API Reference</a>
+            <a href="roadmap.html" class="nav-link">Roadmap</a>
+            <a href="faq.html" class="nav-link">FAQ</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+    </nav>
+    <main class="doc-content">
+        <article class="doc-article">
+            <div data-lang="en">
+                <h1>Core Concepts</h1>
+
+                <h2>Knowledge Items</h2>
+                <p>A Knowledge Item is the fundamental unit in Agentic Local Brain. Each item represents a piece of collected knowledge with: title, content (stored as Markdown), source type, tags, summary, metadata, and vector embeddings. Types: note, bookmark, webpage, paper, email, file.</p>
+
+                <h2>Collectors</h2>
+                <p>Collectors are responsible for ingesting knowledge from various sources. Each collector:</p>
+                <ul>
+                    <li>Extracts content from its specific source type</li>
+                    <li>Converts content to Markdown with YAML front matter</li>
+                    <li>Generates metadata (word count, source info, dates)</li>
+                    <li>Triggers tag and summary extraction</li>
+                </ul>
+                <p>Available collectors: FileCollector (PDF, Markdown, text), WebpageCollector (web articles via httpx + readability), BookmarkCollector (browser bookmarks - Chrome, Firefox, Edge), PaperCollector (arxiv papers), EmailCollector (.eml and .mbox), NoteCollector (quick text notes).</p>
+
+                <h2>Processors</h2>
+                <p>After collection, content goes through processing:</p>
+
+                <h3>Text Chunking</h3>
+                <ul>
+                    <li>Splits large documents into smaller chunks for embedding</li>
+                    <li>Configurable chunk size (default: 1000 chars) and overlap (default: 100 chars)</li>
+                    <li>Preserves semantic boundaries (paragraph and sentence level)</li>
+                </ul>
+
+                <h3>Embedding Generation</h3>
+                <ul>
+                    <li>Converts text chunks to vector representations</li>
+                    <li>Supports DashScope (text-embedding-v4) and OpenAI-compatible providers</li>
+                    <li>Used for semantic similarity search</li>
+                </ul>
+
+                <h3>Tag &amp; Summary Extraction (Smart 3-Tier)</h3>
+                <pre>Tier 1: User-Provided → used directly
+Tier 2: LLM Extraction → AI generates 3-5 tags + summary  
+Tier 3: Built-in Algorithms → TF-IDF keywords + extractive summary</pre>
+
+                <h2>Storage</h2>
+
+                <h3>SQLite (Metadata)</h3>
+                <p>Stores: item records, tags, tag-item associations, full-text search index (FTS5)</p>
+
+                <h3>ChromaDB (Vectors)</h3>
+                <p>Stores: vector embeddings for semantic search, document chunks with metadata</p>
+
+                <h2>Query Modes</h2>
+
+                <h3>Keyword Search</h3>
+                <ul>
+                    <li>Uses SQLite FTS5 full-text search</li>
+                    <li>Fast, exact matching</li>
+                    <li>Works without AI services</li>
+                </ul>
+
+                <h3>Semantic Search</h3>
+                <ul>
+                    <li>Uses vector similarity (cosine distance)</li>
+                    <li>Finds conceptually related content</li>
+                    <li>Requires embedding service</li>
+                </ul>
+
+                <h3>RAG (Retrieval-Augmented Generation)</h3>
+                <ul>
+                    <li>Combines semantic search with LLM</li>
+                    <li>Retrieves relevant context, then generates answer</li>
+                    <li>Requires both embedding and LLM services</li>
+                </ul>
+
+                <h2>Graceful Degradation</h2>
+                <p>The system works at three levels:</p>
+                <ol>
+                    <li>Full AI: All features (semantic search, RAG, LLM tagging)</li>
+                    <li>Embedding only: Semantic search + built-in tagging</li>
+                    <li>No AI: Keyword search + built-in tagging + extractive summary</li>
+                </ol>
+
+                <h2>Knowledge Mining (v0.6)</h2>
+                <p>v0.6 introduces advanced knowledge mining capabilities that automatically discover patterns and relationships across your collected knowledge.</p>
+
+                <h3>Knowledge Graph</h3>
+                <ul>
+                    <li>Automatically extracts entities (people, technologies, concepts) from documents</li>
+                    <li>Builds entity-relationship graphs with mention frequency tracking</li>
+                    <li>Interactive graph visualization in the web interface</li>
+                </ul>
+
+                <h3>Cross-Document Relations</h3>
+                <ul>
+                    <li>Discovers connections between documents via embedding similarity</li>
+                    <li>Identifies shared entities across documents</li>
+                    <li>Provides "related documents" for each knowledge item</li>
+                </ul>
+
+                <h3>Topic Clustering</h3>
+                <ul>
+                    <li>Groups documents into topics using HDBSCAN clustering algorithm</li>
+                    <li>LLM-generated topic labels for human-readable cluster names</li>
+                    <li>Topic trend analysis with time-based visualization</li>
+                </ul>
+
+                <h3>Smart Recommendations</h3>
+                <ul>
+                    <li>Personalized recommendations based on reading patterns</li>
+                    <li>Time-decay weighted scoring for recency awareness</li>
+                    <li>AI-generated recommendation reasons</li>
+                </ul>
+            </div>
+            <div data-lang="zh">
+                <h1>核心概念</h1>
+
+                <h2>知识条目</h2>
+                <p>知识条目是 Agentic Local Brain 的基本单元。每个条目代表一段收集的知识，包含：标题、内容（以 Markdown 存储）、来源类型、标签、摘要、元数据和向量嵌入。类型包括：笔记、书签、网页、论文、邮件、文件。</p>
+
+                <h2>收集器</h2>
+                <p>收集器负责从各种来源摄取知识。每个收集器：</p>
+                <ul>
+                    <li>从其特定来源类型提取内容</li>
+                    <li>将内容转换为带 YAML 前置元数据的 Markdown</li>
+                    <li>生成元数据（字数、来源信息、日期）</li>
+                    <li>触发标签和摘要提取</li>
+                </ul>
+                <p>可用收集器：FileCollector（PDF、Markdown、文本）、WebpageCollector（通过 httpx + readability 获取网页文章）、BookmarkCollector（浏览器书签 - Chrome、Firefox、Edge）、PaperCollector（arxiv 论文）、EmailCollector（.eml 和 .mbox）、NoteCollector（快速文本笔记）。</p>
+
+                <h2>处理器</h2>
+                <p>收集完成后，内容进入处理流程：</p>
+
+                <h3>文本分块</h3>
+                <ul>
+                    <li>将大文档分割成较小的块以便嵌入</li>
+                    <li>可配置的块大小（默认：1000 字符）和重叠（默认：100 字符）</li>
+                    <li>保留语义边界（段落和句子级别）</li>
+                </ul>
+
+                <h3>嵌入生成</h3>
+                <ul>
+                    <li>将文本块转换为向量表示</li>
+                    <li>支持 DashScope（text-embedding-v4）和 OpenAI 兼容的提供商</li>
+                    <li>用于语义相似性搜索</li>
+                </ul>
+
+                <h3>标签与摘要提取（智能三层）</h3>
+                <pre>第一层：用户提供的 → 直接使用
+第二层：LLM 提取 → AI 生成 3-5 个标签 + 摘要
+第三层：内置算法 → TF-IDF 关键词 + 抽取式摘要</pre>
+
+                <h2>存储</h2>
+
+                <h3>SQLite（元数据）</h3>
+                <p>存储：条目记录、标签、标签-条目关联、全文搜索索引（FTS5）</p>
+
+                <h3>ChromaDB（向量）</h3>
+                <p>存储：用于语义搜索的向量嵌入、带元数据的文档块</p>
+
+                <h2>查询模式</h2>
+
+                <h3>关键词搜索</h3>
+                <ul>
+                    <li>使用 SQLite FTS5 全文搜索</li>
+                    <li>快速、精确匹配</li>
+                    <li>无需 AI 服务即可工作</li>
+                </ul>
+
+                <h3>语义搜索</h3>
+                <ul>
+                    <li>使用向量相似性（余弦距离）</li>
+                    <li>查找概念相关的内容</li>
+                    <li>需要嵌入服务</li>
+                </ul>
+
+                <h3>RAG（检索增强生成）</h3>
+                <ul>
+                    <li>结合语义搜索与 LLM</li>
+                    <li>检索相关上下文，然后生成答案</li>
+                    <li>需要嵌入服务和 LLM 服务</li>
+                </ul>
+
+                <h2>优雅降级</h2>
+                <p>系统可在三个级别下工作：</p>
+                <ol>
+                    <li>完整 AI：所有功能（语义搜索、RAG、LLM 标签）</li>
+                    <li>仅嵌入：语义搜索 + 内置标签</li>
+                    <li>无 AI：关键词搜索 + 内置标签 + 抽取式摘要</li>
+                </ol>
+
+                <h2>知识挖掘 (v0.6)</h2>
+                <p>v0.6 引入高级知识挖掘能力，自动发现已收集知识中的模式和关联关系。</p>
+
+                <h3>知识图谱</h3>
+                <ul>
+                    <li>自动从文档中抽取实体（人物、技术、概念）</li>
+                    <li>构建实体关系图谱，跟踪提及频次</li>
+                    <li>Web 界面中提供交互式图谱可视化</li>
+                </ul>
+
+                <h3>跨文档关系</h3>
+                <ul>
+                    <li>通过嵌入向量相似度发现文档之间的关联</li>
+                    <li>识别文档之间的共享实体</li>
+                    <li>为每个知识条目提供"相关文档"推荐</li>
+                </ul>
+
+                <h3>主题聚类</h3>
+                <ul>
+                    <li>使用 HDBSCAN 聚类算法将文档分组为主题</li>
+                    <li>LLM 生成的主题标签，提供可读的聚类名称</li>
+                    <li>主题趋势分析，支持基于时间的可视化</li>
+                </ul>
+
+                <h3>智能推荐</h3>
+                <ul>
+                    <li>基于阅读模式的个性化推荐</li>
+                    <li>时间衰减加权评分，关注近期内容</li>
+                    <li>AI 生成推荐理由</li>
+                </ul>
+            </div>
+        </article>
+    </main>
+    <aside class="doc-outline" id="docOutline">
+        <div class="outline-title">On this page</div>
+        <div class="outline-links" id="outlineLinks"></div>
+    </aside>
+    <script src="layout.js"></script>
+</body>
+</html>

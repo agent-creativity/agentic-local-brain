@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration - Agentic Local Brain Docs</title>
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+    <header class="doc-header">
+        <div class="doc-header-left">
+            <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+            <a href="/docs/index.html" class="doc-logo">⚛️ Agentic Local Brain</a>
+        </div>
+        <div class="doc-header-right">
+            <button class="doc-lang-toggle" id="langToggle">EN</button>
+        </div>
+    </header>
+    <nav class="doc-sidebar" id="docSidebar">
+        <div class="sidebar-header"><a href="/" class="back-to-app">← Back to App</a></div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="getting-started.html" class="nav-link">Getting Started</a>
+            <a href="skill-install.html" class="nav-link">Skill Installation</a>
+            <a href="core-concepts.html" class="nav-link">Core Concepts</a>
+            <a href="architecture.html" class="nav-link">Architecture</a>
+            <a href="configuration.html" class="nav-link active">Configuration</a>
+            <a href="cli-reference.html" class="nav-link">CLI Reference</a>
+            <a href="api-reference.html" class="nav-link">API Reference</a>
+            <a href="roadmap.html" class="nav-link">Roadmap</a>
+            <a href="faq.html" class="nav-link">FAQ</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+    </nav>
+    <main class="doc-content">
+        <article class="doc-article">
+            <div data-lang="en">
+                <h1>Configuration</h1>
+
+                <h2>Configuration File</h2>
+                <p>Location: <code>~/.localbrain/config.yaml</code></p>
+                <p>Created automatically by <code>localbrain init</code></p>
+
+                <pre><code class="language-yaml"># Data directory
+data_dir: ~/.knowledge-base
+
+# Update server URL
+update_server_url: https://localbrain.io.alibaba-inc.com
+
+# Embedding model
+embedding:
+  provider: dashscope
+  dashscope:
+    model: text-embedding-v4
+    api_key: ${DASHSCOPE_API_KEY}
+
+# LLM configuration
+llm:
+  provider: dashscope
+  model: qwen3.5-plus
+  api_key: ${DASHSCOPE_API_KEY}
+
+# Text chunking
+chunking:
+  max_chunk_size: 1000
+  chunk_overlap: 100
+
+# Storage
+storage:
+  type: chroma
+  persist_directory: ~/.knowledge-base/db/chroma
+
+# Logging
+logging:
+  log_dir: ""
+  level: INFO
+  max_bytes: 10485760
+  backup_count: 5</code></pre>
+
+                <h2>Embedding Configuration</h2>
+
+                <h3>DashScope (Default)</h3>
+                <ul>
+                    <li>Model: text-embedding-v4</li>
+                    <li>Requires: DASHSCOPE_API_KEY environment variable or config setting</li>
+                    <li>Get API key: <a href="https://dashscope.console.aliyun.com/">https://dashscope.console.aliyun.com/</a></li>
+                </ul>
+
+                <h3>OpenAI-Compatible</h3>
+                <p>For Ollama, vLLM, or any OpenAI-compatible API:</p>
+                <pre><code class="language-yaml">embedding:
+  provider: openai
+  openai:
+    model: text-embedding-3-small
+    api_key: your-key
+    base_url: http://localhost:11434/v1  # for Ollama</code></pre>
+
+                <h2>LLM Configuration</h2>
+
+                <h3>DashScope (Default)</h3>
+                <p>Supported models: qwen3.5-plus, qwen-plus, qwen-max</p>
+
+                <h3>OpenAI-Compatible</h3>
+                <pre><code class="language-yaml">llm:
+  provider: openai
+  model: gpt-4
+  api_key: your-key
+  base_url: https://api.openai.com/v1</code></pre>
+
+                <h2>Chunking Parameters</h2>
+                <ul>
+                    <li><code>max_chunk_size</code>: Maximum characters per chunk (default: 1000)</li>
+                    <li><code>chunk_overlap</code>: Overlap between adjacent chunks (default: 100)</li>
+                    <li>Larger chunks = more context but less precise search</li>
+                    <li>Smaller chunks = more precise but may lose context</li>
+                </ul>
+
+                <h2>Environment Variables</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Variable</th>
+                            <th>Description</th>
+                            <th>Required</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>DASHSCOPE_API_KEY</td>
+                            <td>DashScope API key</td>
+                            <td>For AI features</td>
+                        </tr>
+                        <tr>
+                            <td>OPENAI_API_KEY</td>
+                            <td>OpenAI API key</td>
+                            <td>If using OpenAI provider</td>
+                        </tr>
+                        <tr>
+                            <td>KB_CONFIG_PATH</td>
+                            <td>Custom config file path</td>
+                            <td>No</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2>Graceful Degradation</h2>
+                <p>The system works without AI services:</p>
+                <ul>
+                    <li>No embedding service → keyword search only, built-in tag extraction</li>
+                    <li>No LLM service → built-in extractive summary, TF-IDF tags</li>
+                    <li>Both available → full semantic search, RAG, LLM tag extraction</li>
+                </ul>
+
+                <h2>Logging Configuration</h2>
+                <ul>
+                    <li>Default log directory: ~/.localbrain/logs/</li>
+                    <li>Log rotation: 10MB max, 5 backup files</li>
+                    <li>Levels: DEBUG, INFO, WARNING, ERROR, CRITICAL</li>
+                </ul>
+            </div>
+
+            <div data-lang="zh">
+                <h1>配置</h1>
+
+                <h2>配置文件</h2>
+                <p>位置：<code>~/.localbrain/config.yaml</code></p>
+                <p>由 <code>localbrain init</code> 自动创建</p>
+
+                <pre><code class="language-yaml"># 数据目录
+data_dir: ~/.knowledge-base
+
+# 更新服务器地址
+update_server_url: https://localbrain.io.alibaba-inc.com
+
+# 嵌入模型
+embedding:
+  provider: dashscope
+  dashscope:
+    model: text-embedding-v4
+    api_key: ${DASHSCOPE_API_KEY}
+
+# 大语言模型配置
+llm:
+  provider: dashscope
+  model: qwen3.5-plus
+  api_key: ${DASHSCOPE_API_KEY}
+
+# 文本分块
+chunking:
+  max_chunk_size: 1000
+  chunk_overlap: 100
+
+# 存储
+storage:
+  type: chroma
+  persist_directory: ~/.knowledge-base/db/chroma
+
+# 日志
+logging:
+  log_dir: ""
+  level: INFO
+  max_bytes: 10485760
+  backup_count: 5</code></pre>
+
+                <h2>嵌入模型配置</h2>
+
+                <h3>DashScope（默认）</h3>
+                <ul>
+                    <li>模型：text-embedding-v4</li>
+                    <li>需要：DASHSCOPE_API_KEY 环境变量或配置设置</li>
+                    <li>获取 API 密钥：<a href="https://dashscope.console.aliyun.com/">https://dashscope.console.aliyun.com/</a></li>
+                </ul>
+
+                <h3>OpenAI 兼容</h3>
+                <p>适用于 Ollama、vLLM 或任何 OpenAI 兼容的 API：</p>
+                <pre><code class="language-yaml">embedding:
+  provider: openai
+  openai:
+    model: text-embedding-3-small
+    api_key: your-key
+    base_url: http://localhost:11434/v1  # 用于 Ollama</code></pre>
+
+                <h2>大语言模型配置</h2>
+
+                <h3>DashScope（默认）</h3>
+                <p>支持的模型：qwen3.5-plus、qwen-plus、qwen-max</p>
+
+                <h3>OpenAI 兼容</h3>
+                <pre><code class="language-yaml">llm:
+  provider: openai
+  model: gpt-4
+  api_key: your-key
+  base_url: https://api.openai.com/v1</code></pre>
+
+                <h2>分块参数</h2>
+                <ul>
+                    <li><code>max_chunk_size</code>：每个分块的最大字符数（默认：1000）</li>
+                    <li><code>chunk_overlap</code>：相邻分块之间的重叠字符数（默认：100）</li>
+                    <li>更大的分块 = 更多上下文但搜索精度较低</li>
+                    <li>更小的分块 = 更精确但可能丢失上下文</li>
+                </ul>
+
+                <h2>环境变量</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>变量</th>
+                            <th>描述</th>
+                            <th>是否必需</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>DASHSCOPE_API_KEY</td>
+                            <td>DashScope API 密钥</td>
+                            <td>AI 功能需要</td>
+                        </tr>
+                        <tr>
+                            <td>OPENAI_API_KEY</td>
+                            <td>OpenAI API 密钥</td>
+                            <td>使用 OpenAI 提供者时需要</td>
+                        </tr>
+                        <tr>
+                            <td>KB_CONFIG_PATH</td>
+                            <td>自定义配置文件路径</td>
+                            <td>否</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2>优雅降级</h2>
+                <p>系统在没有 AI 服务时仍可工作：</p>
+                <ul>
+                    <li>无嵌入服务 → 仅支持关键词搜索，使用内置标签提取</li>
+                    <li>无大语言模型服务 → 使用内置抽取式摘要，TF-IDF 标签</li>
+                    <li>两者都可用 → 完整的语义搜索、RAG、大语言模型标签提取</li>
+                </ul>
+
+                <h2>日志配置</h2>
+                <ul>
+                    <li>默认日志目录：~/.localbrain/logs/</li>
+                    <li>日志轮转：最大 10MB，5 个备份文件</li>
+                    <li>级别：DEBUG、INFO、WARNING、ERROR、CRITICAL</li>
+                </ul>
+            </div>
+        </article>
+    </main>
+    <aside class="doc-outline" id="docOutline">
+        <div class="outline-title">On this page</div>
+        <div class="outline-links" id="outlineLinks"></div>
+    </aside>
+    <script src="layout.js"></script>
+</body>
+</html>

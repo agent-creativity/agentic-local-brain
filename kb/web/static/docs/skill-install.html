@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Installation - Agentic Local Brain Docs</title>
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+    <header class="doc-header">
+        <div class="doc-header-left">
+            <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+            <a href="/docs/index.html" class="doc-logo">⚛️ Agentic Local Brain</a>
+        </div>
+        <div class="doc-header-right">
+            <button class="doc-lang-toggle" id="langToggle">EN</button>
+        </div>
+    </header>
+
+    <nav class="doc-sidebar" id="docSidebar">
+        <div class="sidebar-header">
+            <a href="/" class="back-to-app">← Back to App</a>
+        </div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="getting-started.html" class="nav-link">Getting Started</a>
+            <a href="skill-install.html" class="nav-link active">Skill Installation</a>
+            <a href="core-concepts.html" class="nav-link">Core Concepts</a>
+            <a href="architecture.html" class="nav-link">Architecture</a>
+            <a href="configuration.html" class="nav-link">Configuration</a>
+            <a href="cli-reference.html" class="nav-link">CLI Reference</a>
+            <a href="api-reference.html" class="nav-link">API Reference</a>
+            <a href="roadmap.html" class="nav-link">Roadmap</a>
+            <a href="faq.html" class="nav-link">FAQ</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+    </nav>
+
+    <main class="doc-content">
+        <article class="doc-article">
+            <div data-lang="en">
+                <h1>Skill Installation Guide</h1>
+                
+                <p>Skills are the bridge between your AI coding agent and Agentic Local Brain. By installing the knowledge collection skill, your agent can seamlessly save important information — code snippets, articles, bookmarks, insights — directly into your personal knowledge base while you work.</p>
+
+                <div class="callout callout-info">
+                    <strong>Why use Skills?</strong>
+                    <p>Instead of manually copying and pasting information into your knowledge base, your AI agent can do it automatically. Just tell it what to save, and it handles the rest — tagging, embedding, and indexing for later retrieval.</p>
+                </div>
+
+                <h2>Quickest Way to Install (30 seconds)</h2>
+
+                <div class="callout callout-info">
+                    <p><strong>The fastest way to install the knowledge collection skill:</strong></p>
+                    <p>Simply paste this message into your AI agent's chat window:</p>
+                </div>
+
+                <pre><code>Help me install or update this knowledge collection skill: http://127.0.0.1:8080/docs/skills/knowledge-collect-localbrain/SKILL.md</code></pre>
+
+                <p>That's it! Your agent will automatically download and install the skill. This works with Qoder, OpenClaw, Copaw, and most AI coding agents that support skill installation.</p>
+
+                <h3>Skill Resources</h3>
+                <ul>
+                    <li>📄 <a href="skills/knowledge-collect-localbrain/SKILL.md" target="_blank">View SKILL.md</a> — The skill definition file (view online)</li>
+                    <li>📦 <a href="skills/knowledge-collect-localbrain/SKILL.md" download>Download SKILL.md</a> — Download for manual installation</li>
+                </ul>
+
+                <p>The skill consists of a single <code>SKILL.md</code> file — no additional scripts or dependencies required.</p>
+
+                <h2>What is a Skill?</h2>
+                <ul>
+                    <li>A <strong>Skill</strong> is a plugin/extension that enhances your AI coding agent with new capabilities</li>
+                    <li>The Agentic Local Brain Skill (<code>knowledge-collect-localbrain</code>) enables your agent to collect knowledge from your daily workflow</li>
+                    <li>When installed, you can simply tell your agent things like <em>"save this article to my knowledge base"</em> or <em>"collect this code snippet"</em> and it will be automatically processed and stored</li>
+                </ul>
+
+                <p>The skill connects to your local Agentic Local Brain instance through its LocalBrain CLI, enabling seamless knowledge management without leaving your coding environment.</p>
+
+                <h2>Prerequisites</h2>
+                <p>Before installing the skill, ensure the following requirements are met:</p>
+                
+                <ol>
+                    <li><strong>Agentic Local Brain must be installed and initialized</strong>
+                        <pre><code>localbrain init</code></pre>
+                    </li>
+                    <li><strong>The web server should be running</strong>
+                        <pre><code>localbrain web -b</code></pre>
+                        <p>The <code>-b</code> flag runs the server in background mode.</p>
+                    </li>
+                    <li><strong>Verify your setup is working</strong>
+                        <pre><code>localbrain doctor</code></pre>
+                        <p>This command checks your configuration and connectivity.</p>
+                    </li>
+                </ol>
+
+                <div class="callout callout-warning">
+                    <strong>Important</strong>
+                    <p>The web server must be running for the skill to function. If you restart your computer, you may need to start it again with <code>localbrain web -b</code>.</p>
+                </div>
+
+                <h2>Installation for Qoder (QoderWork)</h2>
+                
+                <h3>Automatic Installation (Recommended)</h3>
+                <ol>
+                    <li>Open Qoder</li>
+                    <li>Open the Skill Store:
+                        <ul>
+                            <li>Press <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> (macOS) or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> (Windows/Linux)</li>
+                            <li>Type "Install Skill" and select the option</li>
+                        </ul>
+                    </li>
+                    <li>Search for <code>knowledge-collect-localbrain</code></li>
+                    <li>Click <strong>"Install"</strong></li>
+                    <li>The skill will be automatically configured and ready to use</li>
+                </ol>
+
+                <div class="callout callout-info">
+                    <strong>Tip</strong>
+                    <p>After installation, you can verify the skill is loaded by asking Qoder: "What skills do you have available?"</p>
+                </div>
+
+                <h3>Manual Installation</h3>
+                <ol>
+                    <li>Navigate to your Qoder skills directory:
+                        <pre><code>cd ~/.qoder/skills/</code></pre>
+                    </li>
+                    <li>Create the skill directory:
+                        <pre><code>mkdir -p knowledge-collect-localbrain
+cd knowledge-collect-localbrain</code></pre>
+                    </li>
+                    <li>Copy the skill manifest file from the Agentic Local Brain project:
+                        <pre><code>cp /path/to/agentic-local-brain/.qoder/skills/knowledge-collect-localbrain/skill.md ./</code></pre>
+                    </li>
+                    <li>Restart Qoder to load the new skill</li>
+                </ol>
+
+                <h2>Installation for OpenClaw</h2>
+
+                <h3>Via Skill Marketplace</h3>
+                <ol>
+                    <li>Open OpenClaw</li>
+                    <li>Navigate to <strong>Settings → Skills/Plugins</strong></li>
+                    <li>Search for <code>Agentic Local Brain</code> or <code>knowledge-collect</code></li>
+                    <li>Click <strong>Install</strong> and follow the prompts</li>
+                    <li>Configure the connection URL (default: <code>http://127.0.0.1:8080</code>)</li>
+                </ol>
+
+                <h3>Manual Installation</h3>
+                <ol>
+                    <li>Locate OpenClaw's skill directory (typically <code>~/.openclaw/skills/</code>)
+                        <pre><code>cd ~/.openclaw/skills/</code></pre>
+                    </li>
+                    <li>Copy the skill manifest file:
+                        <pre><code>mkdir -p knowledge-collect-localbrain
+cp /path/to/agentic-local-brain/.qoder/skills/knowledge-collect-localbrain/skill.md ~/.openclaw/skills/knowledge-collect-localbrain/</code></pre>
+                    </li>
+                    <li>Configure the connection to your local brain instance in OpenClaw's settings</li>
+                    <li>Restart OpenClaw</li>
+                </ol>
+
+                <h2>Installation for Copaw</h2>
+
+                <h3>Via Plugin System</h3>
+                <ol>
+                    <li>Open Copaw</li>
+                    <li>Go to <strong>Settings → Extensions → Skill Store</strong></li>
+                    <li>Search for <code>knowledge-collect-localbrain</code></li>
+                    <li>Click <strong>Install</strong> and <strong>Enable</strong></li>
+                    <li>Verify the connection in settings</li>
+                </ol>
+
+                <h3>Manual Setup</h3>
+                <ol>
+                    <li>Find Copaw's plugin directory:
+                        <pre><code># macOS/Linux
+cd ~/.copaw/plugins/
+
+# Windows
+cd %USERPROFILE%\.copaw\plugins\</code></pre>
+                    </li>
+                    <li>Add the skill configuration:
+                        <pre><code>mkdir -p knowledge-collect-localbrain
+# Copy skill files to this directory</code></pre>
+                    </li>
+                    <li>Restart Copaw</li>
+                </ol>
+
+                <h2>Installation for Other Coding Agents</h2>
+
+                <h3>Cursor</h3>
+                <ol>
+                    <li>Open Cursor Settings (<kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>,</kbd>)</li>
+                    <li>Navigate to <strong>Features → MCP</strong></li>
+                    <li>Add the skill as an MCP tool or custom command</li>
+                    <li>Point the configuration to your localbrain installation:
+                        <pre><code>{
+  "mcpServers": {
+    "localbrain": {
+      "command": "localbrain",
+      "args": ["web", "--api-only"]
+    }
+  }
+}</code></pre>
+                    </li>
+                </ol>
+
+                <h3>Windsurf</h3>
+                <ol>
+                    <li>Access Windsurf's extension/plugin system from Settings</li>
+                    <li>Install via the skill marketplace or manually configure:
+                        <pre><code># Navigate to Windsurf config
+cd ~/.windsurf/extensions/
+
+# Add skill configuration</code></pre>
+                    </li>
+                    <li>Restart Windsurf</li>
+                </ol>
+
+                <h3>Claude Code (Claude CLI)</h3>
+                <ol>
+                    <li>Use the <code>CLAUDE.md</code> or project configuration to reference the skill</li>
+                    <li>Add the knowledge collection commands to your agent's toolkit:
+                        <pre><code># In your project's CLAUDE.md or ~/.claude/CLAUDE.md
+
+## Available Tools
+
+### Knowledge Collection (LocalBrain)
+
+You have access to a knowledge collection system. Use these commands:
+
+- To save a note: `localbrain collect note add "content here" --title "Title"`
+- To save a webpage: `localbrain collect webpage add <url>`
+- To save a file: `localbrain collect file <path>`
+- To search: `localbrain search semantic "query"`
+
+The web API is available at http://127.0.0.1:8080/api/</code></pre>
+                    </li>
+                </ol>
+
+                <h3>Generic Agent Integration</h3>
+                <p>For any coding agent that supports custom tools, skills, or plugins:</p>
+
+                <ol>
+                    <li><strong>Ensure <code>localbrain</code> CLI is in your PATH</strong>
+                        <pre><code>which localbrain  # Should return the path
+# If not, add to PATH or create symlink</code></pre>
+                    </li>
+                    <li><strong>The agent needs to be able to call CLI commands or HTTP API</strong></li>
+                    <li><strong>API endpoint</strong>: <code>http://127.0.0.1:8080/api/</code> (when web server is running)</li>
+                </ol>
+
+                <p><strong>Key API endpoints for skill integration:</strong></p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Endpoint</th>
+                            <th>Method</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>/api/search/semantic</code></td>
+                            <td>POST</td>
+                            <td>Semantic search across your knowledge base</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/search/keyword</code></td>
+                            <td>POST</td>
+                            <td>Keyword-based search</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/rag</code></td>
+                            <td>POST</td>
+                            <td>RAG query for question answering</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/items</code></td>
+                            <td>GET</td>
+                            <td>List all knowledge items</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/tags</code></td>
+                            <td>GET</td>
+                            <td>List all tags</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p><strong>Collect via CLI commands:</strong></p>
+                <pre><code># Add a note
+localbrain collect note add "Your note content here" --title "Note Title"
+
+# Collect a webpage
+localbrain collect webpage add https://example.com/article
+
+# Collect a file
+localbrain collect file /path/to/document.pdf
+
+# Import bookmarks
+localbrain bookmark collect</code></pre>
+
+                <h2>Verify Installation</h2>
+                <p>After installing the skill, verify it's working correctly:</p>
+
+                <ol>
+                    <li><strong>Open your coding agent</strong></li>
+                    <li><strong>Try a simple knowledge collection</strong>:
+                        <blockquote>
+                            "Save a note to my knowledge base: Test skill installation"
+                        </blockquote>
+                    </li>
+                    <li><strong>Verify via CLI</strong>:
+                        <pre><code>localbrain search keyword "Test skill installation"</code></pre>
+                    </li>
+                    <li><strong>Or check the web UI</strong>:
+                        <p>Open <a href="http://127.0.0.1:8080" target="_blank">http://127.0.0.1:8080</a> in your browser</p>
+                    </li>
+                </ol>
+
+                <div class="callout callout-info">
+                    <strong>Success!</strong>
+                    <p>If you can see your test note in the search results or web UI, the skill is working correctly. You can now use natural language commands to manage your knowledge base.</p>
+                </div>
+
+                <h2>Troubleshooting</h2>
+
+                <h3>Skill not found in marketplace</h3>
+                <ul>
+                    <li>Ensure you're using a compatible agent version</li>
+                    <li>Check if your agent supports the skill format</li>
+                    <li>Try the manual installation method instead</li>
+                    <li>Verify your internet connection if using an online marketplace</li>
+                </ul>
+
+                <h3>Connection refused</h3>
+                <ul>
+                    <li>Verify localbrain web server is running:
+                        <pre><code>localbrain web --status</code></pre>
+                    </li>
+                    <li>Start the server if not running:
+                        <pre><code>localbrain web -b</code></pre>
+                    </li>
+                    <li>Check if port 8080 is already in use:
+                        <pre><code># macOS/Linux
+lsof -i :8080
+
+# Kill process if needed
+kill -9 &lt;PID&gt;</code></pre>
+                    </li>
+                </ul>
+
+                <h3>Permission denied</h3>
+                <ul>
+                    <li>Check file permissions on the skill directory:
+                        <pre><code>ls -la ~/.qoder/skills/knowledge-collect-localbrain/</code></pre>
+                    </li>
+                    <li>Fix permissions if needed:
+                        <pre><code># macOS/Linux
+chmod -R 755 ~/.qoder/skills/knowledge-collect-localbrain/
+
+# Ensure localbrain is executable
+chmod +x ~/.localbrain/bin/localbrain</code></pre>
+                    </li>
+                </ul>
+
+                <h3>Knowledge not being saved</h3>
+                <ol>
+                    <li>Check <code>localbrain doctor</code> for configuration issues:
+                        <pre><code>localbrain doctor</code></pre>
+                    </li>
+                    <li>Verify API key is configured:
+                        <pre><code>localbrain config show</code></pre>
+                    </li>
+                    <li>Check logs for errors:
+                        <pre><code># View recent logs
+tail -f ~/.localbrain/logs/localbrain.log</code></pre>
+                    </li>
+                    <li>Ensure the embedding service is configured correctly:
+                        <pre><code># Test embedding service
+localbrain test embedding</code></pre>
+                    </li>
+                </ol>
+
+                <h3>Agent can't find the skill</h3>
+                <ul>
+                    <li>Restart your coding agent after installation</li>
+                    <li>Check the skill directory path is correct</li>
+                    <li>Verify the skill manifest file exists and is valid</li>
+                    <li>Check your agent's documentation for skill installation requirements</li>
+                </ul>
+
+                <div class="callout callout-warning">
+                    <strong>Need more help?</strong>
+                    <p>If you're still experiencing issues, check the <a href="faq.html">FAQ</a> or <a href="contact.html">contact us</a> for support.</p>
+                </div>
+            </div>
+
+            <div data-lang="zh">
+                <h1>Skill 安装指南</h1>
+                
+                <p>Skill 是连接您的 AI 编程助手与 Agentic Local Brain 的桥梁。通过安装知识收集技能，您的 AI 助手可以在您工作时无缝地将重要信息——代码片段、文章、书签、见解——直接保存到您的个人知识库中。</p>
+
+                <div class="callout callout-info">
+                    <strong>为什么要使用 Skill？</strong>
+                    <p>无需手动复制粘贴信息到知识库，您的 AI 助手可以自动完成。只需告诉它保存什么内容，它会处理其余的工作——标签分类、向量化嵌入和索引建立，方便后续检索。</p>
+                </div>
+
+                <h2>最快安装方式（30 秒）</h2>
+
+                <div class="callout callout-info">
+                    <p><strong>安装知识收集 Skill 的最快方式：</strong></p>
+                    <p>只需在你的 AI 编程助手的聊天窗口中粘贴以下消息：</p>
+                </div>
+
+                <pre><code>帮我安装或更新这个知识收集技能：http://127.0.0.1:8080/docs/skills/knowledge-collect-localbrain/SKILL.md</code></pre>
+
+                <p>就是这么简单！你的 AI 助手会自动下载并安装该 Skill。此方法适用于 Qoder、OpenClaw、Copaw 以及大多数支持 Skill 安装的 AI 编程助手。</p>
+
+                <h3>Skill 资源</h3>
+                <ul>
+                    <li>📄 <a href="skills/knowledge-collect-localbrain/SKILL.md" target="_blank">查看 SKILL.md</a> — Skill 定义文件（在线查看）</li>
+                    <li>📦 <a href="skills/knowledge-collect-localbrain/SKILL.md" download>下载 SKILL.md</a> — 下载用于手动安装</li>
+                </ul>
+
+                <p>该 Skill 仅由一个 <code>SKILL.md</code> 文件组成，无需额外的脚本或依赖。</p>
+
+                <h2>什么是 Skill？</h2>
+                <ul>
+                    <li><strong>Skill</strong> 是一种插件/扩展，用于增强 AI 编程助手的功能</li>
+                    <li>Agentic Local Brain Skill（<code>knowledge-collect-localbrain</code>）使您的助手能够从日常工作流程中收集知识</li>
+                    <li>安装后，您只需告诉助手诸如<em>"把这篇文章保存到我的知识库"</em>或<em>"收集这段代码片段"</em>，它就会自动处理并存储</li>
+                </ul>
+
+                <p>Skill 通过 LocalBrain CLI 连接到您本地的 Agentic Local Brain 实例，让您无需离开编程环境即可无缝管理知识。</p>
+
+                <h2>前提条件</h2>
+                <p>在安装 Skill 之前，请确保满足以下要求：</p>
+                
+                <ol>
+                    <li><strong>Agentic Local Brain 必须已安装并初始化</strong>
+                        <pre><code>localbrain init</code></pre>
+                    </li>
+                    <li><strong>Web 服务器应该正在运行</strong>
+                        <pre><code>localbrain web -b</code></pre>
+                        <p><code>-b</code> 参数让服务器在后台运行。</p>
+                    </li>
+                    <li><strong>验证您的设置正常工作</strong>
+                        <pre><code>localbrain doctor</code></pre>
+                        <p>此命令会检查您的配置和连接状态。</p>
+                    </li>
+                </ol>
+
+                <div class="callout callout-warning">
+                    <strong>重要提示</strong>
+                    <p>Web 服务器必须运行才能使 Skill 正常工作。如果您重启电脑，可能需要再次启动服务器：<code>localbrain web -b</code>。</p>
+                </div>
+
+                <h2>Qoder (QoderWork) 安装</h2>
+                
+                <h3>自动安装（推荐）</h3>
+                <ol>
+                    <li>打开 Qoder</li>
+                    <li>打开 Skill Store：
+                        <ul>
+                            <li>按 <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>（macOS）或 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>（Windows/Linux）</li>
+                            <li>输入 "Install Skill" 并选择该选项</li>
+                        </ul>
+                    </li>
+                    <li>搜索 <code>knowledge-collect-localbrain</code></li>
+                    <li>点击<strong>"Install"</strong></li>
+                    <li>Skill 将自动配置并可以使用</li>
+                </ol>
+
+                <div class="callout callout-info">
+                    <strong>提示</strong>
+                    <p>安装完成后，您可以询问 Qoder："你有哪些可用的技能？"来验证 Skill 是否已加载。</p>
+                </div>
+
+                <h3>手动安装</h3>
+                <ol>
+                    <li>进入 Qoder 的 skills 目录：
+                        <pre><code>cd ~/.qoder/skills/</code></pre>
+                    </li>
+                    <li>创建 skill 目录：
+                        <pre><code>mkdir -p knowledge-collect-localbrain
+cd knowledge-collect-localbrain</code></pre>
+                    </li>
+                    <li>从 Agentic Local Brain 项目复制 skill 配置文件：
+                        <pre><code>cp /path/to/agentic-local-brain/.qoder/skills/knowledge-collect-localbrain/skill.md ./</code></pre>
+                    </li>
+                    <li>重启 Qoder 以加载新的 Skill</li>
+                </ol>
+
+                <h2>OpenClaw 安装</h2>
+
+                <h3>通过 Skill 市场安装</h3>
+                <ol>
+                    <li>打开 OpenClaw</li>
+                    <li>进入 <strong>Settings → Skills/Plugins</strong></li>
+                    <li>搜索 <code>Agentic Local Brain</code> 或 <code>knowledge-collect</code></li>
+                    <li>点击 <strong>Install</strong> 并按照提示操作</li>
+                    <li>配置连接 URL（默认：<code>http://127.0.0.1:8080</code>）</li>
+                </ol>
+
+                <h3>手动安装</h3>
+                <ol>
+                    <li>找到 OpenClaw 的 skill 目录（通常是 <code>~/.openclaw/skills/</code>）
+                        <pre><code>cd ~/.openclaw/skills/</code></pre>
+                    </li>
+                    <li>复制 skill 配置文件：
+                        <pre><code>mkdir -p knowledge-collect-localbrain
+cp /path/to/agentic-local-brain/.qoder/skills/knowledge-collect-localbrain/skill.md ~/.openclaw/skills/knowledge-collect-localbrain/</code></pre>
+                    </li>
+                    <li>在 OpenClaw 设置中配置到本地 brain 实例的连接</li>
+                    <li>重启 OpenClaw</li>
+                </ol>
+
+                <h2>Copaw 安装</h2>
+
+                <h3>通过插件系统安装</h3>
+                <ol>
+                    <li>打开 Copaw</li>
+                    <li>进入 <strong>Settings → Extensions → Skill Store</strong></li>
+                    <li>搜索 <code>knowledge-collect-localbrain</code></li>
+                    <li>点击 <strong>Install</strong> 并 <strong>Enable</strong></li>
+                    <li>在设置中验证连接</li>
+                </ol>
+
+                <h3>手动设置</h3>
+                <ol>
+                    <li>找到 Copaw 的插件目录：
+                        <pre><code># macOS/Linux
+cd ~/.copaw/plugins/
+
+# Windows
+cd %USERPROFILE%\.copaw\plugins\</code></pre>
+                    </li>
+                    <li>添加 skill 配置：
+                        <pre><code>mkdir -p knowledge-collect-localbrain
+# 将 skill 文件复制到此目录</code></pre>
+                    </li>
+                    <li>重启 Copaw</li>
+                </ol>
+
+                <h2>其他编程助手安装</h2>
+
+                <h3>Cursor</h3>
+                <ol>
+                    <li>打开 Cursor Settings（<kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>,</kbd>）</li>
+                    <li>进入 <strong>Features → MCP</strong></li>
+                    <li>将 Skill 添加为 MCP 工具或自定义命令</li>
+                    <li>将配置指向您的 localbrain 安装：
+                        <pre><code>{
+  "mcpServers": {
+    "localbrain": {
+      "command": "localbrain",
+      "args": ["web", "--api-only"]
+    }
+  }
+}</code></pre>
+                    </li>
+                </ol>
+
+                <h3>Windsurf</h3>
+                <ol>
+                    <li>从 Settings 访问 Windsurf 的扩展/插件系统</li>
+                    <li>通过 skill 市场安装或手动配置：
+                        <pre><code># 进入 Windsurf 配置目录
+cd ~/.windsurf/extensions/
+
+# 添加 skill 配置</code></pre>
+                    </li>
+                    <li>重启 Windsurf</li>
+                </ol>
+
+                <h3>Claude Code (Claude CLI)</h3>
+                <ol>
+                    <li>使用 <code>CLAUDE.md</code> 或项目配置来引用 Skill</li>
+                    <li>将知识收集命令添加到您的助手工具包：
+                        <pre><code># 在项目的 CLAUDE.md 或 ~/.claude/CLAUDE.md 中
+
+## 可用工具
+
+### 知识收集 (LocalBrain)
+
+你可以访问知识收集系统。使用以下命令：
+
+- 保存笔记：`localbrain collect note add "内容" --title "标题"`
+- 保存网页：`localbrain collect webpage add <url>`
+- 保存文件：`localbrain collect file <path>`
+- 搜索：`localbrain search semantic "查询"`
+
+Web API 地址：http://127.0.0.1:8080/api/</code></pre>
+                    </li>
+                </ol>
+
+                <h3>通用助手集成</h3>
+                <p>对于任何支持自定义工具、技能或插件的编程助手：</p>
+
+                <ol>
+                    <li><strong>确保 <code>localbrain</code> CLI 在您的 PATH 中</strong>
+                        <pre><code>which localbrain  # 应该返回路径
+# 如果没有，添加到 PATH 或创建符号链接</code></pre>
+                    </li>
+                    <li><strong>助手需要能够调用 CLI 命令或 HTTP API</strong></li>
+                    <li><strong>API 端点</strong>：<code>http://127.0.0.1:8080/api/</code>（当 web 服务器运行时）</li>
+                </ol>
+
+                <p><strong>Skill 集成的关键 API 端点：</strong></p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>端点</th>
+                            <th>方法</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>/api/search/semantic</code></td>
+                            <td>POST</td>
+                            <td>知识库语义搜索</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/search/keyword</code></td>
+                            <td>POST</td>
+                            <td>关键词搜索</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/rag</code></td>
+                            <td>POST</td>
+                            <td>RAG 问答查询</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/items</code></td>
+                            <td>GET</td>
+                            <td>列出所有知识条目</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/tags</code></td>
+                            <td>GET</td>
+                            <td>列出所有标签</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p><strong>通过 CLI 命令收集：</strong></p>
+                <pre><code># 添加笔记
+localbrain collect note add "您的笔记内容" --title "笔记标题"
+
+# 收集网页
+localbrain collect webpage add https://example.com/article
+
+# 收集文件
+localbrain collect file /path/to/document.pdf
+
+# 导入书签
+localbrain bookmark collect</code></pre>
+
+                <h2>验证安装</h2>
+                <p>安装 Skill 后，验证其是否正常工作：</p>
+
+                <ol>
+                    <li><strong>打开您的编程助手</strong></li>
+                    <li><strong>尝试简单的知识收集</strong>：
+                        <blockquote>
+                            "保存一条笔记到我的知识库：测试 Skill 安装"
+                        </blockquote>
+                    </li>
+                    <li><strong>通过 CLI 验证</strong>：
+                        <pre><code>localbrain search keyword "测试 Skill 安装"</code></pre>
+                    </li>
+                    <li><strong>或检查 Web UI</strong>：
+                        <p>在浏览器中打开 <a href="http://127.0.0.1:8080" target="_blank">http://127.0.0.1:8080</a></p>
+                    </li>
+                </ol>
+
+                <div class="callout callout-info">
+                    <strong>成功！</strong>
+                    <p>如果您能在搜索结果或 Web UI 中看到测试笔记，说明 Skill 工作正常。现在您可以使用自然语言命令来管理您的知识库了。</p>
+                </div>
+
+                <h2>常见问题排查</h2>
+
+                <h3>在市场中找不到 Skill</h3>
+                <ul>
+                    <li>确保您使用的是兼容的助手版本</li>
+                    <li>检查您的助手是否支持该 Skill 格式</li>
+                    <li>尝试使用手动安装方法</li>
+                    <li>如果使用在线市场，请检查网络连接</li>
+                </ul>
+
+                <h3>连接被拒绝</h3>
+                <ul>
+                    <li>验证 localbrain web 服务器是否正在运行：
+                        <pre><code>localbrain web --status</code></pre>
+                    </li>
+                    <li>如果未运行，启动服务器：
+                        <pre><code>localbrain web -b</code></pre>
+                    </li>
+                    <li>检查端口 8080 是否被占用：
+                        <pre><code># macOS/Linux
+lsof -i :8080
+
+# 如需终止进程
+kill -9 &lt;PID&gt;</code></pre>
+                    </li>
+                </ul>
+
+                <h3>权限被拒绝</h3>
+                <ul>
+                    <li>检查 Skill 目录的文件权限：
+                        <pre><code>ls -la ~/.qoder/skills/knowledge-collect-localbrain/</code></pre>
+                    </li>
+                    <li>如需修复权限：
+                        <pre><code># macOS/Linux
+chmod -R 755 ~/.qoder/skills/knowledge-collect-localbrain/
+
+# 确保 localbrain 可执行
+chmod +x ~/.localbrain/bin/localbrain</code></pre>
+                    </li>
+                </ul>
+
+                <h3>知识未保存</h3>
+                <ol>
+                    <li>检查 <code>localbrain doctor</code> 查看配置问题：
+                        <pre><code>localbrain doctor</code></pre>
+                    </li>
+                    <li>验证 API key 是否已配置：
+                        <pre><code>localbrain config show</code></pre>
+                    </li>
+                    <li>检查日志中的错误：
+                        <pre><code># 查看最近的日志
+tail -f ~/.localbrain/logs/localbrain.log</code></pre>
+                    </li>
+                    <li>确保嵌入服务配置正确：
+                        <pre><code># 测试嵌入服务
+localbrain test embedding</code></pre>
+                    </li>
+                </ol>
+
+                <h3>助手找不到 Skill</h3>
+                <ul>
+                    <li>安装后重启您的编程助手</li>
+                    <li>检查 Skill 目录路径是否正确</li>
+                    <li>验证 Skill 配置文件是否存在且有效</li>
+                    <li>查阅您助手的文档了解 Skill 安装要求</li>
+                </ul>
+
+                <div class="callout callout-warning">
+                    <strong>需要更多帮助？</strong>
+                    <p>如果您仍然遇到问题，请查看 <a href="faq.html">常见问题</a> 或 <a href="contact.html">联系我们</a> 获取支持。</p>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <aside class="doc-outline" id="docOutline">
+        <div class="outline-title">On this page</div>
+        <div class="outline-links" id="outlineLinks"></div>
+    </aside>
+
+    <script src="layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roadmap - Agentic Local Brain Docs</title>
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+    <header class="doc-header">
+        <div class="doc-header-left">
+            <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+            <a href="/docs/index.html" class="doc-logo">⚛️ Agentic Local Brain</a>
+        </div>
+        <div class="doc-header-right">
+            <button class="doc-lang-toggle" id="langToggle">EN</button>
+        </div>
+    </header>
+    <nav class="doc-sidebar" id="docSidebar">
+        <div class="sidebar-header"><a href="/" class="back-to-app">← Back to App</a></div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="getting-started.html" class="nav-link">Getting Started</a>
+            <a href="skill-install.html" class="nav-link">Skill Installation</a>
+            <a href="core-concepts.html" class="nav-link">Core Concepts</a>
+            <a href="architecture.html" class="nav-link">Architecture</a>
+            <a href="configuration.html" class="nav-link">Configuration</a>
+            <a href="cli-reference.html" class="nav-link">CLI Reference</a>
+            <a href="api-reference.html" class="nav-link">API Reference</a>
+            <a href="roadmap.html" class="nav-link active">Roadmap</a>
+            <a href="faq.html" class="nav-link">FAQ</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+    </nav>
+    <main class="doc-content">
+        <article class="doc-article">
+            <div data-lang="en">
+                <h1>Roadmap</h1>
+
+                <h2>Current Version (v0.6.1)</h2>
+                <p>Everything from v0.5.x plus powerful Knowledge Mining capabilities:</p>
+                <h3>Core Features</h3>
+                <ul>
+                    <li>Multi-source collection (6 collector types)</li>
+                    <li>Smart 3-tier tag &amp; summary extraction</li>
+                    <li>Keyword, semantic, and RAG search</li>
+                    <li>CLI + Web interface</li>
+                    <li>Cross-platform installation (Python package, binary)</li>
+                    <li>Agent Skill integration</li>
+                    <li>Graceful degradation without AI services</li>
+                    <li>Background web server mode</li>
+                </ul>
+                <h3>Knowledge Mining (New in v0.6)</h3>
+                <ul>
+                    <li>Automatic knowledge graph construction — entity extraction and relationship visualization</li>
+                    <li>Cross-document relationship discovery — find connections via embedding similarity and shared entities</li>
+                    <li>Topic clustering and trend analysis — HDBSCAN clustering with LLM-generated labels</li>
+                    <li>Smart recommendations based on reading patterns — time-decay weighted, with reason generation</li>
+                    <li>Batch mining CLI: <code>localbrain mine run</code></li>
+                </ul>
+
+                <h2>Release History</h2>
+
+                <h3>v0.5.x — Distribution &amp; Stabilization (Mar 29 – Apr 3, 2026)</h3>
+                <ul>
+                    <li><strong>v0.5.7</strong> — LiteLLM integration for flexible model providers; PDF page-level indexing (PageIndex)</li>
+                    <li><strong>v0.5.5</strong> — Preview formatting fixes; YAML front matter metadata enhancements</li>
+                    <li><strong>v0.5.4</strong> — Webpage collector robustness: charset sanitization, content-based title fallback, agent-friendly error hints</li>
+                    <li><strong>v0.5.2</strong> — Installer hardening: PATH detection, Windows support, error handling fixes</li>
+                    <li><strong>v0.5.1</strong> — 8 production bug fixes; version detection fallback; encoding improvements</li>
+                    <li><strong>v0.5.0</strong> — Cross-platform installation (Python package + binary); hybrid distribution model; self-update support; GitBook-style documentation site</li>
+                </ul>
+
+                <h3>v0.4 — Rebranding &amp; CLI Restructuring (Mar 29, 2026)</h3>
+                <ul>
+                    <li>Project renamed from "Agentic Second Brain" to "Agentic Local Brain"</li>
+                    <li>CLI renamed from <code>kb</code> to <code>localbrain</code> with backward-compatible alias</li>
+                    <li>CLI restructured to object-first (noun-verb) pattern</li>
+                    <li>Smart 3-tier tag/summary extraction with fallback strategy</li>
+                    <li>Graceful degradation when AI services are unavailable</li>
+                    <li>Agent Skill integration (<code>knowledge-collect-localbrain</code>)</li>
+                    <li>Background web server mode</li>
+                </ul>
+
+                <h3>v0.3 — Web UI &amp; Feature Refinement (Mar 25 – 28, 2026)</h3>
+                <ul>
+                    <li>Web UI overhaul with internationalization (EN/ZH)</li>
+                    <li>Dashboard redesign with document sub-pages</li>
+                    <li>Duplicate detection across all collectors</li>
+                    <li>Delete functionality for all item types</li>
+                    <li>Enhanced tag filtering and keyword search</li>
+                    <li>Markdown preview in document detail view</li>
+                </ul>
+
+                <h3>v0.2 — Core Features (Mar 24 – 25, 2026)</h3>
+                <ul>
+                    <li>Chunker and SQLite storage implementation</li>
+                    <li>Paper and email collector</li>
+                    <li>Tag management CLI</li>
+                    <li>Vectorization and tag extraction</li>
+                    <li>Model services integration testing</li>
+                </ul>
+
+                <h3>v0.1 — Initial Prototype (Mar 24, 2026)</h3>
+                <ul>
+                    <li>Project initialization as "Agentic Second Brain"</li>
+                    <li>Core collector framework (bookmark, file, note)</li>
+                    <li>Basic CLI infrastructure</li>
+                    <li>Unit test foundation</li>
+                </ul>
+
+                <h2>Planned Features</h2>
+
+                <h3>Enhanced RAG (v0.7)</h3>
+                <ul>
+                    <li>Multi-turn conversational Q&A</li>
+                    <li>Citation-backed answers with source highlighting</li>
+                    <li>Contextual follow-up questions</li>
+                    <li>Custom knowledge domains</li>
+                </ul>
+
+                <h3>Knowledge Backup & Sync (v0.8)</h3>
+                <ul>
+                    <li>Backup local knowledge to remote storage (S3, OSS, WebDAV, Google Drive)</li>
+                    <li>Incremental sync and versioned snapshots</li>
+                    <li>Encrypted backup with user-controlled keys</li>
+                    <li>Cross-device knowledge restore</li>
+                </ul>
+
+                <h3>Collaboration Features (v0.9)</h3>
+                <ul>
+                    <li>Knowledge sharing between users</li>
+                    <li>Team knowledge bases</li>
+                    <li>Access control and permissions</li>
+                </ul>
+
+                <h3>Advanced Agent Integration (v1.0)</h3>
+                <ul>
+                    <li>Proactive knowledge suggestions during coding</li>
+                    <li>Context-aware knowledge retrieval</li>
+                    <li>Automatic documentation generation from code</li>
+                    <li>Integration with more AI coding agents</li>
+                </ul>
+
+                <h2>Long-term Vision</h2>
+                <p>Agentic Local Brain aims to become the universal personal knowledge layer for developers — a local-first, privacy-preserving system that seamlessly integrates with your daily workflow through AI agents, making your accumulated knowledge always accessible and actionable.</p>
+
+                <h2>Contributing to the Roadmap</h2>
+                <p>We welcome community input on feature priorities. See the Contact page for how to share your ideas.</p>
+            </div>
+            <div data-lang="zh">
+                <h1>路线图</h1>
+
+                <h2>当前版本 (v0.6.1)</h2>
+                <p>包含 v0.5.x 的所有功能，以及强大的知识挖掘能力：</p>
+                <h3>核心功能</h3>
+                <ul>
+                    <li>多源采集（6 种采集器类型）</li>
+                    <li>智能三层标签和摘要提取</li>
+                    <li>关键词、语义和 RAG 搜索</li>
+                    <li>CLI + Web 界面</li>
+                    <li>跨平台安装（Python 包、二进制文件）</li>
+                    <li>Agent Skill 集成</li>
+                    <li>无 AI 服务时的优雅降级</li>
+                    <li>后台 Web 服务器模式</li>
+                </ul>
+                <h3>知识挖掘（v0.6 新增）</h3>
+                <ul>
+                    <li>自动知识图谱构建 — 实体抽取与关系可视化</li>
+                    <li>跨文档关系发现 — 通过嵌入相似度和共享实体发现文档关联</li>
+                    <li>主题聚类和趋势分析 — HDBSCAN 聚类算法，LLM 生成聚类标签</li>
+                    <li>基于阅读模式的智能推荐 — 时间衰减加权，生成推荐理由</li>
+                    <li>批量挖掘命令：<code>localbrain mine run</code></li>
+                </ul>
+
+                <h2>发布历史</h2>
+
+                <h3>v0.5.x — 分发与稳定化 (2026-03-29 – 04-03)</h3>
+                <ul>
+                    <li><strong>v0.5.7</strong> — 集成 LiteLLM 灵活模型提供商支持；PDF 页级索引 (PageIndex)</li>
+                    <li><strong>v0.5.5</strong> — 预览格式修复；YAML front matter 元数据增强</li>
+                    <li><strong>v0.5.4</strong> — 网页采集器健壮性提升：字符集清洗、基于内容的标题回退、Agent 友好的错误提示</li>
+                    <li><strong>v0.5.2</strong> — 安装程序加固：PATH 检测、Windows 支持、错误处理修复</li>
+                    <li><strong>v0.5.1</strong> — 修复 8 个生产环境 Bug；版本检测回退机制；编码改进</li>
+                    <li><strong>v0.5.0</strong> — 跨平台安装（Python 包 + 二进制文件）；混合分发模型；自更新支持；GitBook 风格文档站点</li>
+                </ul>
+
+                <h3>v0.4 — 品牌重塑与 CLI 重构 (2026-03-29)</h3>
+                <ul>
+                    <li>项目从 "Agentic Second Brain" 更名为 "Agentic Local Brain"</li>
+                    <li>CLI 从 <code>kb</code> 更名为 <code>localbrain</code>，保留向后兼容别名</li>
+                    <li>CLI 重构为对象优先（名词-动词）模式</li>
+                    <li>智能三层标签/摘要提取与回退策略</li>
+                    <li>AI 服务不可用时的优雅降级</li>
+                    <li>Agent Skill 集成（<code>knowledge-collect-localbrain</code>）</li>
+                    <li>后台 Web 服务器模式</li>
+                </ul>
+
+                <h3>v0.3 — Web UI 与功能完善 (2026-03-25 – 28)</h3>
+                <ul>
+                    <li>Web UI 全面改版，支持国际化（中/英）</li>
+                    <li>仪表盘重新设计，增加文档子页面</li>
+                    <li>所有采集器支持重复检测</li>
+                    <li>所有条目类型支持删除功能</li>
+                    <li>增强标签筛选和关键词搜索</li>
+                    <li>文档详情页 Markdown 预览</li>
+                </ul>
+
+                <h3>v0.2 — 核心功能 (2026-03-24 – 25)</h3>
+                <ul>
+                    <li>分块器和 SQLite 存储实现</li>
+                    <li>论文和邮件采集器</li>
+                    <li>标签管理 CLI</li>
+                    <li>向量化和标签提取</li>
+                    <li>模型服务集成测试</li>
+                </ul>
+
+                <h3>v0.1 — 初始原型 (2026-03-24)</h3>
+                <ul>
+                    <li>项目初始化为 "Agentic Second Brain"</li>
+                    <li>核心采集器框架（书签、文件、笔记）</li>
+                    <li>基础 CLI 架构</li>
+                    <li>单元测试基础</li>
+                </ul>
+
+                <h2>计划功能</h2>
+
+                <h3>增强 RAG (v0.7)</h3>
+                <ul>
+                    <li>多轮对话式问答</li>
+                    <li>带引用的答案和来源高亮</li>
+                    <li>上下文相关的后续问题</li>
+                    <li>自定义知识领域</li>
+                </ul>
+
+                <h3>知识备份与同步 (v0.8)</h3>
+                <ul>
+                    <li>备份本地知识到远端存储（S3、OSS、WebDAV、Google Drive）</li>
+                    <li>增量同步和版本化快照</li>
+                    <li>用户自主管控密钥的加密备份</li>
+                    <li>跨设备知识恢复</li>
+                </ul>
+
+                <h3>协作功能 (v0.9)</h3>
+                <ul>
+                    <li>用户之间的知识共享</li>
+                    <li>团队知识库</li>
+                    <li>访问控制和权限管理</li>
+                </ul>
+
+                <h3>高级 Agent 集成 (v1.0)</h3>
+                <ul>
+                    <li>编码期间主动知识建议</li>
+                    <li>上下文感知知识检索</li>
+                    <li>从代码自动生成文档</li>
+                    <li>与更多 AI 编程 Agent 集成</li>
+                </ul>
+
+                <h2>长期愿景</h2>
+                <p>Agentic Local Brain 旨在成为开发者的通用个人知识层——一个本地优先、保护隐私的系统，通过 AI Agent 与您的日常工作流程无缝集成，让您积累的知识始终可访问且可操作。</p>
+
+                <h2>为路线图做贡献</h2>
+                <p>我们欢迎社区对功能优先级的反馈。请参阅联系页面了解如何分享您的想法。</p>
+            </div>
+        </article>
+    </main>
+    <aside class="doc-outline" id="docOutline">
+        <div class="outline-title">On this page</div>
+        <div class="outline-links" id="outlineLinks"></div>
+    </aside>
+    <script src="layout.js"></script>
+</body>
+</html>

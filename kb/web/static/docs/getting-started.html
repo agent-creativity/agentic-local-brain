@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getting Started - Agentic Local Brain Docs</title>
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+    <header class="doc-header">
+        <div class="doc-header-left">
+            <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+            <a href="/docs/index.html" class="doc-logo">⚛️ Agentic Local Brain</a>
+        </div>
+        <div class="doc-header-right">
+            <button class="doc-lang-toggle" id="langToggle">EN</button>
+        </div>
+    </header>
+
+    <nav class="doc-sidebar" id="docSidebar">
+        <div class="sidebar-header">
+            <a href="/" class="back-to-app">← Back to App</a>
+        </div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="getting-started.html" class="nav-link active">Getting Started</a>
+            <a href="skill-install.html" class="nav-link">Skill Installation</a>
+            <a href="core-concepts.html" class="nav-link">Core Concepts</a>
+            <a href="architecture.html" class="nav-link">Architecture</a>
+            <a href="configuration.html" class="nav-link">Configuration</a>
+            <a href="cli-reference.html" class="nav-link">CLI Reference</a>
+            <a href="api-reference.html" class="nav-link">API Reference</a>
+            <a href="roadmap.html" class="nav-link">Roadmap</a>
+            <a href="faq.html" class="nav-link">FAQ</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+    </nav>
+
+    <main class="doc-content">
+        <article class="doc-article">
+            <div data-lang="en">
+                <h1>Getting Started</h1>
+                <p>Get up and running with Agentic Local Brain in under 5 minutes.</p>
+
+                <h2>What is Agentic Local Brain?</h2>
+                <p>Agentic Local Brain is a local-first personal knowledge management system for developers and knowledge workers. It collects information from multiple sources (files, webpages, papers, bookmarks, emails, notes), processes them with intelligent tagging and embedding, and provides powerful search capabilities including semantic search and RAG-based Q&A. It integrates with AI coding agents via Skills for seamless knowledge capture.</p>
+
+                <h2>Installation</h2>
+
+                <h3>Option 1: Python Package (Recommended)</h3>
+                <p>Works on all platforms without security warnings. Requires Python 3.8+.</p>
+
+                <p>macOS/Linux:</p>
+                <pre><code>curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh</code></pre>
+
+                <p>Windows (PowerShell):</p>
+                <pre><code>irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex</code></pre>
+
+                <p>The installer will: check Python 3.8+, create a virtual environment at ~/.localbrain/venv, download and install the wheel package, add localbrain to your PATH.</p>
+
+                <h3>Option 2: Binary Install (No Python Required)</h3>
+                <p>For systems without Python. Standalone binary.</p>
+
+                <p>macOS/Linux:</p>
+                <pre><code>curl -fsSL https://localbrain.io.alibaba-inc.com/binary_installer/install.sh | sh</code></pre>
+
+                <p>Windows (PowerShell):</p>
+                <pre><code>irm https://localbrain.io.alibaba-inc.com/binary_installer/install.ps1 | iex</code></pre>
+
+                <div class="callout callout-warning">
+                    <div class="callout-title">⚠️ Warning</div>
+                    <p>macOS binary requires Gatekeeper bypass: <code>xattr -cr ~/.localbrain/bin/localbrain</code></p>
+                </div>
+
+                <h3>Option 3: Install from Source</h3>
+                <pre><code>git clone &lt;repository-url&gt;
+cd agentic-local-brain
+pip install -e .
+localbrain --version</code></pre>
+
+                <h2>Post-Installation Setup</h2>
+                <pre><code>localbrain doctor      # Verify installation
+localbrain init setup  # Initialize with guided setup</code></pre>
+
+                <p>The init command creates:</p>
+                <ul>
+                    <li>Configuration at ~/.localbrain/config.yaml</li>
+                    <li>Data directory at ~/.knowledge-base/</li>
+                    <li>SQLite database for metadata</li>
+                    <li>ChromaDB storage for vector embeddings</li>
+                </ul>
+
+                <h2>Configure AI Services (Optional)</h2>
+                <p>For intelligent tag extraction and semantic search, configure an AI provider:</p>
+                <pre><code>localbrain config show  # View current config</code></pre>
+
+                <p>Edit ~/.localbrain/config.yaml:</p>
+                <pre><code>embedding:
+  provider: dashscope
+  dashscope:
+    model: text-embedding-v4
+    api_key: your-api-key-here
+llm:
+  provider: dashscope
+  model: qwen3.5-plus
+  api_key: your-api-key-here</code></pre>
+
+                <p>Test connectivity:</p>
+                <pre><code>localbrain test embedding
+localbrain test llm</code></pre>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">ℹ️ Info</div>
+                    <p>AI services are optional. Without them, Local Brain still works using built-in TF-IDF and extractive algorithms.</p>
+                </div>
+
+                <h2>Collect Your First Knowledge</h2>
+
+                <h3>Add a Note</h3>
+                <pre><code>localbrain collect note add "Docker containers share the host OS kernel" --tags "docker,devops"</code></pre>
+
+                <h3>Add a Webpage</h3>
+                <pre><code>localbrain collect webpage add https://docs.python.org/3/tutorial/</code></pre>
+
+                <h3>Add a Local File</h3>
+                <pre><code>localbrain collect file add ~/Documents/my-notes.md</code></pre>
+
+                <h3>Import Browser Bookmarks</h3>
+                <pre><code>localbrain collect bookmark import --browser chrome</code></pre>
+
+                <h2>Search Your Knowledge</h2>
+                <pre><code>localbrain search keyword "docker"
+localbrain search semantic "how do containers work"
+localbrain search rag "What are the benefits of containerization?"</code></pre>
+
+                <h2>Start the Web Interface</h2>
+                <pre><code>localbrain web           # Foreground mode
+localbrain web -b        # Background mode (daemon)
+localbrain web --status  # Check status
+localbrain web --stop    # Stop background server</code></pre>
+
+                <p>Visit <a href="http://127.0.0.1:8080">http://127.0.0.1:8080</a> to see your knowledge base.</p>
+
+                <h2>Install the Agent Skill</h2>
+                <p>For seamless knowledge collection from your AI coding agent, install the Skill:</p>
+                <p>→ See the <a href="skill-install.html">Skill Installation Guide</a></p>
+
+                <h2>Next Steps</h2>
+                <ul>
+                    <li>Explore <a href="core-concepts.html">Core Concepts</a> to understand the system</li>
+                    <li>Check <a href="cli-reference.html">CLI Reference</a> for all available commands</li>
+                    <li>Read about <a href="configuration.html">Configuration</a> for advanced setup</li>
+                    <li>Learn about <a href="architecture.html">Architecture</a> if you want to extend the system</li>
+                </ul>
+            </div>
+
+            <div data-lang="zh">
+                <h1>快速入门</h1>
+                <p>在5分钟内启动并运行 Agentic Local Brain。</p>
+
+                <h2>什么是 Agentic Local Brain？</h2>
+                <p>Agentic Local Brain 是一个本地优先的个人知识管理系统，专为开发者和知识工作者设计。它可以从多种来源收集信息（文件、网页、论文、书签、邮件、笔记），通过智能标签和嵌入进行处理，并提供强大的搜索功能，包括语义搜索和基于 RAG 的问答。它通过 Skills 与 AI 编程助手集成，实现无缝的知识捕获。</p>
+
+                <h2>安装</h2>
+
+                <h3>选项 1：Python 包（推荐）</h3>
+                <p>适用于所有平台，无安全警告。需要 Python 3.8+。</p>
+
+                <p>macOS/Linux：</p>
+                <pre><code>curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh</code></pre>
+
+                <p>Windows (PowerShell)：</p>
+                <pre><code>irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex</code></pre>
+
+                <p>安装程序将：检查 Python 3.8+、在 ~/.localbrain/venv 创建虚拟环境、下载并安装 wheel 包、将 localbrain 添加到 PATH。</p>
+
+                <h3>选项 2：二进制安装（无需 Python）</h3>
+                <p>适用于没有 Python 的系统。独立二进制文件。</p>
+
+                <p>macOS/Linux：</p>
+                <pre><code>curl -fsSL https://localbrain.io.alibaba-inc.com/binary_installer/install.sh | sh</code></pre>
+
+                <p>Windows (PowerShell)：</p>
+                <pre><code>irm https://localbrain.io.alibaba-inc.com/binary_installer/install.ps1 | iex</code></pre>
+
+                <div class="callout callout-warning">
+                    <div class="callout-title">⚠️ 警告</div>
+                    <p>macOS 二进制文件需要绕过 Gatekeeper：<code>xattr -cr ~/.localbrain/bin/localbrain</code></p>
+                </div>
+
+                <h3>选项 3：从源码安装</h3>
+                <pre><code>git clone &lt;repository-url&gt;
+cd agentic-local-brain
+pip install -e .
+localbrain --version</code></pre>
+
+                <h2>安装后设置</h2>
+                <pre><code>localbrain doctor      # 验证安装
+localbrain init setup  # 使用引导式设置初始化</code></pre>
+
+                <p>init 命令会创建：</p>
+                <ul>
+                    <li>配置文件 ~/.localbrain/config.yaml</li>
+                    <li>数据目录 ~/.knowledge-base/</li>
+                    <li>用于元数据的 SQLite 数据库</li>
+                    <li>用于向量嵌入的 ChromaDB 存储</li>
+                </ul>
+
+                <h2>配置 AI 服务（可选）</h2>
+                <p>如需智能标签提取和语义搜索，请配置 AI 提供商：</p>
+                <pre><code>localbrain config show  # 查看当前配置</code></pre>
+
+                <p>编辑 ~/.localbrain/config.yaml：</p>
+                <pre><code>embedding:
+  provider: dashscope
+  dashscope:
+    model: text-embedding-v4
+    api_key: your-api-key-here
+llm:
+  provider: dashscope
+  model: qwen3.5-plus
+  api_key: your-api-key-here</code></pre>
+
+                <p>测试连接：</p>
+                <pre><code>localbrain test embedding
+localbrain test llm</code></pre>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">ℹ️ 信息</div>
+                    <p>AI 服务是可选的。即使没有它们，Local Brain 仍然可以使用内置的 TF-IDF 和提取式算法正常工作。</p>
+                </div>
+
+                <h2>收集您的第一条知识</h2>
+
+                <h3>添加笔记</h3>
+                <pre><code>localbrain collect note add "Docker containers share the host OS kernel" --tags "docker,devops"</code></pre>
+
+                <h3>添加网页</h3>
+                <pre><code>localbrain collect webpage add https://docs.python.org/3/tutorial/</code></pre>
+
+                <h3>添加本地文件</h3>
+                <pre><code>localbrain collect file add ~/Documents/my-notes.md</code></pre>
+
+                <h3>导入浏览器书签</h3>
+                <pre><code>localbrain collect bookmark import --browser chrome</code></pre>
+
+                <h2>搜索您的知识</h2>
+                <pre><code>localbrain search keyword "docker"
+localbrain search semantic "how do containers work"
+localbrain search rag "What are the benefits of containerization?"</code></pre>
+
+                <h2>启动 Web 界面</h2>
+                <pre><code>localbrain web           # 前台模式
+localbrain web -b        # 后台模式（守护进程）
+localbrain web --status  # 检查状态
+localbrain web --stop    # 停止后台服务</code></pre>
+
+                <p>访问 <a href="http://127.0.0.1:8080">http://127.0.0.1:8080</a> 查看您的知识库。</p>
+
+                <h2>安装 Agent Skill</h2>
+                <p>为了从 AI 编程助手无缝收集知识，请安装 Skill：</p>
+                <p>→ 请参阅 <a href="skill-install.html">Skill 安装指南</a></p>
+
+                <h2>下一步</h2>
+                <ul>
+                    <li>探索 <a href="core-concepts.html">核心概念</a> 以了解系统</li>
+                    <li>查看 <a href="cli-reference.html">CLI 参考</a> 了解所有可用命令</li>
+                    <li>阅读 <a href="configuration.html">配置</a> 以进行高级设置</li>
+                    <li>了解 <a href="architecture.html">架构</a> 如果您想扩展系统</li>
+                </ul>
+            </div>
+        </article>
+    </main>
+
+    <aside class="doc-outline" id="docOutline">
+        <div class="outline-title">On this page</div>
+        <div class="outline-links" id="outlineLinks"></div>
+    </aside>
+
+    <script src="layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Reference - Agentic Local Brain Docs</title>
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+    <header class="doc-header">
+        <div class="doc-header-left">
+            <button class="hamburger-btn" id="hamburgerBtn">&#9776;</button>
+            <a href="/docs/index.html" class="doc-logo">Agentic Local Brain</a>
+        </div>
+        <div class="doc-header-right">
+            <button class="doc-lang-toggle" id="langToggle">EN</button>
+        </div>
+    </header>
+    <nav class="doc-sidebar" id="docSidebar">
+        <div class="sidebar-header"><a href="/" class="back-to-app">&larr; Back to App</a></div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="getting-started.html" class="nav-link">Getting Started</a>
+            <a href="skill-install.html" class="nav-link">Skill Installation</a>
+            <a href="core-concepts.html" class="nav-link">Core Concepts</a>
+            <a href="architecture.html" class="nav-link">Architecture</a>
+            <a href="configuration.html" class="nav-link">Configuration</a>
+            <a href="config-reference.html" class="nav-link active">Config Reference</a>
+            <a href="cli-reference.html" class="nav-link">CLI Reference</a>
+            <a href="api-reference.html" class="nav-link">API Reference</a>
+            <a href="roadmap.html" class="nav-link">Roadmap</a>
+            <a href="faq.html" class="nav-link">FAQ</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+    </nav>
+    <main class="doc-content">
+        <article class="doc-article">
+            <div data-lang="en">
+                <h1>Configuration Reference</h1>
+                <p>Complete field-level reference for <code>~/.localbrain/config.yaml</code>. Use the <strong>Test</strong> buttons on the <a href="/#settings">Settings page</a> to verify your LLM and Embedding configurations.</p>
+
+                <h2>Full Example Configuration</h2>
+                <pre><code class="language-yaml"># Data storage directory
+data_dir: ~/.knowledge-base
+
+# LLM configuration (for tagging, RAG, entity extraction, topic labels)
+llm:
+  provider: litellm            # litellm (recommended) | dashscope | openai_compatible
+  model: dashscope/qwen-plus   # provider/model format for litellm
+  api_key: ${DASHSCOPE_API_KEY} # env var reference or raw key
+  base_url:                     # optional, for custom endpoints
+
+# Embedding model (for semantic search, document similarity)
+embedding:
+  provider: dashscope           # dashscope | litellm | openai
+  dashscope:
+    model: text-embedding-v4
+    api_key: ${DASHSCOPE_API_KEY}
+
+# Knowledge Mining
+knowledge_mining:
+  entity_extraction:
+    enabled: true
+  topic_clustering:
+    min_cluster_size: 5         # minimum docs to form a topic
+
+# Text chunking
+chunking:
+  max_chunk_size: 1000          # max chars per chunk
+  chunk_overlap: 100            # overlap between chunks
+
+# Vector storage
+storage:
+  type: chroma
+  persist_directory: ~/.knowledge-base/db/chroma
+
+# Logging
+logging:
+  level: INFO                   # DEBUG | INFO | WARNING | ERROR
+  log_dir: ""                   # empty = ~/.localbrain/logs/
+  max_bytes: 10485760           # 10MB
+  backup_count: 5</code></pre>
+
+                <h2>LLM Configuration</h2>
+                <p>The LLM is used for: auto-tagging, RAG question answering, entity extraction (Knowledge Mining), and topic label generation.</p>
+
+                <table>
+                    <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>llm.provider</code></td><td>string</td><td><code>dashscope</code></td><td>Provider type. <code>litellm</code> (recommended), <code>dashscope</code>, or <code>openai_compatible</code></td></tr>
+                        <tr><td><code>llm.model</code></td><td>string</td><td><code>qwen-plus</code></td><td>Model name. For litellm use <code>provider/model</code> format, e.g. <code>dashscope/qwen-plus</code>, <code>openai/gpt-4o</code>, <code>anthropic/claude-3-5-sonnet-20241022</code></td></tr>
+                        <tr><td><code>llm.api_key</code></td><td>string</td><td>-</td><td>API key. Supports <code>${ENV_VAR}</code> format or raw key value</td></tr>
+                        <tr><td><code>llm.base_url</code></td><td>string</td><td>-</td><td>Custom API endpoint URL. Required for <code>openai_compatible</code>, optional for others. Use for Ollama (<code>http://localhost:11434/v1</code>), vLLM, etc.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Provider Examples</h3>
+
+                <h4>DashScope (Alibaba Cloud)</h4>
+                <pre><code class="language-yaml">llm:
+  provider: litellm
+  model: dashscope/qwen-plus    # or qwen-max, qwen-turbo
+  api_key: ${DASHSCOPE_API_KEY}</code></pre>
+                <p>Get API key: <a href="https://dashscope.console.aliyun.com/" target="_blank">https://dashscope.console.aliyun.com/</a></p>
+
+                <h4>OpenAI</h4>
+                <pre><code class="language-yaml">llm:
+  provider: litellm
+  model: openai/gpt-4o
+  api_key: ${OPENAI_API_KEY}</code></pre>
+
+                <h4>Anthropic Claude</h4>
+                <pre><code class="language-yaml">llm:
+  provider: litellm
+  model: anthropic/claude-3-5-sonnet-20241022
+  api_key: ${ANTHROPIC_API_KEY}</code></pre>
+
+                <h4>Ollama (Local)</h4>
+                <pre><code class="language-yaml">llm:
+  provider: openai_compatible
+  model: qwen2.5:7b
+  api_key: ollama
+  base_url: http://localhost:11434/v1</code></pre>
+
+                <h2>Embedding Configuration</h2>
+                <p>Embedding models are used for: semantic search, document-level similarity (Knowledge Mining), and recommendation scoring.</p>
+
+                <table>
+                    <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>embedding.provider</code></td><td>string</td><td><code>dashscope</code></td><td>Provider type: <code>dashscope</code>, <code>litellm</code>, or <code>openai</code></td></tr>
+                        <tr><td><code>embedding.dashscope.model</code></td><td>string</td><td><code>text-embedding-v4</code></td><td>DashScope embedding model name</td></tr>
+                        <tr><td><code>embedding.dashscope.api_key</code></td><td>string</td><td>-</td><td>API key for DashScope embedding</td></tr>
+                        <tr><td><code>embedding.model</code></td><td>string</td><td>-</td><td>Model name (for litellm/openai providers)</td></tr>
+                        <tr><td><code>embedding.api_key</code></td><td>string</td><td>-</td><td>API key (for litellm/openai providers)</td></tr>
+                        <tr><td><code>embedding.base_url</code></td><td>string</td><td>-</td><td>Custom endpoint (for litellm/openai providers)</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Embedding Provider Examples</h3>
+
+                <h4>DashScope (Default)</h4>
+                <pre><code class="language-yaml">embedding:
+  provider: dashscope
+  dashscope:
+    model: text-embedding-v4
+    api_key: ${DASHSCOPE_API_KEY}</code></pre>
+
+                <h4>OpenAI</h4>
+                <pre><code class="language-yaml">embedding:
+  provider: litellm
+  model: openai/text-embedding-3-small
+  api_key: ${OPENAI_API_KEY}</code></pre>
+
+                <h4>Ollama (Local)</h4>
+                <pre><code class="language-yaml">embedding:
+  provider: openai
+  openai:
+    model: nomic-embed-text
+    api_key: ollama
+    base_url: http://localhost:11434/v1</code></pre>
+
+                <h2>Knowledge Mining Configuration</h2>
+                <p>Knowledge Mining automatically extracts entities, discovers document relationships, and clusters topics.</p>
+
+                <table>
+                    <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>knowledge_mining.entity_extraction.enabled</code></td><td>bool</td><td><code>true</code></td><td>Enable LLM-based entity extraction on new documents</td></tr>
+                        <tr><td><code>knowledge_mining.topic_clustering.min_cluster_size</code></td><td>int</td><td><code>5</code></td><td>Minimum documents required to form a topic cluster (HDBSCAN parameter)</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Behavior</h3>
+                <ul>
+                    <li><strong>Auto-trigger on new documents:</strong> When a document is added, entity extraction, embedding generation, and relation discovery run automatically in a background thread (~14s per document)</li>
+                    <li><strong>Topic clustering:</strong> Global operation, not triggered per-document. Use the "Rebuild Topics" button on the Topics page or <code>localbrain topics rebuild</code></li>
+                    <li><strong>Full pipeline CLI:</strong> <code>localbrain mine run</code> (incremental) or <code>localbrain mine run --full</code> (rebuild all)</li>
+                    <li><strong>Concurrency:</strong> <code>localbrain mine run --workers 5</code> for parallel entity extraction</li>
+                </ul>
+
+                <h2>Chunking Configuration</h2>
+                <table>
+                    <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>chunking.max_chunk_size</code></td><td>int</td><td><code>1000</code></td><td>Maximum characters per text chunk</td></tr>
+                        <tr><td><code>chunking.chunk_overlap</code></td><td>int</td><td><code>100</code></td><td>Character overlap between adjacent chunks</td></tr>
+                    </tbody>
+                </table>
+                <p>Larger chunks provide more context but less precise search. Smaller chunks are more precise but may lose context.</p>
+
+                <h2>Storage Configuration</h2>
+                <table>
+                    <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>data_dir</code></td><td>string</td><td><code>~/.knowledge-base</code></td><td>Root directory for all data (SQLite DB, files, etc.)</td></tr>
+                        <tr><td><code>storage.type</code></td><td>string</td><td><code>chroma</code></td><td>Vector store backend type</td></tr>
+                        <tr><td><code>storage.persist_directory</code></td><td>string</td><td><code>~/.knowledge-base/db/chroma</code></td><td>ChromaDB persistence directory</td></tr>
+                    </tbody>
+                </table>
+
+                <h2>Logging Configuration</h2>
+                <table>
+                    <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>logging.level</code></td><td>string</td><td><code>INFO</code></td><td>Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL</td></tr>
+                        <tr><td><code>logging.log_dir</code></td><td>string</td><td><code>""</code></td><td>Custom log directory. Empty uses <code>~/.localbrain/logs/</code></td></tr>
+                        <tr><td><code>logging.max_bytes</code></td><td>int</td><td><code>10485760</code></td><td>Max log file size before rotation (10MB)</td></tr>
+                        <tr><td><code>logging.backup_count</code></td><td>int</td><td><code>5</code></td><td>Number of rotated log files to keep</td></tr>
+                    </tbody>
+                </table>
+
+                <h2>Environment Variables</h2>
+                <table>
+                    <thead><tr><th>Variable</th><th>Description</th><th>Required</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>DASHSCOPE_API_KEY</code></td><td>DashScope API key (LLM + Embedding)</td><td>For AI features with DashScope</td></tr>
+                        <tr><td><code>OPENAI_API_KEY</code></td><td>OpenAI API key</td><td>If using OpenAI provider</td></tr>
+                        <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Anthropic API key</td><td>If using Anthropic/Claude</td></tr>
+                        <tr><td><code>KB_CONFIG_PATH</code></td><td>Custom config file path</td><td>No</td></tr>
+                    </tbody>
+                </table>
+                <p>Use <code>${ENV_VAR_NAME}</code> syntax in config.yaml to reference environment variables. This keeps secrets out of the config file.</p>
+
+                <h2>Graceful Degradation</h2>
+                <p>The system works progressively based on available services:</p>
+                <table>
+                    <thead><tr><th>Services Available</th><th>Features</th></tr></thead>
+                    <tbody>
+                        <tr><td>None</td><td>File collection, keyword search, manual tagging</td></tr>
+                        <tr><td>Embedding only</td><td>+ Semantic search, document similarity</td></tr>
+                        <tr><td>LLM only</td><td>+ Auto-tagging, summarization, entity extraction</td></tr>
+                        <tr><td>Both</td><td>+ RAG Q&A, full Knowledge Mining, smart recommendations</td></tr>
+                    </tbody>
+                </table>
+
+                <h2>Testing Your Configuration</h2>
+                <p>Two ways to verify your model configuration:</p>
+                <ol>
+                    <li><strong>Web UI:</strong> Go to Settings page, click "Test LLM Connection" or "Test Embedding Connection" buttons</li>
+                    <li><strong>CLI:</strong>
+                        <pre><code class="language-bash"># Check overall mining stats
+localbrain mine stats
+
+# Run a full pipeline to verify everything works
+localbrain mine run</code></pre>
+                    </li>
+                </ol>
+            </div>
+
+            <div data-lang="zh">
+                <h1>配置参考</h1>
+                <p><code>~/.localbrain/config.yaml</code> 完整字段级参考。可在 <a href="/#settings">设置页面</a> 使用 <strong>测试</strong> 按钮验证 LLM 和 Embedding 配置。</p>
+
+                <h2>完整配置示例</h2>
+                <pre><code class="language-yaml"># 数据存储目录
+data_dir: ~/.knowledge-base
+
+# 大语言模型配置（用于打标签、RAG、实体抽取、主题标签生成）
+llm:
+  provider: litellm            # litellm（推荐）| dashscope | openai_compatible
+  model: dashscope/qwen-plus   # litellm 使用 provider/model 格式
+  api_key: ${DASHSCOPE_API_KEY} # 环境变量引用或原始密钥
+  base_url:                     # 可选，自定义端点
+
+# 嵌入模型（用于语义搜索、文档相似度）
+embedding:
+  provider: dashscope           # dashscope | litellm | openai
+  dashscope:
+    model: text-embedding-v4
+    api_key: ${DASHSCOPE_API_KEY}
+
+# 知识挖掘
+knowledge_mining:
+  entity_extraction:
+    enabled: true
+  topic_clustering:
+    min_cluster_size: 5         # 形成主题的最少文档数
+
+# 文本分块
+chunking:
+  max_chunk_size: 1000          # 每个分块最大字符数
+  chunk_overlap: 100            # 分块间重叠字符数
+
+# 向量存储
+storage:
+  type: chroma
+  persist_directory: ~/.knowledge-base/db/chroma
+
+# 日志
+logging:
+  level: INFO                   # DEBUG | INFO | WARNING | ERROR
+  log_dir: ""                   # 空值 = ~/.localbrain/logs/
+  max_bytes: 10485760           # 10MB
+  backup_count: 5</code></pre>
+
+                <h2>LLM 配置</h2>
+                <p>LLM 用于：自动打标签、RAG 问答、实体抽取（知识挖掘）、主题标签生成。</p>
+
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>llm.provider</code></td><td>string</td><td><code>dashscope</code></td><td>提供商类型：<code>litellm</code>（推荐）、<code>dashscope</code>、<code>openai_compatible</code></td></tr>
+                        <tr><td><code>llm.model</code></td><td>string</td><td><code>qwen-plus</code></td><td>模型名。litellm 使用 <code>provider/model</code> 格式，如 <code>dashscope/qwen-plus</code>、<code>openai/gpt-4o</code></td></tr>
+                        <tr><td><code>llm.api_key</code></td><td>string</td><td>-</td><td>API 密钥。支持 <code>${环境变量名}</code> 格式或直接填写密钥</td></tr>
+                        <tr><td><code>llm.base_url</code></td><td>string</td><td>-</td><td>自定义 API 端点 URL。<code>openai_compatible</code> 必填，其他可选</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>提供商配置示例</h3>
+
+                <h4>DashScope（阿里云）</h4>
+                <pre><code class="language-yaml">llm:
+  provider: litellm
+  model: dashscope/qwen-plus    # 或 qwen-max, qwen-turbo
+  api_key: ${DASHSCOPE_API_KEY}</code></pre>
+                <p>获取 API 密钥：<a href="https://dashscope.console.aliyun.com/" target="_blank">https://dashscope.console.aliyun.com/</a></p>
+
+                <h4>OpenAI</h4>
+                <pre><code class="language-yaml">llm:
+  provider: litellm
+  model: openai/gpt-4o
+  api_key: ${OPENAI_API_KEY}</code></pre>
+
+                <h4>Anthropic Claude</h4>
+                <pre><code class="language-yaml">llm:
+  provider: litellm
+  model: anthropic/claude-3-5-sonnet-20241022
+  api_key: ${ANTHROPIC_API_KEY}</code></pre>
+
+                <h4>Ollama（本地部署）</h4>
+                <pre><code class="language-yaml">llm:
+  provider: openai_compatible
+  model: qwen2.5:7b
+  api_key: ollama
+  base_url: http://localhost:11434/v1</code></pre>
+
+                <h2>Embedding 配置</h2>
+                <p>Embedding 模型用于：语义搜索、文档级相似度（知识挖掘）、推荐评分。</p>
+
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>embedding.provider</code></td><td>string</td><td><code>dashscope</code></td><td>提供商：<code>dashscope</code>、<code>litellm</code>、<code>openai</code></td></tr>
+                        <tr><td><code>embedding.dashscope.model</code></td><td>string</td><td><code>text-embedding-v4</code></td><td>DashScope 嵌入模型名</td></tr>
+                        <tr><td><code>embedding.dashscope.api_key</code></td><td>string</td><td>-</td><td>DashScope 嵌入模型 API 密钥</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Embedding 提供商示例</h3>
+
+                <h4>DashScope（默认）</h4>
+                <pre><code class="language-yaml">embedding:
+  provider: dashscope
+  dashscope:
+    model: text-embedding-v4
+    api_key: ${DASHSCOPE_API_KEY}</code></pre>
+
+                <h4>OpenAI</h4>
+                <pre><code class="language-yaml">embedding:
+  provider: litellm
+  model: openai/text-embedding-3-small
+  api_key: ${OPENAI_API_KEY}</code></pre>
+
+                <h4>Ollama（本地部署）</h4>
+                <pre><code class="language-yaml">embedding:
+  provider: openai
+  openai:
+    model: nomic-embed-text
+    api_key: ollama
+    base_url: http://localhost:11434/v1</code></pre>
+
+                <h2>知识挖掘配置</h2>
+                <p>知识挖掘自动提取实体、发现文档关系、聚类主题。</p>
+
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>knowledge_mining.entity_extraction.enabled</code></td><td>bool</td><td><code>true</code></td><td>是否在新文档入库时自动进行实体抽取</td></tr>
+                        <tr><td><code>knowledge_mining.topic_clustering.min_cluster_size</code></td><td>int</td><td><code>5</code></td><td>形成主题聚类的最少文档数（HDBSCAN 参数）</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>运行机制</h3>
+                <ul>
+                    <li><strong>新文档自动触发：</strong>文档入库后，实体抽取、Embedding 生成、关系发现会在后台线程自动执行（每篇约 14 秒）</li>
+                    <li><strong>主题聚类：</strong>全局操作，不按单篇触发。在主题页面点击"重建主题聚类"按钮，或执行 <code>localbrain topics rebuild</code></li>
+                    <li><strong>全量管道 CLI：</strong><code>localbrain mine run</code>（增量）或 <code>localbrain mine run --full</code>（全量重建）</li>
+                    <li><strong>并发加速：</strong><code>localbrain mine run --workers 5</code> 并行实体抽取</li>
+                </ul>
+
+                <h2>分块配置</h2>
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>chunking.max_chunk_size</code></td><td>int</td><td><code>1000</code></td><td>每个文本分块最大字符数</td></tr>
+                        <tr><td><code>chunking.chunk_overlap</code></td><td>int</td><td><code>100</code></td><td>相邻分块间重叠字符数</td></tr>
+                    </tbody>
+                </table>
+
+                <h2>存储配置</h2>
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>data_dir</code></td><td>string</td><td><code>~/.knowledge-base</code></td><td>数据根目录（SQLite 数据库、文件等）</td></tr>
+                        <tr><td><code>storage.type</code></td><td>string</td><td><code>chroma</code></td><td>向量存储后端类型</td></tr>
+                        <tr><td><code>storage.persist_directory</code></td><td>string</td><td><code>~/.knowledge-base/db/chroma</code></td><td>ChromaDB 持久化目录</td></tr>
+                    </tbody>
+                </table>
+
+                <h2>日志配置</h2>
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>logging.level</code></td><td>string</td><td><code>INFO</code></td><td>日志级别：DEBUG、INFO、WARNING、ERROR、CRITICAL</td></tr>
+                        <tr><td><code>logging.log_dir</code></td><td>string</td><td><code>""</code></td><td>自定义日志目录，空值使用 <code>~/.localbrain/logs/</code></td></tr>
+                        <tr><td><code>logging.max_bytes</code></td><td>int</td><td><code>10485760</code></td><td>日志文件轮转大小（10MB）</td></tr>
+                        <tr><td><code>logging.backup_count</code></td><td>int</td><td><code>5</code></td><td>保留的轮转日志文件数</td></tr>
+                    </tbody>
+                </table>
+
+                <h2>环境变量</h2>
+                <table>
+                    <thead><tr><th>变量</th><th>说明</th><th>何时需要</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>DASHSCOPE_API_KEY</code></td><td>DashScope API 密钥（LLM + Embedding）</td><td>使用 DashScope 时</td></tr>
+                        <tr><td><code>OPENAI_API_KEY</code></td><td>OpenAI API 密钥</td><td>使用 OpenAI 时</td></tr>
+                        <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Anthropic API 密钥</td><td>使用 Claude 时</td></tr>
+                        <tr><td><code>KB_CONFIG_PATH</code></td><td>自定义配置文件路径</td><td>否</td></tr>
+                    </tbody>
+                </table>
+                <p>在 config.yaml 中使用 <code>${环境变量名}</code> 语法引用环境变量，避免密钥明文写入配置文件。</p>
+
+                <h2>优雅降级</h2>
+                <table>
+                    <thead><tr><th>可用服务</th><th>支持的功能</th></tr></thead>
+                    <tbody>
+                        <tr><td>无</td><td>文件收集、关键词搜索、手动打标签</td></tr>
+                        <tr><td>仅 Embedding</td><td>+ 语义搜索、文档相似度</td></tr>
+                        <tr><td>仅 LLM</td><td>+ 自动打标签、摘要、实体抽取</td></tr>
+                        <tr><td>两者都有</td><td>+ RAG 问答、完整知识挖掘、智能推荐</td></tr>
+                    </tbody>
+                </table>
+
+                <h2>测试配置</h2>
+                <p>两种方式验证模型配置：</p>
+                <ol>
+                    <li><strong>Web 界面：</strong>进入设置页面，点击"测试 LLM 连接"或"测试 Embedding 连接"按钮</li>
+                    <li><strong>命令行：</strong>
+                        <pre><code class="language-bash"># 查看挖掘统计
+localbrain mine stats
+
+# 运行完整管道验证配置
+localbrain mine run</code></pre>
+                    </li>
+                </ol>
+            </div>
+        </article>
+    </main>
+    <aside class="doc-outline" id="docOutline">
+        <div class="outline-title">On this page</div>
+        <div class="outline-links" id="outlineLinks"></div>
+    </aside>
+    <script src="layout.js"></script>
+</body>
+</html>

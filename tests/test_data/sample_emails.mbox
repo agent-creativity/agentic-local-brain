@@ -1,0 +1,86 @@
+From test@example.com Mon Jan 15 10:30:00 2024
+Return-Path: <test@example.com>
+From: Alice <alice@example.com>
+To: Bob <bob@example.com>
+Subject: 项目进度更新 - 第3周
+Date: Mon, 15 Jan 2024 10:30:00 +0800
+Message-ID: <msg001@example.com>
+Content-Type: text/plain; charset=UTF-8
+
+Hi Bob,
+
+本周项目进展顺利：
+
+1. 前端开发
+   - 用户界面设计完成
+   - 核心组件开发进度80%
+   - 单元测试覆盖率75%
+
+2. 后端开发
+   - API接口开发完成
+   - 数据库设计优化
+   - 性能测试通过
+
+3. 下周计划
+   - 集成测试
+   - 文档编写
+   - 准备Beta版本发布
+
+如有问题随时沟通。
+
+Best regards,
+Alice
+
+From test@example.com Tue Jan 16 14:20:00 2024
+Return-Path: <test@example.com>
+From: Charlie <charlie@example.com>
+To: Team <team@example.com>
+Subject: 技术分享：微服务架构实践
+Date: Tue, 16 Jan 2024 14:20:00 +0800
+Message-ID: <msg002@example.com>
+Content-Type: text/plain; charset=UTF-8
+
+大家好，
+
+本周五下午3点将举行技术分享会，主题：微服务架构实践。
+
+分享内容包括：
+- 微服务拆分原则
+- 服务间通信模式
+- 分布式事务处理
+- 监控和日志管理
+- 部署和运维实践
+
+地点：会议室A
+时间：周五 15:00-16:30
+
+欢迎大家参加！
+
+Charlie
+
+From test@example.com Wed Jan 17 09:15:00 2024
+Return-Path: <test@example.com>
+From: David <david@example.com>
+To: Alice <alice@example.com>
+Subject: Re: 代码审查反馈
+Date: Wed, 17 Jan 2024 09:15:00 +0800
+Message-ID: <msg003@example.com>
+Content-Type: text/plain; charset=UTF-8
+
+Hi Alice,
+
+已完成PR #123的代码审查，以下是反馈：
+
+优点：
+✓ 代码结构清晰
+✓ 单元测试覆盖完整
+✓ 文档详细
+
+建议改进：
+1. 错误处理可以更细化
+2. 部分函数可以提取为独立模块
+3. 添加更多边界条件测试
+
+总体来说代码质量很好，小修后可以直接合并。
+
+David

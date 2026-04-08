@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Reference - Agentic Local Brain Docs</title>
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+    <header class="doc-header">
+        <div class="doc-header-left">
+            <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+            <a href="/docs/index.html" class="doc-logo">⚛️ Agentic Local Brain</a>
+        </div>
+        <div class="doc-header-right">
+            <button class="doc-lang-toggle" id="langToggle">EN</button>
+        </div>
+    </header>
+    <nav class="doc-sidebar" id="docSidebar">
+        <div class="sidebar-header"><a href="/" class="back-to-app">← Back to App</a></div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="getting-started.html" class="nav-link">Getting Started</a>
+            <a href="skill-install.html" class="nav-link">Skill Installation</a>
+            <a href="core-concepts.html" class="nav-link">Core Concepts</a>
+            <a href="architecture.html" class="nav-link">Architecture</a>
+            <a href="configuration.html" class="nav-link">Configuration</a>
+            <a href="cli-reference.html" class="nav-link">CLI Reference</a>
+            <a href="api-reference.html" class="nav-link active">API Reference</a>
+            <a href="roadmap.html" class="nav-link">Roadmap</a>
+            <a href="faq.html" class="nav-link">FAQ</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+    </nav>
+    <main class="doc-content">
+        <article class="doc-article">
+            <div data-lang="en">
+                <h1>API Reference</h1>
+                <p>The REST API is served by FastAPI at <code>http://127.0.0.1:8080</code> (default). Interactive API docs at <code>http://127.0.0.1:8080/api/docs</code>.</p>
+
+                <h2>Dashboard</h2>
+
+                <h3>GET /api/dashboard/stats</h3>
+                <p>Returns knowledge base statistics.</p>
+                <p>Response example:</p>
+                <pre><code>{
+  "total_items": 42,
+  "total_tags": 15,
+  "items_by_type": {"note": 10, "webpage": 12, "bookmark": 8, "file": 5, "paper": 4, "email": 3}
+}</code></pre>
+
+                <h3>GET /api/dashboard/recent</h3>
+                <p>Returns recent items by type.</p>
+
+                <h2>Items</h2>
+
+                <h3>GET /api/items</h3>
+                <p>List items with pagination and filtering.</p>
+                <p>Query params: <code>page</code>, <code>per_page</code>, <code>type</code>, <code>tag</code>, <code>q</code> (search)</p>
+
+                <h3>GET /api/items/{id}</h3>
+                <p>Get item by ID. Returns full item details with content.</p>
+
+                <h3>PUT /api/items/{id}</h3>
+                <p>Update item metadata (title, tags, summary).</p>
+
+                <h3>DELETE /api/items/{id}</h3>
+                <p>Delete a knowledge item.</p>
+
+                <h2>Tags</h2>
+
+                <h3>GET /api/tags</h3>
+                <p>List all tags with item counts.</p>
+
+                <h3>GET /api/tags/{name}/items</h3>
+                <p>Get items associated with a specific tag.</p>
+
+                <h3>POST /api/tags/merge</h3>
+                <p>Merge two tags. Body: <code>{"source": "old-tag", "target": "new-tag"}</code></p>
+
+                <h3>DELETE /api/tags/{name}</h3>
+                <p>Delete a tag.</p>
+
+                <h2>Search</h2>
+
+                <h3>POST /api/search/keyword (or GET /api/search?q=...)</h3>
+                <p>Keyword search. Body: <code>{"query": "search terms", "limit": 10}</code></p>
+
+                <h3>POST /api/search/semantic</h3>
+                <p>Semantic vector search. Body: <code>{"query": "conceptual question", "limit": 10}</code></p>
+                <p>Requires embedding service.</p>
+
+                <h3>POST /api/rag</h3>
+                <p>RAG query. Body: <code>{"question": "What is X?", "limit": 5}</code></p>
+                <p>Requires embedding + LLM services.</p>
+                <p>Response: <code>{"answer": "...", "sources": [...]}</code></p>
+
+                <h2>Error Handling</h2>
+                <p>Standard HTTP status codes. Error response format: <code>{"detail": "Error message"}</code></p>
+
+                <h2>Knowledge Mining (v0.6)</h2>
+
+                <h3>GET /api/graph</h3>
+                <p>Returns knowledge graph data for visualization (nodes and edges).</p>
+
+                <h3>GET /api/knowledge/{id}/related</h3>
+                <p>Returns related documents for a given knowledge item, based on embedding similarity and shared entities.</p>
+
+                <h3>GET /api/topics</h3>
+                <p>Returns all topic clusters with document counts and labels.</p>
+
+                <h3>GET /api/topics/{id}/documents</h3>
+                <p>Returns documents belonging to a specific topic cluster.</p>
+
+                <h3>GET /api/topics/trend</h3>
+                <p>Returns topic trend data for time-based visualization.</p>
+
+                <h3>GET /api/recommendations</h3>
+                <p>Returns personalized reading recommendations based on user patterns. Response includes recommendation reasons.</p>
+            </div>
+            <div data-lang="zh">
+                <h1>API 参考</h1>
+                <p>REST API 由 FastAPI 在 <code>http://127.0.0.1:8080</code>（默认）提供服务。交互式 API 文档位于 <code>http://127.0.0.1:8080/api/docs</code>。</p>
+
+                <h2>仪表盘</h2>
+
+                <h3>GET /api/dashboard/stats</h3>
+                <p>返回知识库统计信息。</p>
+                <p>响应示例：</p>
+                <pre><code>{
+  "total_items": 42,
+  "total_tags": 15,
+  "items_by_type": {"note": 10, "webpage": 12, "bookmark": 8, "file": 5, "paper": 4, "email": 3}
+}</code></pre>
+
+                <h3>GET /api/dashboard/recent</h3>
+                <p>按类型返回最近的项目。</p>
+
+                <h2>项目</h2>
+
+                <h3>GET /api/items</h3>
+                <p>列出项目，支持分页和过滤。</p>
+                <p>查询参数：<code>page</code>、<code>per_page</code>、<code>type</code>、<code>tag</code>、<code>q</code>（搜索）</p>
+
+                <h3>GET /api/items/{id}</h3>
+                <p>通过 ID 获取项目。返回完整的项目详情和内容。</p>
+
+                <h3>PUT /api/items/{id}</h3>
+                <p>更新项目元数据（标题、标签、摘要）。</p>
+
+                <h3>DELETE /api/items/{id}</h3>
+                <p>删除知识项目。</p>
+
+                <h2>标签</h2>
+
+                <h3>GET /api/tags</h3>
+                <p>列出所有标签及其项目数量。</p>
+
+                <h3>GET /api/tags/{name}/items</h3>
+                <p>获取与特定标签关联的项目。</p>
+
+                <h3>POST /api/tags/merge</h3>
+                <p>合并两个标签。请求体：<code>{"source": "old-tag", "target": "new-tag"}</code></p>
+
+                <h3>DELETE /api/tags/{name}</h3>
+                <p>删除标签。</p>
+
+                <h2>搜索</h2>
+
+                <h3>POST /api/search/keyword（或 GET /api/search?q=...）</h3>
+                <p>关键词搜索。请求体：<code>{"query": "search terms", "limit": 10}</code></p>
+
+                <h3>POST /api/search/semantic</h3>
+                <p>语义向量搜索。请求体：<code>{"query": "conceptual question", "limit": 10}</code></p>
+                <p>需要嵌入服务。</p>
+
+                <h3>POST /api/rag</h3>
+                <p>RAG 查询。请求体：<code>{"question": "What is X?", "limit": 5}</code></p>
+                <p>需要嵌入 + LLM 服务。</p>
+                <p>响应：<code>{"answer": "...", "sources": [...]}</code></p>
+
+                <h2>错误处理</h2>
+                <p>标准 HTTP 状态码。错误响应格式：<code>{"detail": "Error message"}</code></p>
+
+                <h2>知识挖掘 (v0.6)</h2>
+
+                <h3>GET /api/graph</h3>
+                <p>返回知识图谱可视化数据（节点和边）。</p>
+
+                <h3>GET /api/knowledge/{id}/related</h3>
+                <p>返回指定知识条目的相关文档，基于嵌入相似度和共享实体。</p>
+
+                <h3>GET /api/topics</h3>
+                <p>返回所有主题聚类，包含文档数量和标签。</p>
+
+                <h3>GET /api/topics/{id}/documents</h3>
+                <p>返回特定主题聚类下的文档。</p>
+
+                <h3>GET /api/topics/trend</h3>
+                <p>返回主题趋势数据，用于基于时间的可视化。</p>
+
+                <h3>GET /api/recommendations</h3>
+                <p>返回基于用户模式的个性化阅读推荐，包含推荐理由。</p>
+            </div>
+        </article>
+    </main>
+    <aside class="doc-outline" id="docOutline">
+        <div class="outline-title">On this page</div>
+        <div class="outline-links" id="outlineLinks"></div>
+    </aside>
+    <script src="layout.js"></script>
+</body>
+</html>
