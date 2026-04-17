@@ -21,12 +21,12 @@ Works on all platforms without security warnings. Requires Python 3.8+.
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh
+curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.sh | sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex
+irm http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.ps1 | iex
 ```
 
 The installer will:
@@ -41,12 +41,12 @@ For systems without Python. Standalone binary with no dependencies.
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://localbrain.io.alibaba-inc.com/binary_installer/install.sh | sh
+curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.sh | sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-irm https://localbrain.io.alibaba-inc.com/binary_installer/install.ps1 | iex
+irm http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.ps1 | iex
 ```
 
 **macOS Note:** Binary requires Gatekeeper bypass:
@@ -260,7 +260,7 @@ Configuration file: `~/.localbrain/config.yaml`
 data_dir: ~/.knowledge-base
 
 # Update server (for self-update functionality)
-update_server_url: https://localbrain.io.alibaba-inc.com
+update_server_url: http://localbrain.oss-cn-shanghai.aliyuncs.com
 
 embedding:
   provider: dashscope

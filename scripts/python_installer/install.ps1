@@ -2,7 +2,7 @@
 # LocalBrain Python Installer for Windows
 #
 # Usage:
-#   irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex
+#   irm http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.ps1 | iex
 #
 # Environment variables:
 #   $env:LOCALBRAIN_SERVER  - Server URL
@@ -13,7 +13,7 @@ param()
 $ErrorActionPreference = "Stop"
 
 # Configuration
-$ServerUrl = if ($env:LOCALBRAIN_SERVER) { $env:LOCALBRAIN_SERVER } else { "https://localbrain.io.alibaba-inc.com" }
+$ServerUrl = if ($env:LOCALBRAIN_SERVER) { $env:LOCALBRAIN_SERVER } else { "http://localbrain.oss-cn-shanghai.aliyuncs.com" }
 $Version = if ($env:LOCALBRAIN_VERSION) { $env:LOCALBRAIN_VERSION } else { "latest" }
 $InstallDir = "$env:USERPROFILE\.localbrain"
 $VenvDir = "$InstallDir\venv"

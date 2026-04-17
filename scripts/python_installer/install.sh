@@ -3,16 +3,16 @@
 # LocalBrain Python Installer for macOS/Linux
 #
 # Usage:
-#   curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh
+#   curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.sh | sh
 #
 # Environment variables:
-#   LOCALBRAIN_SERVER  - Server URL (default: https://localbrain.io.alibaba-inc.com)
+#   LOCALBRAIN_SERVER  - Server URL (default: http://localbrain.oss-cn-shanghai.aliyuncs.com)
 #   LOCALBRAIN_VERSION - Version to install (default: latest)
 
 set -e
 
 # Configuration
-SERVER_URL="${LOCALBRAIN_SERVER:-https://localbrain.io.alibaba-inc.com}"
+SERVER_URL="${LOCALBRAIN_SERVER:-http://localbrain.oss-cn-shanghai.aliyuncs.com}"
 VERSION="${LOCALBRAIN_VERSION:-latest}"
 INSTALL_DIR="$HOME/.localbrain"
 VENV_DIR="$INSTALL_DIR/venv"

@@ -23,12 +23,12 @@
 
 **macOS / Linux：**
 ```bash
-curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh
+curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.sh | sh
 ```
 
 **Windows (PowerShell)：**
 ```powershell
-irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex
+irm http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.ps1 | iex
 ```
 
 安装程序将会：
@@ -43,12 +43,12 @@ irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex
 
 **macOS / Linux：**
 ```bash
-curl -fsSL https://localbrain.io.alibaba-inc.com/binary_installer/install.sh | sh
+curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.sh | sh
 ```
 
 **Windows (PowerShell)：**
 ```powershell
-irm https://localbrain.io.alibaba-inc.com/binary_installer/install.ps1 | iex
+irm http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.ps1 | iex
 ```
 
 **macOS 注意事项：** 二进制文件需要绕过 Gatekeeper：
@@ -262,7 +262,7 @@ API 端点（默认：http://localhost:8080）：
 data_dir: ~/.knowledge-base
 
 # 更新服务器（用于自更新功能）
-update_server_url: https://localbrain.io.alibaba-inc.com
+update_server_url: http://localbrain.oss-cn-shanghai.aliyuncs.com
 
 embedding:
   provider: dashscope

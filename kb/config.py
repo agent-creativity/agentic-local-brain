@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # 默认配置
 DEFAULT_CONFIG: Dict[str, Any] = {
     "data_dir": "~/.knowledge-base",
-    "update_server_url": "https://localbrain.io.alibaba-inc.com",
+    "update_server_url": "http://localbrain.oss-cn-shanghai.aliyuncs.com",
     "embedding": {
         "provider": "dashscope",
         "model": "text-embedding-v4",

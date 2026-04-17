@@ -5,7 +5,7 @@
 data_dir: ~/.knowledge-base
 
 # Update server URL (for self-update functionality)
-update_server_url: https://localbrain.io.alibaba-inc.com
+update_server_url: http://localbrain.oss-cn-shanghai.aliyuncs.com
 
 # 嵌入模型配置（通过 LiteLLM 统一调用）
 #

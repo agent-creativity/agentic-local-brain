@@ -1,5 +1,5 @@
 # 基于 Agent + IM + Skill + CLI 的理念，打造一个 Local First 的本地知识大脑系统LocalBrain
-> 两个周末、110 次提交、一个 AI 虚拟团队 —— 我是如何与AI协作从0打造一个本地LLM知识管理产品Agentic Local Brain，配合QoderWork+小Q使用更佳，详情参考：https://localbrain.io.alibaba-inc.com
+> 两个周末、110 次提交、一个 AI 虚拟团队 —— 我是如何与AI协作从0打造一个本地LLM知识管理产品Agentic Local Brain，配合QoderWork+小Q使用更佳，详情参考：http://localbrain.oss-cn-shanghai.aliyuncs.com
 
 ---
 
@@ -223,7 +223,7 @@ intent_recognition:
     action: note
 ```
 
-**30 秒安装，即插即用**。具体参考：https://localbrain.io.alibaba-inc.com/docs/Skill-安装
+**30 秒安装，即插即用**。具体参考：http://localbrain.oss-cn-shanghai.aliyuncs.com/docs/Skill-安装
 
 更重要的是，Skill 是**可组合**的。知识收集只是第一个 Skill，未来可以扩展：
 - `knowledge-mine` —— 知识挖掘（v0.6 已实现）
@@ -881,13 +881,13 @@ LocalBrain 支持三种安装方式，5 分钟内即可启动运行。
 macOS/Linux：
 
 ```bash
-curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh
+curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.sh | sh
 ```
 
 Windows (PowerShell)：
 
 ```powershell
-irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex
+irm http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.ps1 | iex
 ```
 
 **安装后设置**
@@ -1033,9 +1033,9 @@ LocalBrain 就是这样的定位，并正在朝这个方向不断深化。
 
 如果你想试试 LocalBrain，这里有三个入口：
 
-- **产品主页**：[https://localbrain.io.alibaba-inc.com/](https://localbrain.io.alibaba-inc.com/)
-- **Skill 一键安装**：[https://localbrain.io.alibaba-inc.com/docs/skill-install.html](https://localbrain.io.alibaba-inc.com/docs/skill-install.html)
-- **五分钟快速开始**：[https://localbrain.io.alibaba-inc.com/docs/五分钟本地快速安装配置](https://localbrain.io.alibaba-inc.com/docs/五分钟本地快速安装配置)
+- **产品主页**：[http://localbrain.oss-cn-shanghai.aliyuncs.com/](http://localbrain.oss-cn-shanghai.aliyuncs.com/)
+- **Skill 一键安装**：[http://localbrain.oss-cn-shanghai.aliyuncs.com/docs/skill-install.html](http://localbrain.oss-cn-shanghai.aliyuncs.com/docs/skill-install.html)
+- **五分钟快速开始**：[http://localbrain.oss-cn-shanghai.aliyuncs.com/docs/五分钟本地快速安装配置](http://localbrain.oss-cn-shanghai.aliyuncs.com/docs/五分钟本地快速安装配置)
 
 有任何问题或建议，欢迎在钉钉里找我聊聊。这个项目还在快速迭代，你的反馈会让它变得更好。
 ![](https://oss-ata.alibaba.com/article/2026/04/9d50e61a-3543-4c63-808b-92887afa1ca0.png)

@@ -21,7 +21,7 @@ Implement a hybrid distribution system for Agentic Local Brain that provides two
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    HTTP Server                                   │
-│  https://localbrain.io.alibaba-inc.com                          │
+│  http://localbrain.oss-cn-shanghai.aliyuncs.com                          │
 │  ├── version.json                                               │
 │  ├── binary_installer/                                          │
 │  │   ├── install.sh                                             │
@@ -60,12 +60,12 @@ scripts/
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh
+curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.sh | sh
 ```
 
 **Windows:**
 ```powershell
-irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex
+irm http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.ps1 | iex
 ```
 
 **Requirements:**
@@ -85,12 +85,12 @@ irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://localbrain.io.alibaba-inc.com/binary_installer/install.sh | sh
+curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.sh | sh
 ```
 
 **Windows:**
 ```powershell
-irm https://localbrain.io.alibaba-inc.com/binary_installer/install.ps1 | iex
+irm http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.ps1 | iex
 ```
 
 **Requirements:**
@@ -117,12 +117,12 @@ irm https://localbrain.io.alibaba-inc.com/binary_installer/install.ps1 | iex
 # LocalBrain Python Installer for macOS/Linux
 #
 # Usage:
-#   curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh
+#   curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.sh | sh
 
 set -e
 
 # Configuration
-SERVER_URL="${LOCALBRAIN_SERVER:-https://localbrain.io.alibaba-inc.com}"
+SERVER_URL="${LOCALBRAIN_SERVER:-http://localbrain.oss-cn-shanghai.aliyuncs.com}"
 VERSION="${LOCALBRAIN_VERSION:-latest}"
 INSTALL_DIR="$HOME/.localbrain"
 VENV_DIR="$INSTALL_DIR/venv"
@@ -247,7 +247,7 @@ param()
 
 $ErrorActionPreference = "Stop"
 
-$ServerUrl = if ($env:LOCALBRAIN_SERVER) { $env:LOCALBRAIN_SERVER } else { "https://localbrain.io.alibaba-inc.com" }
+$ServerUrl = if ($env:LOCALBRAIN_SERVER) { $env:LOCALBRAIN_SERVER } else { "http://localbrain.oss-cn-shanghai.aliyuncs.com" }
 $Version = if ($env:LOCALBRAIN_VERSION) { $env:LOCALBRAIN_VERSION } else { "latest" }
 $InstallDir = "$env:USERPROFILE\.localbrain"
 $VenvDir = "$InstallDir\venv"
@@ -467,12 +467,12 @@ Works on all platforms without security warnings. Requires Python 3.8+.
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh
+curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.sh | sh
 ```
 
 **Windows:**
 ```powershell
-irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex
+irm http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.ps1 | iex
 ```
 
 ### Option 2: Binary Install (No Python Required)
@@ -481,12 +481,12 @@ For systems without Python. Note: macOS requires Gatekeeper bypass.
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://localbrain.io.alibaba-inc.com/binary_installer/install.sh | sh
+curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.sh | sh
 ```
 
 **Windows:**
 ```powershell
-irm https://localbrain.io.alibaba-inc.com/binary_installer/install.ps1 | iex
+irm http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.ps1 | iex
 ```
 
 **macOS Gatekeeper Bypass:**

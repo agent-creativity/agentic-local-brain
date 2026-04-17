@@ -60,11 +60,11 @@ mv scripts/install.ps1 scripts/binary_installer/install.ps1
 
 Change the URL in the Usage comment from:
 ```bash
-#   curl -fsSL https://localbrain.io.alibaba-inc.com/install.sh | sh
+#   curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/install.sh | sh
 ```
 to:
 ```bash
-#   curl -fsSL https://localbrain.io.alibaba-inc.com/binary_installer/install.sh | sh
+#   curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.sh | sh
 ```
 
 Also update the download URL in `download_binary()` function from:
@@ -80,11 +80,11 @@ local url="${SERVER_URL}/binary_installer/releases/v${VERSION}/${filename}"
 
 Change the URL in the Usage comment from:
 ```powershell
-#   irm https://localbrain.io.alibaba-inc.com/install.ps1 | iex
+#   irm http://localbrain.oss-cn-shanghai.aliyuncs.com/install.ps1 | iex
 ```
 to:
 ```powershell
-#   irm https://localbrain.io.alibaba-inc.com/binary_installer/install.ps1 | iex
+#   irm http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.ps1 | iex
 ```
 
 Also update the download URL in `Download-Binary` function from:
@@ -141,16 +141,16 @@ Create the file with complete installer script for macOS/Linux:
 # LocalBrain Python Installer for macOS/Linux
 #
 # Usage:
-#   curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh
+#   curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.sh | sh
 #
 # Environment variables:
-#   LOCALBRAIN_SERVER  - Server URL (default: https://localbrain.io.alibaba-inc.com)
+#   LOCALBRAIN_SERVER  - Server URL (default: http://localbrain.oss-cn-shanghai.aliyuncs.com)
 #   LOCALBRAIN_VERSION - Version to install (default: latest)
 
 set -e
 
 # Configuration
-SERVER_URL="${LOCALBRAIN_SERVER:-https://localbrain.io.alibaba-inc.com}"
+SERVER_URL="${LOCALBRAIN_SERVER:-http://localbrain.oss-cn-shanghai.aliyuncs.com}"
 VERSION="${LOCALBRAIN_VERSION:-latest}"
 INSTALL_DIR="$HOME/.localbrain"
 VENV_DIR="$INSTALL_DIR/venv"
@@ -363,7 +363,7 @@ Create the Windows PowerShell installer:
 # LocalBrain Python Installer for Windows
 #
 # Usage:
-#   irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex
+#   irm http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.ps1 | iex
 #
 # Environment variables:
 #   $env:LOCALBRAIN_SERVER  - Server URL
@@ -374,7 +374,7 @@ param()
 $ErrorActionPreference = "Stop"
 
 # Configuration
-$ServerUrl = if ($env:LOCALBRAIN_SERVER) { $env:LOCALBRAIN_SERVER } else { "https://localbrain.io.alibaba-inc.com" }
+$ServerUrl = if ($env:LOCALBRAIN_SERVER) { $env:LOCALBRAIN_SERVER } else { "http://localbrain.oss-cn-shanghai.aliyuncs.com" }
 $Version = if ($env:LOCALBRAIN_VERSION) { $env:LOCALBRAIN_VERSION } else { "latest" }
 $InstallDir = "$env:USERPROFILE\.localbrain"
 $VenvDir = "$InstallDir\venv"
@@ -1075,12 +1075,12 @@ Works on all platforms without security warnings. Requires Python 3.8+.
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh
+curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.sh | sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex
+irm http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.ps1 | iex
 ```
 
 The installer will:
@@ -1095,12 +1095,12 @@ For systems without Python. Standalone binary with no dependencies.
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://localbrain.io.alibaba-inc.com/binary_installer/install.sh | sh
+curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.sh | sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-irm https://localbrain.io.alibaba-inc.com/binary_installer/install.ps1 | iex
+irm http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.ps1 | iex
 ```
 
 **macOS Note:** Binary requires Gatekeeper bypass:
@@ -1207,7 +1207,7 @@ After completing all tasks:
 
 **HTTP Server Structure Required:**
 ```
-localbrain.io.alibaba-inc.com/
+localbrain.oss-cn-shanghai.aliyuncs.com/
 ├── version.json
 ├── binary_installer/
 │   ├── install.sh

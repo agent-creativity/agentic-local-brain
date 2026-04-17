@@ -65,16 +65,16 @@ This skill enables AI agents to collect, save, and archive knowledge from variou
    **Recommended: Python one-liner installer** (requires Python 3.8+):
    ```bash
    # macOS/Linux
-   curl -fsSL https://localbrain.io.alibaba-inc.com/python_installer/install.sh | sh
+   curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.sh | sh
    # Windows (PowerShell)
-   irm https://localbrain.io.alibaba-inc.com/python_installer/install.ps1 | iex
+   irm http://localbrain.oss-cn-shanghai.aliyuncs.com/python_installer/install.ps1 | iex
    ```
 
    This creates a virtual environment at `~/.localbrain/venv` and installs localbrain there.
 
    **Alternative: Binary installer** (macOS/Linux only, for systems without Python):
    ```bash
-   curl -fsSL https://localbrain.io.alibaba-inc.com/binary_installer/install.sh | sh
+   curl -fsSL http://localbrain.oss-cn-shanghai.aliyuncs.com/binary_installer/install.sh | sh
    ```
 
    After installation, add to PATH and verify:
