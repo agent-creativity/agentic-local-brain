@@ -379,3 +379,120 @@ class GraphQuery:
             }
         finally:
             cursor.close()
+
+    def get_entities_for_context(
+        self, document_ids: List[str], max_entities: int = 10
+    ) -> List[Dict[str, Any]]:
+        """Get entity context for RAG enrichment from a list of document IDs.
+
+        For each document, fetches mentioned entities and their 1-hop relations.
+        Returns deduplicated entities with their mentions and relations,
+        prioritized by frequency across documents.
+
+        Args:
+            document_ids: List of knowledge item IDs
+            max_entities: Maximum entities to return
+
+        Returns:
+            List of dicts with: name, type, mentions (context snippets), relations
+        """
+        if not document_ids:
+            return []
+
+        cursor = self.storage.conn.cursor()
+        try:
+            # Collect entities across all documents with their mentions
+            entity_data: Dict[int, Dict[str, Any]] = {}
+            entity_frequency: Dict[int, int] = {}
+
+            for doc_id in document_ids:
+                # Get entities mentioned in this document
+                cursor.execute(
+                    """SELECT e.id, e.name, e.display_name, e.type, e.description, em.context
+                       FROM entities e
+                       JOIN entity_mentions em ON em.entity_id = e.id
+                       WHERE em.knowledge_id = ?""",
+                    (doc_id,),
+                )
+
+                for row in cursor.fetchall():
+                    entity_id = row["id"]
+                    if entity_id not in entity_data:
+                        entity_data[entity_id] = {
+                            "name": row["name"],
+                            "display_name": row["display_name"],
+                            "type": row["type"],
+                            "description": row["description"],
+                            "mentions": [],
+                        }
+                        entity_frequency[entity_id] = 0
+
+                    # Add mention context if available
+                    if row["context"]:
+                        entity_data[entity_id]["mentions"].append(row["context"])
+                    entity_frequency[entity_id] += 1
+
+            if not entity_data:
+                return []
+
+            # Sort entities by frequency across documents
+            sorted_entity_ids = sorted(
+                entity_frequency.keys(),
+                key=lambda eid: entity_frequency[eid],
+                reverse=True,
+            )
+
+            # Take top entities
+            top_entity_ids = sorted_entity_ids[:max_entities]
+
+            # Fetch 1-hop relations for top entities
+            result = []
+            for entity_id in top_entity_ids:
+                entity = entity_data[entity_id].copy()
+                entity["entity_id"] = entity_id
+
+                # Get 1-hop relations
+                cursor.execute(
+                    """SELECT er.relation_type, er.weight,
+                              e.id as related_id, e.name as related_name,
+                              e.display_name as related_display_name, e.type as related_type
+                       FROM entity_relations er
+                       JOIN entities e ON e.id = er.target_entity_id
+                       WHERE er.source_entity_id = ?
+                       UNION ALL
+                       SELECT er.relation_type, er.weight,
+                              e.id as related_id, e.name as related_name,
+                              e.display_name as related_display_name, e.type as related_type
+                       FROM entity_relations er
+                       JOIN entities e ON e.id = er.source_entity_id
+                       WHERE er.target_entity_id = ?""",
+                    (entity_id, entity_id),
+                )
+
+                relations = []
+                for row in cursor.fetchall():
+                    relations.append({
+                        "relation_type": row["relation_type"],
+                        "weight": row["weight"],
+                        "related_entity": {
+                            "id": row["related_id"],
+                            "name": row["related_name"],
+                            "display_name": row["related_display_name"],
+                            "type": row["related_type"],
+                        },
+                    })
+
+                entity["relations"] = relations
+                entity["frequency"] = entity_frequency[entity_id]
+                result.append(entity)
+
+            logger.debug(
+                f"Retrieved {len(result)} entities for context from {len(document_ids)} documents"
+            )
+            return result
+
+        except Exception as e:
+            logger.warning(f"Failed to get entities for context: {e}")
+            return []
+        finally:
+            cursor.close()

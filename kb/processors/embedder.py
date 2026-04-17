@@ -362,6 +362,9 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
     """
 
     DEFAULT_DIMENSION = 1536
+    # DashScope has a hard limit of 10 chunks per batch
+    DASHSCOPE_BATCH_SIZE = 10
+    DEFAULT_BATCH_SIZE = 25
 
     def __init__(
         self,
@@ -369,6 +372,7 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
         api_key: str,
         api_base: Optional[str] = None,
         dimension: Optional[int] = None,
+        batch_size: Optional[int] = None,
         **kwargs: Any
     ) -> None:
         """
@@ -379,6 +383,7 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
             api_key: API 密钥
             api_base: API 基础 URL，可选
             dimension: 向量维度
+            batch_size: 批量处理大小，DashScope defaults to 10, others to 25
             **kwargs: 额外的配置参数（如 encoding_format）
         """
         if litellm is None:
@@ -391,6 +396,15 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
         self.api_key = api_key
         self.api_base = api_base
         self._dimension = dimension or self.DEFAULT_DIMENSION
+        
+        # Auto-detect batch size based on provider
+        if batch_size is not None:
+            self.batch_size = batch_size
+        elif api_base and "dashscope" in api_base.lower():
+            self.batch_size = self.DASHSCOPE_BATCH_SIZE
+        else:
+            self.batch_size = self.DEFAULT_BATCH_SIZE
+        
         self.extra_kwargs = kwargs
 
     @property
@@ -401,7 +415,7 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
         self,
         texts: List[str],
         max_retries: int = 3,
-        batch_size: int = 25,
+        batch_size: Optional[int] = None,
         **kwargs: Any
     ) -> List[List[float]]:
         """
@@ -410,7 +424,7 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
         Args:
             texts: 待向量化的文本列表
             max_retries: 最大重试次数
-            batch_size: 批量处理大小
+            batch_size: 批量处理大小，如果为 None 则使用实例的 batch_size
             **kwargs: 额外的生成参数
 
         Returns:
@@ -419,10 +433,13 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
         if not texts:
             raise ValueError("Texts list cannot be empty")
 
+        # Use instance batch_size if not specified
+        effective_batch_size = batch_size if batch_size is not None else self.batch_size
+        
         all_embeddings: List[List[float]] = []
 
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i:i + batch_size]
+        for i in range(0, len(texts), effective_batch_size):
+            batch = texts[i:i + effective_batch_size]
             batch_embeddings = self._embed_batch(batch, max_retries, **kwargs)
             all_embeddings.extend(batch_embeddings)
 
@@ -447,6 +464,10 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
                 }
                 if self.api_base:
                     call_kwargs["api_base"] = self.api_base
+
+                # Prevent litellm from sending encoding_format=None (rejected by some providers like DashScope)
+                if "encoding_format" not in call_kwargs or call_kwargs.get("encoding_format") is None:
+                    call_kwargs["encoding_format"] = "float"
 
                 response = litellm.embedding(**call_kwargs)
 
@@ -563,8 +584,9 @@ class Embedder:
                     api_key=api_key,
                     api_base=DASHSCOPE_EMBEDDING_API_BASE,
                     encoding_format="float",
+                    batch_size=LiteLLMEmbeddingProvider.DASHSCOPE_BATCH_SIZE,
                 )
-                logger.info(f"Using litellm for dashscope embedding: openai/{model}")
+                logger.info(f"Using litellm for dashscope embedding: openai/{model} (batch_size=10)")
             else:
                 # Fallback to native dashscope SDK
                 provider = DashScopeEmbeddingProvider(

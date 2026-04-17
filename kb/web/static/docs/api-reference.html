@@ -36,7 +36,7 @@
         <article class="doc-article">
             <div data-lang="en">
                 <h1>API Reference</h1>
-                <p>The REST API is served by FastAPI at <code>http://127.0.0.1:8080</code> (default). Interactive API docs at <code>http://127.0.0.1:8080/api/docs</code>.</p>
+                <p>The REST API is served by FastAPI at <code>http://127.0.0.1:11201</code> (default). Interactive API docs at <code>http://127.0.0.1:11201/api/docs</code>.</p>
 
                 <h2>Dashboard</h2>
 
@@ -95,6 +95,100 @@
                 <p>Requires embedding + LLM services.</p>
                 <p>Response: <code>{"answer": "...", "sources": [...]}</code></p>
 
+                <h2>Enhanced RAG (v0.7)</h2>
+
+                <h3>POST /api/rag/chat</h3>
+                <p>Multi-turn conversational RAG with context preservation.</p>
+                <p>Request body:</p>
+                <pre><code>{
+  "query": "What is machine learning?",
+  "session_id": "optional-session-id",
+  "use_graph": true,
+  "use_topics": true
+}</code></pre>
+                <p>Response includes conversation history and source citations.</p>
+
+                <h3>GET /api/rag/conversations</h3>
+                <p>List all conversation sessions.</p>
+                <p>Returns: <code>[{"session_id": "...", "created_at": "...", "message_count": 5}]</code></p>
+
+                <h3>GET /api/rag/conversations/{session_id}</h3>
+                <p>Get full conversation history for a session.</p>
+                <p>Returns complete conversation with all messages and sources.</p>
+
+                <h3>DELETE /api/rag/conversations/{session_id}</h3>
+                <p>Delete a specific conversation session.</p>
+
+                <h3>POST /api/rag/suggest</h3>
+                <p>Get query suggestions based on knowledge base content.</p>
+                <p>Request body: <code>{"query": "machine learning"}</code></p>
+                <p>Returns suggested follow-up questions.</p>
+
+                <h3>GET /api/dashboard/rag-stats</h3>
+                <p>Get RAG usage analytics and statistics.</p>
+                <p>Returns query counts, response times, and source usage metrics.</p>
+
+                <h2>Wiki API (v0.7)</h2>
+
+                <h3>GET /api/wiki/tree</h3>
+                <p>Get wiki structure as hierarchical navigation tree.</p>
+                <p>Returns topics with nested categories and article counts.</p>
+                <pre><code>{
+  "topics": [
+    {
+      "topic_id": "cluster_001",
+      "label": "Machine Learning",
+      "categories": [
+        {"category_id": "...", "name": "Deep Learning", "article_count": 5}
+      ]
+    }
+  ],
+  "stats": {"total_articles": 42, "total_categories": 8}
+}</code></pre>
+
+                <h3>GET /api/wiki/categories/{category_id}/articles</h3>
+                <p>Get articles belonging to a specific category.</p>
+
+                <h3>GET /api/wiki/topics/{topic_id}/articles</h3>
+                <p>Get all articles for a given topic across all its categories.</p>
+
+                <h3>GET /api/wiki/articles</h3>
+                <p>List wiki articles with filtering.</p>
+                <p>Query params:</p>
+                <ul>
+                    <li><code>article_type</code> — Filter by type: <code>topic</code>, <code>entity</code></li>
+                    <li><code>limit</code> — Max results (default: 100, max: 500)</li>
+                    <li><code>offset</code> — Offset for pagination (default: 0)</li>
+                </ul>
+
+                <h3>GET /api/wiki/articles/{article_id}</h3>
+                <p>Get article content with metadata.</p>
+                <p>Returns full article content (Markdown), metadata, and source documents.</p>
+                <pre><code>{
+  "article_id": "ml-intro",
+  "title": "Introduction to Machine Learning",
+  "article_type": "topic",
+  "content": "# Introduction...",
+  "word_count": 1500,
+  "source_doc_ids": ["doc1", "doc2"],
+  "entity_refs": ["neural-networks", "supervised-learning"],
+  "compiled_at": "2026-04-10T12:00:00Z",
+  "version": 2
+}</code></pre>
+
+                <h3>GET /api/wiki/search?q={query}</h3>
+                <p>Search wiki articles by title.</p>
+                <p>Query params: <code>q</code> (required), <code>limit</code> (default: 20, max: 100)</p>
+
+                <h3>GET /api/wiki/entities</h3>
+                <p>List all entities with wiki cards.</p>
+
+                <h3>GET /api/wiki/entities/{entity_id}</h3>
+                <p>Get entity details and associated wiki card.</p>
+
+                <h3>GET /api/wiki/stats</h3>
+                <p>Get wiki statistics (article counts, category counts, etc.).</p>
+
                 <h2>Error Handling</h2>
                 <p>Standard HTTP status codes. Error response format: <code>{"detail": "Error message"}</code></p>
 
@@ -120,7 +214,7 @@
             </div>
             <div data-lang="zh">
                 <h1>API 参考</h1>
-                <p>REST API 由 FastAPI 在 <code>http://127.0.0.1:8080</code>（默认）提供服务。交互式 API 文档位于 <code>http://127.0.0.1:8080/api/docs</code>。</p>
+                <p>REST API 由 FastAPI 在 <code>http://127.0.0.1:11201</code>（默认）提供服务。交互式 API 文档位于 <code>http://127.0.0.1:11201/api/docs</code>。</p>
 
                 <h2>仪表盘</h2>
 
@@ -178,6 +272,100 @@
                 <p>RAG 查询。请求体：<code>{"question": "What is X?", "limit": 5}</code></p>
                 <p>需要嵌入 + LLM 服务。</p>
                 <p>响应：<code>{"answer": "...", "sources": [...]}</code></p>
+
+                <h2>增强 RAG (v0.7)</h2>
+
+                <h3>POST /api/rag/chat</h3>
+                <p>多轮对话式 RAG，支持上下文保持。</p>
+                <p>请求体：</p>
+                <pre><code>{
+  "query": "什么是机器学习？",
+  "session_id": "可选会话ID",
+  "use_graph": true,
+  "use_topics": true
+}</code></pre>
+                <p>响应包含对话历史和来源引用。</p>
+
+                <h3>GET /api/rag/conversations</h3>
+                <p>列出所有会话。</p>
+                <p>返回：<code>[{"session_id": "...", "created_at": "...", "message_count": 5}]</code></p>
+
+                <h3>GET /api/rag/conversations/{session_id}</h3>
+                <p>获取指定会话的完整对话历史。</p>
+                <p>返回包含所有消息和来源的完整对话。</p>
+
+                <h3>DELETE /api/rag/conversations/{session_id}</h3>
+                <p>删除指定的会话。</p>
+
+                <h3>POST /api/rag/suggest</h3>
+                <p>基于知识库内容获取查询建议。</p>
+                <p>请求体：<code>{"query": "machine learning"}</code></p>
+                <p>返回建议的后续问题。</p>
+
+                <h3>GET /api/dashboard/rag-stats</h3>
+                <p>获取 RAG 使用分析和统计信息。</p>
+                <p>返回查询次数、响应时间和来源使用指标。</p>
+
+                <h2>Wiki API (v0.7)</h2>
+
+                <h3>GET /api/wiki/tree</h3>
+                <p>获取 Wiki 结构作为分层导航树。</p>
+                <p>返回包含嵌套分类和文章数的主题列表。</p>
+                <pre><code>{
+  "topics": [
+    {
+      "topic_id": "cluster_001",
+      "label": "机器学习",
+      "categories": [
+        {"category_id": "...", "name": "深度学习", "article_count": 5}
+      ]
+    }
+  ],
+  "stats": {"total_articles": 42, "total_categories": 8}
+}</code></pre>
+
+                <h3>GET /api/wiki/categories/{category_id}/articles</h3>
+                <p>获取指定分类下的文章。</p>
+
+                <h3>GET /api/wiki/topics/{topic_id}/articles</h3>
+                <p>获取指定主题下的所有文章（跨所有分类）。</p>
+
+                <h3>GET /api/wiki/articles</h3>
+                <p>列出 Wiki 文章，支持过滤。</p>
+                <p>查询参数：</p>
+                <ul>
+                    <li><code>article_type</code> — 按类型过滤：<code>topic</code>、<code>entity</code></li>
+                    <li><code>limit</code> — 最大结果数（默认：100，最大：500）</li>
+                    <li><code>offset</code> — 分页偏移量（默认：0）</li>
+                </ul>
+
+                <h3>GET /api/wiki/articles/{article_id}</h3>
+                <p>获取文章内容和元数据。</p>
+                <p>返回完整文章内容（Markdown）、元数据和源文档。</p>
+                <pre><code>{
+  "article_id": "ml-intro",
+  "title": "机器学习简介",
+  "article_type": "topic",
+  "content": "# 简介...",
+  "word_count": 1500,
+  "source_doc_ids": ["doc1", "doc2"],
+  "entity_refs": ["neural-networks", "supervised-learning"],
+  "compiled_at": "2026-04-10T12:00:00Z",
+  "version": 2
+}</code></pre>
+
+                <h3>GET /api/wiki/search?q={query}</h3>
+                <p>按标题搜索 Wiki 文章。</p>
+                <p>查询参数：<code>q</code>（必需），<code>limit</code>（默认：20，最大：100）</p>
+
+                <h3>GET /api/wiki/entities</h3>
+                <p>列出所有带有 Wiki 卡片的实体。</p>
+
+                <h3>GET /api/wiki/entities/{entity_id}</h3>
+                <p>获取实体详情和关联的 Wiki 卡片。</p>
+
+                <h3>GET /api/wiki/stats</h3>
+                <p>获取 Wiki 统计信息（文章数、分类数等）。</p>
 
                 <h2>错误处理</h2>
                 <p>标准 HTTP 状态码。错误响应格式：<code>{"detail": "Error message"}</code></p>

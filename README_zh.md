@@ -14,6 +14,8 @@
 - **优雅降级**：无需 LLM/嵌入服务即可工作，使用内置降级算法
 - **跨平台支持**：灵活多样的安装方式 — Python 包安装（推荐，无安全警告）、独立二进制文件（无需 Python）、或从源码安装
 - **知识挖掘** (v0.6)：自动知识图谱构建、跨文档关系发现、主题聚类与趋势分析、基于阅读模式的智能推荐
+- **增强检索** (v0.7)：多阶段检索管线（查询扩展 → 混合检索 → LLM 重排序 → 上下文增强 → 答案生成）、多轮对话支持、可配置提示词模板
+- **LLM Wiki 知识百科** (v0.7)：利用 LLM 将知识合成为主题文章和实体摘要卡片、Wiki 链接交叉引用、过期追踪与自动重编译、Web 百科浏览器
 
 ## 安装
 
@@ -223,6 +225,201 @@ localbrain collect file add paper.pdf --no-auto-extract
 
 无论服务可用性如何，文档**始终保存**到文件系统和 SQLite。使用 `localbrain test embedding` 和 `localbrain test llm` 验证服务连接。
 
+## 增强 RAG (v0.7)
+
+增强 RAG 系统采用多阶段检索管线，提供高质量的 AI 问答体验：
+
+### 多阶段检索管线
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  1. 查询扩展 (Query Expansion)                                   │
+│     → LLM 重写和扩展查询以提高召回率                              │
+├─────────────────────────────────────────────────────────────────┤
+│  2. 混合检索 (Hybrid Retrieval)                                  │
+│     → 关键词搜索 + 语义搜索（RRF 融合排序）                        │
+├─────────────────────────────────────────────────────────────────┤
+│  3. LLM 重排序 (LLM Reranking)                                   │
+│     → 使用 LLM 对候选文档进行相关性评分和重新排序                   │
+├─────────────────────────────────────────────────────────────────┤
+│  4. 上下文增强 (Context Enrichment)                              │
+│     → 注入相关实体、主题和知识图谱关系                              │
+├─────────────────────────────────────────────────────────────────┤
+│  5. Token 感知组装 (Token-Aware Assembly)                        │
+│     → 智能打包上下文以适应 LLM 上下文窗口                          │
+├─────────────────────────────────────────────────────────────────┤
+│  6. 答案生成 (Answer Generation)                                 │
+│     → 使用可配置提示词模板生成带引用的答案                          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 多轮对话支持
+
+维护跨多轮对话的会话上下文：
+
+```bash
+# 开始新对话（自动创建会话）
+localbrain search rag "解释机器学习"
+
+# 继续对话（使用 --conversation 指定会话 ID）
+localbrain search rag "深度学习和它有什么区别？" --conversation <session_id>
+
+# 查看所有对话会话
+# 通过 Web API: GET /api/rag/conversations
+
+# 删除对话
+# 通过 Web API: DELETE /api/rag/conversations/{session_id}
+```
+
+### 可配置提示词模板
+
+选择适合您查询类型的提示词模板：
+
+| 模板 | 用途 | 特点 |
+|------|------|------|
+| `general` | 通用问答 | 平衡、对话式回答 |
+| `technical` | 技术文档 | 精确、结构化、包含代码示例 |
+| `academic` | 学术研究 | 正式、引用驱动、方法论 |
+| `creative` | 头脑风暴 | 开放式、探索性、多角度 |
+
+在配置文件中设置默认模板：
+```yaml
+query:
+  rag:
+    templates:
+      default: technical
+```
+
+### CLI 使用示例
+
+```bash
+# 基本 RAG 查询
+localbrain search rag "什么是向量数据库？"
+
+# 使用特定模板
+localbrain search rag "解释 RAG 架构" --template technical
+
+# 多轮对话（后续问题）
+localbrain search rag "有哪些流行的实现？" --conversation <session_id>
+
+# 获取查询建议
+# 通过 Web API: POST /api/rag/suggest
+```
+
+### Web API 使用示例
+
+```bash
+# 多轮对话 RAG
+curl -X POST http://localhost:11201/api/rag/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "解释 RAG 检索管线",
+    "template": "technical",
+    "session_id": "optional-existing-session"
+  }'
+
+# 响应包含：
+# - answer: 生成的答案
+# - sources: 带相关性和置信度分数的引用来源
+# - session_id: 用于后续问题的会话 ID
+# - confidence: 整体答案置信度
+```
+
+## LLM Wiki 知识百科 (v0.7)
+
+LLM Wiki 功能利用大型语言模型将您收集的知识合成为结构化的主题文章和实体摘要卡片，创建可浏览、可交叉引用的知识百科。
+
+### 功能特性
+
+**主题文章 (Topic Articles)**
+- 从主题聚类自动生成全面的主题文章
+- 包含摘要、关键点、相关概念和引用来源
+- 分层组织，支持分类和子分类
+
+**实体摘要卡片 (Entity Cards)**
+- 为频繁出现的实体（人物、组织、概念）创建摘要卡片
+- 显示定义、属性、相关主题和出现次数
+- 自动链接到相关主题文章
+
+**Wiki 链接与交叉引用**
+- 文章之间的双向链接（`[[Article Name]]` 语法）
+- 自动发现相关主题和实体
+- 通过知识图谱关系进行导航
+
+**过期追踪与重编译**
+- 追踪源文档修改时间
+- 当底层知识变化时自动检测过期文章
+- 支持增量重编译（仅更新变更的主题）
+
+**Web 百科浏览器**
+- 在 Web UI 中浏览所有 Wiki 文章
+- 支持分类视图和搜索
+- 查看文章历史版本
+
+### CLI 命令
+
+| 命令 | 描述 |
+|---------|-------------|
+| `localbrain wiki compile` | 将主题聚类编译为 Wiki 文章 |
+| `localbrain wiki compile --force` | 重新生成所有文章（忽略过期状态） |
+| `localbrain wiki list` | 列出所有编译的 Wiki 文章（分层视图） |
+| `localbrain wiki list --flat` | 以扁平列表形式显示文章 |
+| `localbrain wiki list --type topic` | 仅显示主题文章 |
+| `localbrain wiki list --type entity` | 仅显示实体卡片 |
+| `localbrain wiki show <slug>` | 在终端中显示 Wiki 文章内容 |
+
+### CLI 使用示例
+
+```bash
+# 编译 Wiki 文章（仅更新过期的主题）
+localbrain wiki compile
+
+# 强制重新编译所有文章
+localbrain wiki compile --force
+
+# 以分层视图列出所有文章
+localbrain wiki list
+
+# 扁平列表视图
+localbrain wiki list --flat
+
+# 仅显示实体卡片
+localbrain wiki list --type entity
+
+# 在终端中阅读文章
+localbrain wiki show "machine-learning"
+```
+
+### 与知识挖掘集成
+
+Wiki 编译与知识挖掘管线集成：
+
+```bash
+# 运行完整挖掘（包括 Wiki 生成）
+localbrain mine run
+
+# 挖掘步骤包括：
+# 1. 实体提取
+# 2. 主题聚类
+# 3. 跨文档关系发现
+# 4. 生成推荐
+# 5. 编译 Wiki 文章 ← 最后一步
+```
+
+### Web UI 浏览器
+
+启动 Web 界面以浏览 Wiki：
+
+```bash
+localbrain web
+```
+
+然后访问 `http://localhost:11201` 并点击导航菜单中的 **"Wiki"** 以：
+- 按分类浏览文章
+- 阅读格式化的 Markdown 文章
+- 点击 Wiki 链接导航
+- 查看相关主题和实体
+
 ## Web API
 
 启动 Web 服务：
@@ -234,7 +431,7 @@ localbrain web --stop             # 停止后台服务
 localbrain web --status           # 查看服务状态
 ```
 
-API 端点（默认：http://localhost:8080）：
+API 端点（默认：http://localhost:11201）：
 
 | 方法 | 端点 | 描述 |
 |--------|----------|-------------|
@@ -251,37 +448,110 @@ API 端点（默认：http://localhost:8080）：
 | GET | `/api/topics/{id}/documents` | 主题下的文档 |
 | GET | `/api/topics/trend` | 主题趋势 |
 | GET | `/api/recommendations` | 智能推荐 |
+| POST | `/api/rag/chat` | 支持多轮对话的增强 RAG |
+| GET | `/api/rag/conversations` | 列出对话会话 |
+| GET | `/api/rag/conversations/{session_id}` | 获取完整对话 |
+| DELETE | `/api/rag/conversations/{session_id}` | 删除对话 |
+| POST | `/api/rag/suggest` | 查询建议 |
+| GET | `/api/dashboard/rag-stats` | RAG 分析统计 |
+| GET | `/api/wiki/tree` | Wiki 结构树 |
+| GET | `/api/wiki/articles` | 文章列表（参数: article_type, limit, offset） |
+| GET | `/api/wiki/articles/{article_id}` | 获取文章内容 |
+| GET | `/api/wiki/search` | 搜索百科文章 |
+| GET | `/api/wiki/categories/{category_id}/articles` | 按分类查看文章 |
+| GET | `/api/wiki/topics/{topic_id}/articles` | 按主题查看文章 |
+| GET | `/api/wiki/entities` | 实体卡片列表 |
+| GET | `/api/wiki/entities/{entity_id}` | 获取实体卡片 |
+| GET | `/api/wiki/stats` | 百科统计 |
 
-服务运行时可访问 `http://localhost:8080/docs` 查看 API 文档。
+服务运行时可访问 `http://localhost:11201/docs` 查看 API 文档。
 
 ## 配置
 
 配置文件：`~/.localbrain/config.yaml`
 
 ```yaml
+# 数据目录路径
 data_dir: ~/.knowledge-base
 
 # 更新服务器（用于自更新功能）
 update_server_url: http://localbrain.oss-cn-shanghai.aliyuncs.com
 
+# 嵌入模型配置（通过 LiteLLM 统一调用）
 embedding:
-  provider: dashscope
-  model: text-embedding-v4
+  provider: litellm
+  model: openai/text-embedding-v4
   api_key: ${DASHSCOPE_API_KEY}
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  encoding_format: float
 
+# 大语言模型配置（通过 LiteLLM 统一调用）
 llm:
-  provider: dashscope
-  model: qwen-plus
+  provider: litellm
+  model: dashscope/qwen-plus
   api_key: ${DASHSCOPE_API_KEY}
 
+# 文本分块配置
 chunking:
   max_chunk_size: 1000
-  overlap: 100
+  chunk_overlap: 100
 
+# 存储配置
+storage:
+  type: chroma
+  persist_directory: ~/.knowledge-base/db/chroma
+
+# 查询配置
+query:
+  # RAG 查询配置
+  rag:
+    top_k: 5                    # RAG 检索的文档数量
+    temperature: 0.3             # LLM 生成温度
+    max_tokens: 1000             # LLM 最大 token 数
+    context_budget: 4000         # LLM 上下文 token 预算
+    context_format: hierarchical # 上下文格式: hierarchical (分层) 或 flat (扁平)
+    # 重排序配置（使用 LLM 对检索结果进行相关性评分）
+    reranking:
+      enabled: true              # 是否启用 LLM 重排序
+      top_n_candidates: 20       # 参与重排序的候选文档数量
+      weight_retrieval: 0.4      # 检索分数权重
+      weight_rerank: 0.6         # 重排序分数权重
+    # 多轮对话配置
+    conversation:
+      max_turns: 20              # 单个会话最大轮数
+      session_timeout_minutes: 30  # 会话超时时间（分钟）
+      history_turns_in_context: 5  # 注入上下文的最近轮数
+    # 提示词模板配置
+    templates:
+      default: general           # 默认模板: general, technical, academic, creative
+      # 自定义模板示例 (取消注释以启用):
+      # custom: |
+      #   You are a specialized assistant for {domain}.
+      #   {context}
+      #   Question: {question}
+  # 检索流水线配置
+  pipeline:
+    top_k: 10                    # 检索阶段返回的文档数量
+    rerank_top_k: 5              # 重排序后返回的文档数量
+    context_budget: 4000         # LLM 上下文 token 预算（备用）
+
+# 日志配置（用于后台 Web 服务模式）
 logging:
-  level: INFO
-  max_bytes: 10485760    # 10MB
-  backup_count: 5
+  log_dir: ""              # 日志目录（默认: ~/.localbrain/logs/）
+  level: INFO              # 日志级别: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  max_bytes: 10485760      # 日志文件最大字节数（默认: 10MB）
+  backup_count: 5          # 保留的轮转备份文件数量
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Wiki 编译配置
+wiki:
+  enabled: true                        # 挖掘期间启用 Wiki 文章生成
+  max_source_tokens_per_topic: 8000    # 每个主题的最大源文档 token 数
+  entity_card_threshold: 3             # 实体卡片的最小主题出现次数
+  temperature: 0.3                     # 编译的 LLM 温度
+  model: null                          # null = 使用默认 LLM 模型
+  max_article_words: 3000              # 每篇文章的目标最大字数
+  max_subcategories: 5                 # 每个主题的最大子分类数
 ```
 
 ### 环境变量

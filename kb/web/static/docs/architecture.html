@@ -91,6 +91,94 @@ User Query → SQLite FTS5 → Matched Documents
 User Question → Semantic Search → Context → LLM → Answer
 </pre>
 
+                <h2>Enhanced RAG Pipeline (v0.7)</h2>
+                <p>The Enhanced RAG system implements a multi-stage retrieval pipeline for improved answer quality:</p>
+<pre>
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    Enhanced RAG Pipeline (v0.7)                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  1. Query Expansion                                                      │
+│     └── Rewrite and expand queries for better recall                     │
+│                                                                          │
+│  2. Hybrid Retrieval (Keyword + Semantic with RRF)                       │
+│     ├── Semantic Search → Top-K results                                  │
+│     ├── Keyword Search → Top-K results                                   │
+│     └── Reciprocal Rank Fusion → Combined ranking                        │
+│                                                                          │
+│  3. LLM Reranking                                                        │
+│     └── Relevance scoring and result refinement                          │
+│                                                                          │
+│  4. Entity/Topic Enrichment                                              │
+│     ├── Graph Query → Related entities                                   │
+│     └── Topic Query → Related topics                                     │
+│                                                                          │
+│  5. Token-aware Context Assembly                                         │
+│     └── Hierarchical context building with budget management             │
+│                                                                          │
+│  6. Answer Generation                                                    │
+│     └── LLM synthesis with configurable prompt templates                 │
+└─────────────────────────────────────────────────────────────────────────┘
+</pre>
+                <p>Key components:</p>
+                <ul>
+                    <li><strong>Query Expander:</strong> Rewrites queries to improve retrieval recall</li>
+                    <li><strong>Hybrid Retriever:</strong> Combines semantic and keyword search using RRF</li>
+                    <li><strong>Reranker:</strong> LLM-based relevance scoring for result refinement</li>
+                    <li><strong>Context Builder:</strong> Token-aware assembly with hierarchical formatting</li>
+                    <li><strong>Conversation Manager:</strong> Multi-turn context preservation</li>
+                    <li><strong>Prompt Templates:</strong> Configurable templates for different domains</li>
+                </ul>
+
+                <h2>LLM Wiki System (v0.7)</h2>
+                <p>The LLM Wiki system automatically compiles knowledge into structured articles:</p>
+<pre>
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    LLM Wiki System (v0.7)                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   Topic Clusters ──► Wiki Compiler ──► LLM Synthesis                     │
+│        │                    │                  │                         │
+│        ▼                    ▼                  ▼                         │
+│   ┌─────────┐        ┌────────────┐     ┌──────────┐                    │
+│   │ HDBSCAN │        │ Category   │     │ Topic    │                    │
+│   │Clusterer│        │ Organizer  │────►│ Articles │                    │
+│   └─────────┘        └────────────┘     └──────────┘                    │
+│        │                    │                  │                         │
+│        ▼                    ▼                  ▼                         │
+│   ┌─────────┐        ┌────────────┐     ┌──────────┐                    │
+│   │ Entities│───────►│ Entity     │────►│ Entity   │                    │
+│   │ Extract │        │ Card Gen   │     │ Cards    │                    │
+│   └─────────┘        └────────────┘     └──────────┘                    │
+│                                                  │                       │
+│                                                  ▼                       │
+│                                         ┌──────────────┐                │
+│                                         │ Wiki Storage │                │
+│                                         │  (SQLite)    │                │
+│                                         └──────────────┘                │
+│                                                  │                       │
+│                    ┌─────────────────────────────┘                       │
+│                    ▼                                                     │
+│         ┌────────────────────┐                                           │
+│         │ Wiki-Link Cross    │                                           │
+│         │ References         │                                           │
+│         └────────────────────┘                                           │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+</pre>
+                <p>Article types:</p>
+                <ul>
+                    <li><strong>Topic Articles:</strong> Comprehensive articles compiled from topic clusters with hierarchical organization</li>
+                    <li><strong>Entity Summary Cards:</strong> Concise summaries of key entities (people, organizations, concepts)</li>
+                </ul>
+                <p>Features:</p>
+                <ul>
+                    <li>Automatic compilation from topic clusters using LLM synthesis</li>
+                    <li>Two-level navigation: Topics → Categories → Articles</li>
+                    <li>Wiki-link cross-references between related articles</li>
+                    <li>Stale article detection and incremental recompilation</li>
+                    <li>Source document tracking with knowledge-type prefixes</li>
+                </ul>
+
                 <h2>Module Structure</h2>
 <pre>
 kb/
@@ -273,6 +361,94 @@ User Query → SQLite FTS5 → Matched Documents
          or
 User Question → Semantic Search → Context → LLM → Answer
 </pre>
+
+                <h2>增强 RAG 流水线 (v0.7)</h2>
+                <p>增强 RAG 系统实现了多阶段检索流水线，以提升回答质量：</p>
+<pre>
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    增强 RAG 流水线 (v0.7)                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│  1. 查询扩展                                                             │
+│     └── 重写和扩展查询以提高召回率                                         │
+│                                                                          │
+│  2. 混合检索（关键词 + 语义，使用 RRF）                                    │
+│     ├── 语义搜索 → Top-K 结果                                             │
+│     ├── 关键词搜索 → Top-K 结果                                           │
+│     └── 倒数排名融合 → 合并排序                                           │
+│                                                                          │
+│  3. LLM 重排序                                                           │
+│     └── 相关性评分和结果优化                                               │
+│                                                                          │
+│  4. 实体/主题增强                                                         │
+│     ├── 图谱查询 → 相关实体                                               │
+│     └── 主题查询 → 相关主题                                               │
+│                                                                          │
+│  5. Token 感知上下文组装                                                  │
+│     └── 分层上下文构建与预算管理                                           │
+│                                                                          │
+│  6. 答案生成                                                             │
+│     └── 使用可配置提示词模板的 LLM 合成                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+</pre>
+                <p>关键组件：</p>
+                <ul>
+                    <li><strong>查询扩展器：</strong>重写查询以提高检索召回率</li>
+                    <li><strong>混合检索器：</strong>使用 RRF 结合语义和关键词搜索</li>
+                    <li><strong>重排序器：</strong>基于 LLM 的相关性评分进行结果优化</li>
+                    <li><strong>上下文构建器：</strong>Token 感知组装，支持分层格式</li>
+                    <li><strong>会话管理器：</strong>多轮上下文保持</li>
+                    <li><strong>提示词模板：</strong>支持不同领域的可配置模板</li>
+                </ul>
+
+                <h2>LLM Wiki 系统 (v0.7)</h2>
+                <p>LLM Wiki 系统自动将知识编译成结构化文章：</p>
+<pre>
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    LLM Wiki 系统 (v0.7)                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   主题聚类 ──► Wiki 编译器 ──► LLM 合成                                   │
+│        │                    │                  │                         │
+│        ▼                    ▼                  ▼                         │
+│   ┌─────────┐        ┌────────────┐     ┌──────────┐                    │
+│   │ HDBSCAN │        │  分类      │     │ 主题     │                    │
+│   │ 聚类器   │        │ 组织器      │────►│ 文章     │                    │
+│   └─────────┘        └────────────┘     └──────────┘                    │
+│        │                    │                  │                         │
+│        ▼                    ▼                  ▼                         │
+│   ┌─────────┐        ┌────────────┐     ┌──────────┐                    │
+│   │ 实体    │───────►│ 实体       │────►│ 实体     │                    │
+│   │ 抽取    │        │ 卡片生成   │     │ 卡片     │                    │
+│   └─────────┘        └────────────┘     └──────────┘                    │
+│                                                  │                       │
+│                                                  ▼                       │
+│                                         ┌──────────────┐                │
+│                                         │ Wiki 存储     │                │
+│                                         │  (SQLite)    │                │
+│                                         └──────────────┘                │
+│                                                  │                       │
+│                    ┌─────────────────────────────┘                       │
+│                    ▼                                                     │
+│         ┌────────────────────┐                                           │
+│         │ Wiki 链接交叉       │                                           │
+│         │ 引用               │                                           │
+│         └────────────────────┘                                           │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+</pre>
+                <p>文章类型：</p>
+                <ul>
+                    <li><strong>主题文章：</strong>从主题聚类编译的综合文章，支持分层组织</li>
+                    <li><strong>实体摘要卡片：</strong>关键实体（人物、组织、概念）的简洁摘要</li>
+                </ul>
+                <p>特性：</p>
+                <ul>
+                    <li>使用 LLM 合成从主题聚类自动编译</li>
+                    <li>两级导航：主题 → 分类 → 文章</li>
+                    <li>相关文章间的 Wiki 链接交叉引用</li>
+                    <li>陈旧文章检测和增量重新编译</li>
+                    <li>带知识类型前缀的源文档跟踪</li>
+                </ul>
 
                 <h2>模块结构</h2>
 <pre>

@@ -4,18 +4,44 @@ FastAPI web application for Knowledge Base.
 Main application module that sets up the FastAPI app with all routes,
 middleware, and static file serving.
 """
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown events."""
+    yield
+    # Cleanup on shutdown
+    from kb.web import dependencies
+    if dependencies._sqlite_storage_instance is not None:
+        try:
+            dependencies._sqlite_storage_instance.close()
+            dependencies._sqlite_storage_instance = None
+        except Exception:
+            pass
+    if dependencies._chroma_storage_instance is not None:
+        try:
+            dependencies._chroma_storage_instance.close()
+            dependencies._chroma_storage_instance = None
+        except Exception:
+            pass
+    if dependencies._pipeline_instance is not None:
+        dependencies._pipeline_instance = None
+    if dependencies._conversation_manager_instance is not None:
+        dependencies._conversation_manager_instance = None
+
+
 app = FastAPI(
     title="Knowledge Base",
     description="Knowledge Base Management API",
     version="1.0.0",
     docs_url="/api/docs",  # Swagger UI moved to /api/docs to free /docs for documentation site
-    redoc_url="/api/redoc"  # ReDoc moved to /api/redoc
+    redoc_url="/api/redoc",  # ReDoc moved to /api/redoc
+    lifespan=lifespan
 )
 
 # CORS middleware for cross-origin requests
@@ -28,19 +54,35 @@ app.add_middleware(
 )
 
 # Include routers
-from kb.web.routes import dashboard, graph, items, recommendations, search, settings, tags, topics
+from kb.web.routes import backup, dashboard, graph, items, mining, recommendations, search, settings, tags, topics, wiki
 
+app.include_router(backup.router, prefix="/api", tags=["Backup"])
 app.include_router(dashboard.router, prefix="/api", tags=["Dashboard"])
 app.include_router(graph.router, prefix="/api", tags=["Graph"])
 app.include_router(items.router, prefix="/api", tags=["Items"])
+app.include_router(mining.router, prefix="/api", tags=["Mining"])
 app.include_router(search.router, prefix="/api", tags=["Search"])
 app.include_router(settings.router, prefix="/api", tags=["Settings"])
 app.include_router(tags.router, prefix="/api", tags=["Tags"])
 app.include_router(topics.router, prefix="/api", tags=["Topics"])
 app.include_router(recommendations.router, prefix="/api", tags=["Recommendations"])
+app.include_router(wiki.router, prefix="/api", tags=["Wiki"])
 
 # Static files directory
 static_dir = Path(__file__).parent / "static"
+
+# Cache index.html content at module load
+_index_html_cache = None
+
+
+def _get_index_html():
+    """Get cached index.html content."""
+    global _index_html_cache
+    if _index_html_cache is None:
+        index_file = static_dir / "index.html"
+        if index_file.exists():
+            _index_html_cache = index_file.read_text(encoding="utf-8")
+    return _index_html_cache
 
 # Mount docs static files first (before /static) so /docs route is captured here
 # The html=True enables serving index.html automatically for directory requests
@@ -63,9 +105,9 @@ async def root():
     Returns:
         HTML content - either the frontend index.html or a simple welcome page.
     """
-    index_file = static_dir / "index.html"
-    if index_file.exists():
-        return index_file.read_text(encoding="utf-8")
+    html_content = _get_index_html()
+    if html_content:
+        return html_content
     
     return """<!DOCTYPE html>
 <html>

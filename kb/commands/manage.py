@@ -324,7 +324,7 @@ def test_llm() -> None:
 
 @click.command()
 @click.option("--host", "-h", default=None, help="Host to bind to (default: 127.0.0.1)")
-@click.option("--port", "-p", default=None, type=int, help="Port to bind to (default: 8080)")
+@click.option("--port", "-p", default=None, type=int, help="Port to bind to (default: 11201)")
 @click.option("--reload", is_flag=True, help="Enable auto-reload for development")
 @click.option("-b", "--background", is_flag=True, default=False, help="Run web server in background (daemon mode)")
 @click.option("--stop", is_flag=True, default=False, help="Stop the background web server")
@@ -353,7 +353,7 @@ def web(host: str, port: int, reload: bool, background: bool, stop: bool, status
     
     # Use command line args or config or defaults
     bind_host = host or config.get("web.host", "127.0.0.1")
-    bind_port = port or int(config.get("web.port", 8080))
+    bind_port = port or int(config.get("web.port", 11201))
     
     # Handle background mode
     if background:

@@ -60,11 +60,11 @@ cp "$DIST_DIR/version.json" "$PUBLISH_STATIC/version.json"
 echo "  Copied: version.json"
 
 # Copy skill assets (SKILL.md + package.json)
-SKILL_SRC="$PROJECT_DIR/kb/web/static/docs/skills/knowledge-collect-localbrain"
-SKILL_DST="$PUBLISH_STATIC/skills/knowledge-collect-localbrain"
+SKILL_SRC="$PROJECT_DIR/kb/web/static/docs/skills/localbrain-collect"
+SKILL_DST="$PUBLISH_STATIC/skills/localbrain-collect"
 mkdir -p "$SKILL_DST"
 cp -R "$SKILL_SRC/" "$SKILL_DST/"
-echo "  Copied: skills/knowledge-collect-localbrain/"
+echo "  Copied: skills/localbrain-collect/"
 
 echo ""
 

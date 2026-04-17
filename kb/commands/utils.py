@@ -5,6 +5,7 @@ Common helper functions and constants used across CLI command modules.
 """
 
 import hashlib
+import json
 import os
 import signal
 import subprocess
@@ -74,6 +75,19 @@ def _is_process_running(pid: int) -> bool:
         return False
 
 
+def _read_pid_file(pid_file: Path) -> dict:
+    """Read PID file, supporting both legacy (plain PID) and new JSON format."""
+    content = pid_file.read_text().strip()
+    try:
+        data = json.loads(content)
+        if isinstance(data, dict):
+            return data  # New format: {"pid": ..., "host": ..., "port": ...}
+    except (json.JSONDecodeError, ValueError):
+        pass
+    # Legacy format: just the PID number
+    return {"pid": int(content), "host": None, "port": None}
+
+
 def _start_background_server(host: str, port: int, config: Config) -> None:
     """Start the web server in background mode."""
     pid_file = _get_pid_file(config)
@@ -81,7 +95,8 @@ def _start_background_server(host: str, port: int, config: Config) -> None:
     # Check if already running
     if pid_file.exists():
         try:
-            existing_pid = int(pid_file.read_text().strip())
+            data = _read_pid_file(pid_file)
+            existing_pid = data["pid"]
             if _is_process_running(existing_pid):
                 click.echo(f"⚠️  Web server is already running (PID: {existing_pid})")
                 click.echo(f"   Use 'localbrain web --stop' to stop it first.")
@@ -89,7 +104,7 @@ def _start_background_server(host: str, port: int, config: Config) -> None:
             else:
                 # Stale PID file, remove it
                 pid_file.unlink()
-        except ValueError:
+        except (ValueError, KeyError):
             # Invalid PID file, remove it
             pid_file.unlink()
     
@@ -116,8 +131,9 @@ def _start_background_server(host: str, port: int, config: Config) -> None:
             start_new_session=True  # detach from terminal
         )
         
-        # Write PID to file
-        pid_file.write_text(str(proc.pid))
+        # Write PID and server info to file
+        pid_data = {"pid": proc.pid, "host": host, "port": port}
+        pid_file.write_text(json.dumps(pid_data))
         
         click.echo(f"✓ Web server started in background (PID: {proc.pid})")
         click.echo(f"  Log file: {log_file}")
@@ -139,8 +155,9 @@ def _stop_background_server(config: Config) -> None:
         return
     
     try:
-        pid = int(pid_file.read_text().strip())
-    except (ValueError, IOError):
+        data = _read_pid_file(pid_file)
+        pid = data["pid"]
+    except (ValueError, IOError, KeyError):
         click.echo("✗ Invalid PID file. Removing it.", err=True)
         pid_file.unlink(missing_ok=True)
         raise SystemExit(1)
@@ -180,15 +197,19 @@ def _check_server_status(config: Config) -> None:
         return
     
     try:
-        pid = int(pid_file.read_text().strip())
-    except (ValueError, IOError):
+        data = _read_pid_file(pid_file)
+        pid = data["pid"]
+    except (ValueError, IOError, KeyError):
         click.echo("⚠️  Web server status: Unknown (invalid PID file)")
         return
     
     if _is_process_running(pid):
         log_config = config.get_log_config()
         log_file = log_config["log_dir"] / "web_server.log"
+        host = data.get("host") or config.get("web.host", "127.0.0.1")
+        port = data.get("port") or int(config.get("web.port", 11201))
         click.echo(f"✓ Web server status: Running (PID: {pid})")
+        click.echo(f"  URL: http://{host}:{port}")
         click.echo(f"  Log file: {log_file}")
     else:
         click.echo(f"⚠️  Web server status: Not running (stale PID file: {pid})")

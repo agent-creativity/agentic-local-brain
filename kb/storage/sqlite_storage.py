@@ -5,6 +5,7 @@ SQLite 元数据存储模块
 提供全文搜索（FTS5）和标签管理功能。
 """
 
+import json
 import os
 import sqlite3
 from contextlib import contextmanager
@@ -331,6 +332,45 @@ class SQLiteStorage:
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reading_history_time ON reading_history(created_at DESC)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reading_history_knowledge ON reading_history(knowledge_id)")
+
+            # ---- Wiki Articles table (v0.8) ----
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS wiki_articles (
+                    article_id TEXT PRIMARY KEY,
+                    article_type TEXT NOT NULL,
+                    topic_id TEXT,
+                    title TEXT NOT NULL,
+                    file_path TEXT,
+                    source_doc_ids TEXT,
+                    entity_refs TEXT,
+                    compiled_at DATETIME,
+                    version INTEGER DEFAULT 1,
+                    word_count INTEGER DEFAULT 0
+                )
+            """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_wiki_articles_type ON wiki_articles(article_type)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_wiki_articles_topic ON wiki_articles(topic_id)")
+
+            # ---- Wiki Categories table (v0.8) ----
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS wiki_categories (
+                    category_id TEXT PRIMARY KEY,
+                    topic_id INTEGER NOT NULL,
+                    name TEXT NOT NULL,
+                    description TEXT,
+                    doc_ids TEXT,
+                    article_count INTEGER DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (topic_id) REFERENCES topic_clusters(id) ON DELETE CASCADE
+                )
+            """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_wiki_categories_topic ON wiki_categories(topic_id)")
+
+            # Migration: add category_id to wiki_articles if not exists
+            try:
+                cursor.execute("SELECT category_id FROM wiki_articles LIMIT 1")
+            except Exception:
+                cursor.execute("ALTER TABLE wiki_articles ADD COLUMN category_id TEXT REFERENCES wiki_categories(category_id)")
 
     # ---- Knowledge CRUD ----
 
@@ -1226,6 +1266,391 @@ class SQLiteStorage:
             }
         finally:
             cursor.close()
+
+    # ---- Wiki Articles Management (v0.8) ----
+
+    def save_wiki_article(
+        self,
+        article_id: str,
+        article_type: str,
+        topic_id: str,
+        title: str,
+        file_path: str,
+        source_doc_ids: List[str],
+        entity_refs: List[str],
+        word_count: int = 0,
+        category_id: str = None
+    ) -> bool:
+        """
+        Save or update a wiki article
+
+        Args:
+            article_id: Unique article identifier
+            article_type: "topic" or "entity"
+            topic_id: Associated topic ID (for topic articles)
+            title: Article title
+            file_path: Path to the generated markdown file
+            source_doc_ids: List of source document IDs
+            entity_refs: List of referenced entity names
+            word_count: Word count of the article
+            category_id: Optional category ID for the article
+
+        Returns:
+            bool: True if saved successfully
+        """
+        try:
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            source_doc_ids_json = json.dumps(source_doc_ids or [])
+            entity_refs_json = json.dumps(entity_refs or [])
+
+            with self._transaction() as cursor:
+                # Check if article exists (for version increment)
+                cursor.execute(
+                    "SELECT version FROM wiki_articles WHERE article_id = ?",
+                    (article_id,)
+                )
+                existing = cursor.fetchone()
+                version = (existing[0] + 1) if existing else 1
+
+                cursor.execute("""
+                    INSERT OR REPLACE INTO wiki_articles
+                    (article_id, article_type, topic_id, title, file_path,
+                     source_doc_ids, entity_refs, compiled_at, version, word_count, category_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    article_id, article_type, topic_id, title, file_path,
+                    source_doc_ids_json, entity_refs_json, now, version, word_count, category_id
+                ))
+            return True
+        except Exception:
+            return False
+
+    def get_wiki_article(self, article_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get a wiki article by ID
+
+        Args:
+            article_id: Article identifier
+
+        Returns:
+            Dict with article data or None if not found
+        """
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute(
+                "SELECT * FROM wiki_articles WHERE article_id = ?",
+                (article_id,)
+            )
+            row = cursor.fetchone()
+            if row:
+                article = dict(row)
+                # Parse JSON fields back to lists
+                article['source_doc_ids'] = json.loads(article.get('source_doc_ids', '[]'))
+                article['entity_refs'] = json.loads(article.get('entity_refs', '[]'))
+                return article
+            return None
+        finally:
+            cursor.close()
+
+    def list_wiki_articles(
+        self,
+        article_type: str = None,
+        category_id: str = None,
+        limit: int = 100,
+        offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        """
+        List wiki articles with optional type filter
+
+        Args:
+            article_type: Filter by "topic" or "entity", optional
+            category_id: Filter by category ID, optional
+            limit: Max results to return
+            offset: Offset for pagination
+
+        Returns:
+            List of article dicts ordered by compiled_at DESC
+        """
+        cursor = self.conn.cursor()
+        try:
+            if article_type and category_id:
+                cursor.execute("""
+                    SELECT * FROM wiki_articles
+                    WHERE article_type = ? AND category_id = ?
+                    ORDER BY compiled_at DESC
+                    LIMIT ? OFFSET ?
+                """, (article_type, category_id, limit, offset))
+            elif article_type:
+                cursor.execute("""
+                    SELECT * FROM wiki_articles
+                    WHERE article_type = ?
+                    ORDER BY compiled_at DESC
+                    LIMIT ? OFFSET ?
+                """, (article_type, limit, offset))
+            elif category_id:
+                cursor.execute("""
+                    SELECT * FROM wiki_articles
+                    WHERE category_id = ?
+                    ORDER BY compiled_at DESC
+                    LIMIT ? OFFSET ?
+                """, (category_id, limit, offset))
+            else:
+                cursor.execute("""
+                    SELECT * FROM wiki_articles
+                    ORDER BY compiled_at DESC
+                    LIMIT ? OFFSET ?
+                """, (limit, offset))
+
+            articles = []
+            for row in cursor.fetchall():
+                article = dict(row)
+                article['source_doc_ids'] = json.loads(article.get('source_doc_ids', '[]'))
+                article['entity_refs'] = json.loads(article.get('entity_refs', '[]'))
+                articles.append(article)
+            return articles
+        finally:
+            cursor.close()
+
+    def get_wiki_stats(self) -> Dict[str, Any]:
+        """
+        Get wiki article statistics
+
+        Returns:
+            Dict with topic_count, entity_count, total_count, last_compiled, total_words, category_count
+        """
+        cursor = self.conn.cursor()
+        try:
+            # Total count
+            cursor.execute("SELECT COUNT(*) FROM wiki_articles")
+            total_count = cursor.fetchone()[0]
+
+            # Count by type
+            cursor.execute("""
+                SELECT article_type, COUNT(*)
+                FROM wiki_articles
+                GROUP BY article_type
+            """)
+            type_counts = {row[0]: row[1] for row in cursor.fetchall()}
+            topic_count = type_counts.get('topic', 0)
+            entity_count = type_counts.get('entity', 0)
+
+            # Last compiled time
+            cursor.execute("SELECT MAX(compiled_at) FROM wiki_articles")
+            last_compiled = cursor.fetchone()[0]
+
+            # Total words
+            cursor.execute("SELECT COALESCE(SUM(word_count), 0) FROM wiki_articles")
+            total_words = cursor.fetchone()[0]
+
+            # Category count
+            cursor.execute("SELECT COUNT(*) FROM wiki_categories")
+            category_count = cursor.fetchone()[0]
+
+            return {
+                'topic_count': topic_count,
+                'entity_count': entity_count,
+                'total_count': total_count,
+                'last_compiled': last_compiled,
+                'total_words': total_words,
+                'category_count': category_count
+            }
+        finally:
+            cursor.close()
+
+    def search_wiki_articles(self, query: str, limit: int = 20) -> List[Dict[str, Any]]:
+        """
+        Search wiki articles by title
+
+        Args:
+            query: Search query
+            limit: Max results to return
+
+        Returns:
+            List of matching articles
+        """
+        if not query or not query.strip():
+            return []
+
+        cursor = self.conn.cursor()
+        try:
+            like_query = f"%{query}%"
+            cursor.execute("""
+                SELECT * FROM wiki_articles
+                WHERE title LIKE ?
+                ORDER BY compiled_at DESC
+                LIMIT ?
+            """, (like_query, limit))
+
+            articles = []
+            for row in cursor.fetchall():
+                article = dict(row)
+                article['source_doc_ids'] = json.loads(article.get('source_doc_ids', '[]'))
+                article['entity_refs'] = json.loads(article.get('entity_refs', '[]'))
+                articles.append(article)
+            return articles
+        finally:
+            cursor.close()
+
+    def delete_wiki_article(self, article_id: str) -> bool:
+        """
+        Delete a wiki article
+
+        Args:
+            article_id: Article identifier
+
+        Returns:
+            bool: True if deleted successfully
+        """
+        try:
+            with self._transaction() as cursor:
+                cursor.execute(
+                    "DELETE FROM wiki_articles WHERE article_id = ?",
+                    (article_id,)
+                )
+            return True
+        except Exception:
+            return False
+
+    def get_wiki_compiled_at(self, topic_id: str) -> Optional[str]:
+        """
+        Get the compiled_at timestamp for a topic's wiki article
+
+        Args:
+            topic_id: Topic identifier
+
+        Returns:
+            Compiled timestamp string or None if not found
+        """
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT compiled_at FROM wiki_articles
+                WHERE topic_id = ? AND article_type = 'topic'
+            """, (topic_id,))
+            row = cursor.fetchone()
+            return row[0] if row else None
+        finally:
+            cursor.close()
+
+    # ---- Wiki Categories Management (v0.8) ----
+
+    def save_wiki_category(
+        self,
+        category_id: str,
+        topic_id: int,
+        name: str,
+        description: str = None,
+        doc_ids: List[str] = None
+    ) -> bool:
+        """
+        Save or update a wiki category
+
+        Args:
+            category_id: Unique category identifier
+            topic_id: Associated topic ID
+            name: Category name
+            description: Category description
+            doc_ids: List of document IDs in this category
+
+        Returns:
+            bool: True if saved successfully
+        """
+        try:
+            doc_ids_json = json.dumps(doc_ids or [])
+            article_count = len(doc_ids) if doc_ids else 0
+
+            with self._transaction() as cursor:
+                cursor.execute("""
+                    INSERT OR REPLACE INTO wiki_categories
+                    (category_id, topic_id, name, description, doc_ids, article_count)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    category_id, topic_id, name, description, doc_ids_json, article_count
+                ))
+            return True
+        except Exception:
+            return False
+
+    def list_wiki_categories(
+        self,
+        topic_id: int = None
+    ) -> List[Dict[str, Any]]:
+        """
+        List wiki categories with optional topic filter
+
+        Args:
+            topic_id: Filter by topic ID, optional
+
+        Returns:
+            List of category dicts ordered by created_at DESC
+        """
+        cursor = self.conn.cursor()
+        try:
+            if topic_id:
+                cursor.execute("""
+                    SELECT * FROM wiki_categories
+                    WHERE topic_id = ?
+                    ORDER BY created_at DESC
+                """, (topic_id,))
+            else:
+                cursor.execute("""
+                    SELECT * FROM wiki_categories
+                    ORDER BY created_at DESC
+                """)
+
+            categories = []
+            for row in cursor.fetchall():
+                category = dict(row)
+                category['doc_ids'] = json.loads(category.get('doc_ids', '[]'))
+                categories.append(category)
+            return categories
+        finally:
+            cursor.close()
+
+    def get_wiki_category(self, category_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get a wiki category by ID
+
+        Args:
+            category_id: Category identifier
+
+        Returns:
+            Dict with category data or None if not found
+        """
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute(
+                "SELECT * FROM wiki_categories WHERE category_id = ?",
+                (category_id,)
+            )
+            row = cursor.fetchone()
+            if row:
+                category = dict(row)
+                category['doc_ids'] = json.loads(category.get('doc_ids', '[]'))
+                return category
+            return None
+        finally:
+            cursor.close()
+
+    def delete_wiki_categories_by_topic(self, topic_id: int) -> bool:
+        """
+        Delete all wiki categories for a topic (for recompilation)
+
+        Args:
+            topic_id: Topic identifier
+
+        Returns:
+            bool: True if deleted successfully
+        """
+        try:
+            with self._transaction() as cursor:
+                cursor.execute(
+                    "DELETE FROM wiki_categories WHERE topic_id = ?",
+                    (topic_id,)
+                )
+            return True
+        except Exception:
+            return False
 
     # ---- Utility ----
 

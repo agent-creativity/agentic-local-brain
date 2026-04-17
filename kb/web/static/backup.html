@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup Management - Agentic Local Brain</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .backup-list {
+            margin-top: 20px;
+        }
+
+        .backup-item {
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .backup-info {
+            flex: 1;
+        }
+
+        .backup-info h3 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .backup-info p {
+            color: #666;
+            font-size: 14px;
+            margin: 3px 0;
+        }
+
+        .backup-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-running {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .status-failed {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status-pending {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+
+        .alert-info {
+            background: #bee3f8;
+            color: #2c5282;
+            border: 1px solid #90cdf4;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗄️ Backup Management</h1>
+            <p>Create and manage knowledge base backups</p>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <!-- Create Backup Section -->
+        <div class="card">
+            <h2>Create New Backup</h2>
+            <div class="form-group">
+                <label for="cloud-provider">Cloud Storage (Optional)</label>
+                <select id="cloud-provider">
+                    <option value="">Local only</option>
+                    <option value="oss">Alibaba Cloud OSS</option>
+                    <option value="s3">AWS S3</option>
+                </select>
+            </div>
+            <button id="create-backup-btn" class="btn btn-primary">Create Backup</button>
+        </div>
+
+        <!-- Backup List Section -->
+        <div class="card">
+            <h2>Backup History</h2>
+            <div id="backup-list-container">
+                <div class="loading">Loading backups...</div>
+            </div>
+        </div>
+
+        <!-- Tasks Section -->
+        <div class="card">
+            <h2>Backup Tasks</h2>
+            <div id="tasks-container">
+                <div class="loading">Loading tasks...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+
+        // Show alert message
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            container.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Create backup
+        document.getElementById('create-backup-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('create-backup-btn');
+            const cloudProvider = document.getElementById('cloud-provider').value;
+
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+
+            try {
+                const response = await fetch(`${API_BASE}/backup/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cloud_provider: cloudProvider || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert(`Backup task created: ${data.task_id}`, 'success');
+                    loadTasks();
+
+                    // Refresh list after a delay
+                    setTimeout(loadBackups, 3000);
+                } else {
+                    showAlert('Failed to create backup', 'error');
+                }
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Backup';
+            }
+        });
+
+        // Load backups
+        async function loadBackups() {
+            const container = document.getElementById('backup-list-container');
+
+            try {
+                const response = await fetch(`${API_BASE}/backup/list`);
+                const data = await response.json();
+
+                if (data.success && data.backups.length > 0) {
+                    container.innerHTML = '<div class="backup-list"></div>';
+                    const list = container.querySelector('.backup-list');
+
+                    data.backups.forEach(backup => {
+                        const item = document.createElement('div');
+                        item.className = 'backup-item';
+
+                        const sizeMB = (backup.size / (1024 * 1024)).toFixed(2);
+                        const date = new Date(backup.created_at).toLocaleString();
+                        const location = backup.cloud_location || backup.location || backup.path || 'N/A';
+
+                        item.innerHTML = `
+                            <div class="backup-info">
+                                <h3>${backup.filename}</h3>
+                                <p>Size: ${sizeMB} MB</p>
+                                <p>Created: ${date}</p>
+                                <p>Location: ${location}</p>
+                            </div>
+                            <div class="backup-actions">
+                                <button class="btn btn-danger" onclick="deleteBackup('${backup.id}')">Delete</button>
+                            </div>
+                        `;
+
+                        list.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <p>No backups found</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Create your first backup to get started</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-error">Error loading backups: ${error.message}</div>`;
+            }
+        }
+
+        // Load tasks
+        async function loadTasks() {
+            const container = document.getElementById('tasks-container');
+
+            try {
+                const response = await fetch(`${API_BASE}/backup/status`);
+                const data = await response.json();
+
+                if (data.success && data.tasks.length > 0) {
+                    container.innerHTML = '<div class="backup-list"></div>';
+                    const list = container.querySelector('.backup-list');
+
+                    data.tasks.slice(0, 10).forEach(task => {
+                        const item = document.createElement('div');
+                        item.className = 'backup-item';
+
+                        const date = new Date(task.created_at).toLocaleString();
+                        const statusClass = `status-${task.status}`;
+
+                        item.innerHTML = `
+                            <div class="backup-info">
+                                <h3>Task ${task.id}</h3>
+                                <p>Status: <span class="status-badge ${statusClass}">${task.status}</span></p>
+                                <p>Created: ${date}</p>
+                                ${task.cloud_provider ? `<p>Cloud: ${task.cloud_provider}</p>` : ''}
+                                ${task.error ? `<p style="color: #e53e3e;">Error: ${task.error}</p>` : ''}
+                            </div>
+                        `;
+
+                        list.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <p>No tasks found</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-error">Error loading tasks: ${error.message}</div>`;
+            }
+        }
+
+        // Delete backup
+        async function deleteBackup(backupId) {
+            if (!confirm('Are you sure you want to delete this backup?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/backup/${backupId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Backup deleted successfully', 'success');
+                    loadBackups();
+                } else {
+                    showAlert('Failed to delete backup', 'error');
+                }
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-refresh tasks every 5 seconds
+        setInterval(loadTasks, 5000);
+
+        // Initial load
+        loadBackups();
+        loadTasks();
+    </script>
+</body>
+</html>

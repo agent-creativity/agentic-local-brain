@@ -399,3 +399,14 @@ class ChromaStorage:
 
         except Exception as e:
             raise Exception(f"Failed to reset collection: {str(e)}")
+
+    def close(self):
+        """Release ChromaDB client resources."""
+        self.client = None
+        self.collection = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()

@@ -149,6 +149,20 @@ localbrain graph rebuild           # Rebuild knowledge graph
 localbrain graph stats             # Show graph statistics
 localbrain topics rebuild          # Rebuild topic clusters
 localbrain topics list             # List all topic clusters</code></pre>
+
+                <h2>LLM Wiki (v0.7)</h2>
+                <pre><code class="language-bash">localbrain wiki compile            # Compile wiki articles from topic clusters
+localbrain wiki compile --force    # Regenerate all articles, ignoring staleness
+localbrain wiki compile --stale-only  # Only recompile changed topics (default)
+localbrain wiki list               # List compiled articles (hierarchical view)
+localbrain wiki list --flat        # Show flat list instead of tree
+localbrain wiki list --type topic  # Filter by type: topic, entity
+localbrain wiki show &lt;slug&gt;        # Display article content in terminal</code></pre>
+
+                <h2>RAG Commands</h2>
+                <pre><code class="language-bash">localbrain search rag "your question"     # Single-turn RAG query
+localbrain search rag "question" --chat   # Start multi-turn conversation</code></pre>
+                <p>For multi-turn conversational RAG with context preservation, use the Web API at <code>/api/rag/chat</code>.</p>
             </div>
 
             <div data-lang="zh">
@@ -266,6 +280,20 @@ localbrain graph rebuild           # 重建知识图谱
 localbrain graph stats             # 显示图谱统计信息
 localbrain topics rebuild          # 重建主题聚类
 localbrain topics list             # 列出所有主题聚类</code></pre>
+
+                <h2>LLM Wiki (v0.7)</h2>
+                <pre><code class="language-bash">localbrain wiki compile            # 从主题聚类编译 Wiki 文章
+localbrain wiki compile --force    # 重新生成所有文章，忽略陈旧性
+localbrain wiki compile --stale-only  # 仅重新编译已更改的主题（默认）
+localbrain wiki list               # 列出编译的文章（分层视图）
+localbrain wiki list --flat        # 显示扁平列表而非树形
+localbrain wiki list --type topic  # 按类型过滤：topic、entity
+localbrain wiki show &lt;slug&gt;        # 在终端显示文章内容</code></pre>
+
+                <h2>RAG 命令</h2>
+                <pre><code class="language-bash">localbrain search rag "你的问题"        # 单轮 RAG 查询
+localbrain search rag "问题" --chat     # 启动多轮对话</code></pre>
+                <p>如需使用支持上下文保持的多轮对话 RAG，请使用 Web API <code>/api/rag/chat</code>。</p>
             </div>
         </article>
     </main>

@@ -55,14 +55,14 @@ class TestWebCommandDefaults:
         # Check output contains expected messages
         assert "Starting Local Brain Web UI" in result.output
         assert "127.0.0.1" in result.output
-        assert "8080" in result.output
+        assert "11201" in result.output
         assert "/docs" in result.output
         
         # Verify uvicorn.run was called with defaults
         uvicorn_mock.run.assert_called_once_with(
             "kb.web.app:app",
             host="127.0.0.1",
-            port=8080,
+            port=11201,
             reload=False,
         )
 
@@ -117,7 +117,7 @@ class TestWebCommandReload:
         uvicorn_mock.run.assert_called_once_with(
             "kb.web.app:app",
             host="127.0.0.1",
-            port=8080,
+            port=11201,
             reload=True,
         )
 
@@ -166,8 +166,8 @@ class TestWebCommandOutput:
         
         # Check output messages
         assert "Starting Local Brain Web UI" in result.output
-        assert "URL: http://127.0.0.1:8080" in result.output
-        assert "API Docs: http://127.0.0.1:8080/docs" in result.output
+        assert "URL: http://127.0.0.1:11201" in result.output
+        assert "API Docs: http://127.0.0.1:11201/docs" in result.output
         assert "Press Ctrl+C to stop the server" in result.output
 
 

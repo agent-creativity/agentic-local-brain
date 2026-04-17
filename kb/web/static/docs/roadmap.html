@@ -37,8 +37,8 @@
             <div data-lang="en">
                 <h1>Roadmap</h1>
 
-                <h2>Current Version (v0.6.1)</h2>
-                <p>Everything from v0.5.x plus powerful Knowledge Mining capabilities:</p>
+                <h2>Current Version (v0.7.x)</h2>
+                <p>Everything from v0.6.x plus Enhanced RAG and LLM Wiki capabilities:</p>
                 <h3>Core Features</h3>
                 <ul>
                     <li>Multi-source collection (6 collector types)</li>
@@ -50,7 +50,7 @@
                     <li>Graceful degradation without AI services</li>
                     <li>Background web server mode</li>
                 </ul>
-                <h3>Knowledge Mining (New in v0.6)</h3>
+                <h3>Knowledge Mining (v0.6)</h3>
                 <ul>
                     <li>Automatic knowledge graph construction — entity extraction and relationship visualization</li>
                     <li>Cross-document relationship discovery — find connections via embedding similarity and shared entities</li>
@@ -58,8 +58,40 @@
                     <li>Smart recommendations based on reading patterns — time-decay weighted, with reason generation</li>
                     <li>Batch mining CLI: <code>localbrain mine run</code></li>
                 </ul>
+                <h3>Enhanced RAG (v0.7.0)</h3>
+                <ul>
+                    <li>Multi-stage retrieval pipeline — query expansion, hybrid retrieval, LLM reranking</li>
+                    <li>Multi-turn conversational Q&amp;A with context preservation</li>
+                    <li>Token-aware context assembly with hierarchical formatting</li>
+                    <li>Entity and topic enrichment for better context</li>
+                    <li>Conversation management with session persistence</li>
+                    <li>Query suggestions and RAG analytics dashboard</li>
+                </ul>
+                <h3>LLM Wiki (v0.7.1 - v0.7.3)</h3>
+                <ul>
+                    <li>Automatic wiki article compilation from topic clusters</li>
+                    <li>Topic articles with hierarchical category organization</li>
+                    <li>Entity summary cards for key concepts</li>
+                    <li>Wiki-link cross-references between articles</li>
+                    <li>Tree-based navigation in web UI</li>
+                    <li>Wiki search and related article discovery</li>
+                </ul>
 
                 <h2>Release History</h2>
+
+                <h3>v0.7.x — Enhanced RAG &amp; LLM Wiki (Apr 4 – Apr 13, 2026)</h3>
+                <ul>
+                    <li><strong>v0.7.3</strong> — LLM Wiki UI improvements: hierarchical tree navigation, topic-click article loading, knowledge-type source prefixes</li>
+                    <li><strong>v0.7.2</strong> — Wiki compilation refinements: entity card generation, category management, stale article detection</li>
+                    <li><strong>v0.7.1</strong> — LLM Wiki system: automatic article compilation from topic clusters, wiki-link cross-references</li>
+                    <li><strong>v0.7.0</strong> — Enhanced RAG pipeline: query expansion, hybrid retrieval, LLM reranking, multi-turn conversations, context builder</li>
+                </ul>
+
+                <h3>v0.6.x — Knowledge Mining (Apr 1 – Apr 3, 2026)</h3>
+                <ul>
+                    <li><strong>v0.6.1</strong> — Knowledge graph visualization, topic clustering, reading recommendations</li>
+                    <li><strong>v0.6.0</strong> — Entity extraction, cross-document relationships, topic analysis</li>
+                </ul>
 
                 <h3>v0.5.x — Distribution &amp; Stabilization (Mar 29 – Apr 3, 2026)</h3>
                 <ul>
@@ -78,7 +110,7 @@
                     <li>CLI restructured to object-first (noun-verb) pattern</li>
                     <li>Smart 3-tier tag/summary extraction with fallback strategy</li>
                     <li>Graceful degradation when AI services are unavailable</li>
-                    <li>Agent Skill integration (<code>knowledge-collect-localbrain</code>)</li>
+                    <li>Agent Skill integration (<code>localbrain-collect</code>)</li>
                     <li>Background web server mode</li>
                 </ul>
 
@@ -110,14 +142,6 @@
                 </ul>
 
                 <h2>Planned Features</h2>
-
-                <h3>Enhanced RAG (v0.7)</h3>
-                <ul>
-                    <li>Multi-turn conversational Q&A</li>
-                    <li>Citation-backed answers with source highlighting</li>
-                    <li>Contextual follow-up questions</li>
-                    <li>Custom knowledge domains</li>
-                </ul>
 
                 <h3>Knowledge Backup & Sync (v0.8)</h3>
                 <ul>
@@ -151,8 +175,8 @@
             <div data-lang="zh">
                 <h1>路线图</h1>
 
-                <h2>当前版本 (v0.6.1)</h2>
-                <p>包含 v0.5.x 的所有功能，以及强大的知识挖掘能力：</p>
+                <h2>当前版本 (v0.7.x)</h2>
+                <p>包含 v0.6.x 的所有功能，以及增强 RAG 和 LLM Wiki 能力：</p>
                 <h3>核心功能</h3>
                 <ul>
                     <li>多源采集（6 种采集器类型）</li>
@@ -164,7 +188,7 @@
                     <li>无 AI 服务时的优雅降级</li>
                     <li>后台 Web 服务器模式</li>
                 </ul>
-                <h3>知识挖掘（v0.6 新增）</h3>
+                <h3>知识挖掘（v0.6）</h3>
                 <ul>
                     <li>自动知识图谱构建 — 实体抽取与关系可视化</li>
                     <li>跨文档关系发现 — 通过嵌入相似度和共享实体发现文档关联</li>
@@ -172,8 +196,40 @@
                     <li>基于阅读模式的智能推荐 — 时间衰减加权，生成推荐理由</li>
                     <li>批量挖掘命令：<code>localbrain mine run</code></li>
                 </ul>
+                <h3>增强 RAG (v0.7.0)</h3>
+                <ul>
+                    <li>多阶段检索流水线 — 查询扩展、混合检索、LLM 重排序</li>
+                    <li>多轮对话式问答，支持上下文保持</li>
+                    <li>Token 感知上下文组装，支持分层格式</li>
+                    <li>实体和主题增强，提供更好的上下文</li>
+                    <li>会话管理，支持会话持久化</li>
+                    <li>查询建议和 RAG 分析仪表盘</li>
+                </ul>
+                <h3>LLM Wiki (v0.7.1 - v0.7.3)</h3>
+                <ul>
+                    <li>从主题聚类自动生成 Wiki 文章</li>
+                    <li>主题文章支持分层分类组织</li>
+                    <li>关键概念实体摘要卡片</li>
+                    <li>文章间 Wiki 链接交叉引用</li>
+                    <li>Web 界面树形导航</li>
+                    <li>Wiki 搜索和相关文章发现</li>
+                </ul>
 
                 <h2>发布历史</h2>
+
+                <h3>v0.7.x — 增强 RAG 与 LLM Wiki (2026-04-04 – 04-13)</h3>
+                <ul>
+                    <li><strong>v0.7.3</strong> — LLM Wiki UI 改进：分层树形导航、主题点击加载文章、知识类型来源前缀</li>
+                    <li><strong>v0.7.2</strong> — Wiki 编译优化：实体卡片生成、分类管理、陈旧文章检测</li>
+                    <li><strong>v0.7.1</strong> — LLM Wiki 系统：从主题聚类自动生成文章、Wiki 链接交叉引用</li>
+                    <li><strong>v0.7.0</strong> — 增强 RAG 流水线：查询扩展、混合检索、LLM 重排序、多轮对话、上下文构建器</li>
+                </ul>
+
+                <h3>v0.6.x — 知识挖掘 (2026-04-01 – 04-03)</h3>
+                <ul>
+                    <li><strong>v0.6.1</strong> — 知识图谱可视化、主题聚类、阅读推荐</li>
+                    <li><strong>v0.6.0</strong> — 实体抽取、跨文档关系、主题分析</li>
+                </ul>
 
                 <h3>v0.5.x — 分发与稳定化 (2026-03-29 – 04-03)</h3>
                 <ul>
@@ -192,7 +248,7 @@
                     <li>CLI 重构为对象优先（名词-动词）模式</li>
                     <li>智能三层标签/摘要提取与回退策略</li>
                     <li>AI 服务不可用时的优雅降级</li>
-                    <li>Agent Skill 集成（<code>knowledge-collect-localbrain</code>）</li>
+                    <li>Agent Skill 集成（<code>localbrain-collect</code>）</li>
                     <li>后台 Web 服务器模式</li>
                 </ul>
 
@@ -224,14 +280,6 @@
                 </ul>
 
                 <h2>计划功能</h2>
-
-                <h3>增强 RAG (v0.7)</h3>
-                <ul>
-                    <li>多轮对话式问答</li>
-                    <li>带引用的答案和来源高亮</li>
-                    <li>上下文相关的后续问题</li>
-                    <li>自定义知识领域</li>
-                </ul>
 
                 <h3>知识备份与同步 (v0.8)</h3>
                 <ul>

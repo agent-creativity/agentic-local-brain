@@ -36,12 +36,49 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "type": "chroma",
         "persist_directory": "~/.knowledge-base/db/chroma",
     },
+    "query": {
+        "rag": {
+            "top_k": 5,
+            "temperature": 0.3,
+            "max_tokens": 1000,
+            "context_budget": 4000,
+            "context_format": "hierarchical",
+            "reranking": {
+                "enabled": True,
+                "top_n_candidates": 20,
+                "weight_retrieval": 0.4,
+                "weight_rerank": 0.6,
+            },
+            "conversation": {
+                "max_turns": 20,
+                "session_timeout_minutes": 30,
+                "history_turns_in_context": 5,
+            },
+            "templates": {
+                "default": "general",
+            },
+        },
+        "pipeline": {
+            "top_k": 10,
+            "rerank_top_k": 5,
+            "context_budget": 4000,
+        },
+    },
     "logging": {
         "log_dir": "",  # empty means default to ~/.localbrain/logs/
         "level": "INFO",  # DEBUG, INFO, WARNING, ERROR, CRITICAL
         "max_bytes": 10485760,  # 10MB per log file
         "backup_count": 5,  # number of rotated log files to keep
         "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    },
+    "wiki": {
+        "enabled": True,
+        "max_source_tokens_per_topic": 8000,
+        "entity_card_threshold": 3,
+        "temperature": 0.3,
+        "model": None,
+        "max_article_words": 3000,
+        "max_subcategories": 5,
     },
 }
 
@@ -292,3 +329,18 @@ class Config:
             )
 
         return status
+
+    def get_wiki_dir(self) -> Path:
+        """
+        Get wiki directory path, creating it if needed.
+
+        The wiki directory is located at <data_dir>/2_process/wiki/ with
+        subdirectories for topics/ and entities/.
+
+        Returns:
+            Path object pointing to the wiki directory.
+        """
+        wiki_dir = self.data_dir / "2_process" / "wiki"
+        (wiki_dir / "topics").mkdir(parents=True, exist_ok=True)
+        (wiki_dir / "entities").mkdir(parents=True, exist_ok=True)
+        return wiki_dir

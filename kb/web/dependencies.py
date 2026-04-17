@@ -9,6 +9,12 @@ from typing import Optional
 
 from kb.config import Config
 
+# Cache for singleton instances
+_sqlite_storage_instance = None
+_chroma_storage_instance = None
+_pipeline_instance = None
+_conversation_manager_instance = None
+
 CONFIG_FILE = Path.home() / ".localbrain" / "config.yaml"
 
 
@@ -25,32 +31,42 @@ def get_config() -> Config:
 
 def get_sqlite_storage():
     """
-    Get SQLite storage instance.
+    Get SQLite storage instance (singleton).
     
     Returns:
         SQLiteStorage: Storage instance for metadata operations.
     """
-    from kb.storage.sqlite_storage import SQLiteStorage
+    global _sqlite_storage_instance
     
-    config = get_config()
-    data_dir = Path(config.get("data_dir", "~/.knowledge-base")).expanduser()
-    db_path = str(data_dir / "db" / "metadata.db")
-    return SQLiteStorage(db_path=db_path)
+    if _sqlite_storage_instance is None:
+        from kb.storage.sqlite_storage import SQLiteStorage
+        
+        config = get_config()
+        data_dir = Path(config.get("data_dir", "~/.knowledge-base")).expanduser()
+        db_path = str(data_dir / "db" / "metadata.db")
+        _sqlite_storage_instance = SQLiteStorage(db_path=db_path)
+    
+    return _sqlite_storage_instance
 
 
 def get_chroma_storage():
     """
-    Get ChromaDB storage instance.
+    Get ChromaDB storage instance (singleton).
     
     Returns:
         ChromaStorage: Storage instance for vector operations.
     """
-    from kb.storage.chroma_storage import ChromaStorage
+    global _chroma_storage_instance
     
-    config = get_config()
-    persist_dir = config.get("storage.persist_directory", "~/.knowledge-base/db/chroma")
-    persist_dir = str(Path(persist_dir).expanduser())
-    return ChromaStorage(path=persist_dir)
+    if _chroma_storage_instance is None:
+        from kb.storage.chroma_storage import ChromaStorage
+        
+        config = get_config()
+        persist_dir = config.get("storage.persist_directory", "~/.knowledge-base/db/chroma")
+        persist_dir = str(Path(persist_dir).expanduser())
+        _chroma_storage_instance = ChromaStorage(path=persist_dir)
+    
+    return _chroma_storage_instance
 
 
 def get_keyword_search():
@@ -139,3 +155,116 @@ def get_reading_history():
 
     storage = get_sqlite_storage()
     return ReadingHistory(storage=storage)
+
+
+def get_conversation_manager():
+    """
+    Get or create the conversation manager.
+
+    Returns:
+        ConversationManager: Instance for managing multi-turn conversation sessions.
+    """
+    global _conversation_manager_instance
+
+    if _conversation_manager_instance is None:
+        from kb.query.conversation import ConversationManager
+
+        config = get_config()
+        data_dir = Path(config.get("data_dir", "~/.knowledge-base")).expanduser()
+        db_path = str(data_dir / "db" / "conversations.db")
+        _conversation_manager_instance = ConversationManager(db_path=db_path)
+
+    return _conversation_manager_instance
+
+
+def get_retrieval_pipeline():
+    """
+    Get or create the enhanced retrieval pipeline.
+
+    Creates the full RetrievalPipeline with all its components using graceful
+    degradation - if some components (graph, topics) aren't available, the
+    pipeline is created without them.
+
+    Returns:
+        RetrievalPipeline: The enhanced retrieval pipeline instance.
+
+    Raises:
+        ValueError: If required configuration is missing.
+    """
+    global _pipeline_instance
+
+    if _pipeline_instance is None:
+        from kb.query.retrieval_pipeline import RetrievalPipeline
+        from kb.query.query_expander import LLMQueryExpander, NoOpQueryExpander
+        from kb.query.reranker import LLMReranker, NoOpReranker
+        from kb.query.context_builder import HierarchicalContextBuilder
+
+        config = get_config()
+
+        # Get or create search components
+        try:
+            semantic_search = get_semantic_search()
+        except Exception as e:
+            semantic_search = None
+
+        try:
+            keyword_search = get_keyword_search()
+        except Exception as e:
+            keyword_search = None
+
+        # Create query expander with graceful degradation
+        try:
+            query_expander = LLMQueryExpander(config.to_dict())
+            if not query_expander.llm_available:
+                query_expander = NoOpQueryExpander()
+        except Exception as e:
+            query_expander = NoOpQueryExpander()
+
+        # Create reranker with graceful degradation
+        try:
+            reranker = LLMReranker(config.to_dict())
+            if not reranker.llm_available:
+                reranker = NoOpReranker()
+        except Exception as e:
+            reranker = NoOpReranker()
+
+        # Create context builder
+        context_budget = config.get("query", {}).get("rag", {}).get("context_budget", 4000)
+        context_builder = HierarchicalContextBuilder(budget=context_budget)
+
+        # Get optional enrichment components with graceful degradation
+        try:
+            graph_query = get_graph_query()
+        except Exception as e:
+            graph_query = None
+
+        try:
+            topic_query = get_topic_query()
+        except Exception as e:
+            topic_query = None
+
+        try:
+            reading_history = get_reading_history()
+        except Exception as e:
+            reading_history = None
+
+        try:
+            conversation_manager = get_conversation_manager()
+        except Exception as e:
+            conversation_manager = None
+
+        # Create the pipeline with all components
+        _pipeline_instance = RetrievalPipeline(
+            config=config,
+            semantic_search=semantic_search,
+            keyword_search=keyword_search,
+            query_expander=query_expander,
+            reranker=reranker,
+            context_builder=context_builder,
+            graph_query=graph_query,
+            topic_query=topic_query,
+            reading_history=reading_history,
+            conversation_manager=conversation_manager,
+        )
+
+    return _pipeline_instance

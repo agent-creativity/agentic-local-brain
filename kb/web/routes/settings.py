@@ -18,8 +18,12 @@ router = APIRouter()
 
 CONFIG_FILE = Path.home() / ".localbrain" / "config.yaml"
 
-# Valid provider values
-VALID_PROVIDERS = {"dashscope", "openai_compatible", "litellm"}
+# Valid provider values for the UI (actual provider names)
+# These map to litellm internally
+VALID_UI_PROVIDERS = {"dashscope", "openai", "anthropic", "ollama", "openai_compatible"}
+
+# Legacy providers that we support for backward compatibility
+LEGACY_PROVIDERS = {"dashscope", "openai_compatible", "litellm"}
 
 
 class LLMConfigRequest(BaseModel):
@@ -28,6 +32,92 @@ class LLMConfigRequest(BaseModel):
     model: str
     api_key: str
     base_url: Optional[str] = None
+
+
+class EmbeddingConfigRequest(BaseModel):
+    """Request model for updating embedding configuration."""
+    provider: str
+    model: str
+    api_key: str
+    base_url: Optional[str] = None
+
+
+def _parse_litellm_model(model_str: str) -> tuple:
+    """
+    Parse a litellm model string into (provider, model_name).
+    
+    Examples:
+    - 'dashscope/qwen-plus' -> ('dashscope', 'qwen-plus')
+    - 'openai/gpt-4o' -> ('openai', 'gpt-4o')
+    - 'qwen-plus' -> (None, 'qwen-plus')  # legacy format without prefix
+    """
+    if '/' in model_str:
+        parts = model_str.split('/', 1)
+        return (parts[0], parts[1])
+    return (None, model_str)
+
+
+def _determine_ui_provider(stored_provider: str, stored_model: str, base_url: str = None, is_embedding: bool = False) -> str:
+    """
+    Determine the UI provider from stored config.
+    
+    Handles:
+    - New format: provider='litellm', model='dashscope/qwen-plus' -> 'dashscope'
+    - Legacy format: provider='dashscope', model='qwen-plus' -> 'dashscope'
+    - Legacy format: provider='openai_compatible', model='...' -> 'openai_compatible'
+    - DashScope embedding via OpenAI-compatible: model='openai/text-embedding-v4', base_url contains 'dashscope.aliyuncs.com' -> 'dashscope'
+    """
+    # Special case: DashScope embeddings via OpenAI-compatible endpoint
+    # Model has 'openai/' prefix but base_url points to DashScope
+    if is_embedding and stored_model.startswith('openai/') and base_url and 'dashscope.aliyuncs.com' in base_url:
+        return 'dashscope'
+    
+    # If provider is litellm, extract the actual provider from model string
+    if stored_provider == 'litellm':
+        parsed_provider, _ = _parse_litellm_model(stored_model)
+        if parsed_provider:
+            # Map litellm provider names to UI provider names
+            # 'openai' in litellm could be actual OpenAI or openai_compatible
+            # We default to 'openai' for openai/ prefix
+            return parsed_provider
+        # If no prefix in model, default to dashscope
+        return 'dashscope'
+    
+    # Legacy format: provider is the actual provider name
+    return stored_provider
+
+
+def _build_litellm_model(ui_provider: str, ui_model: str, is_embedding: bool = False) -> str:
+    """
+    Build a litellm model string from UI provider and model.
+    
+    Examples:
+    - ('dashscope', 'qwen-plus') -> 'dashscope/qwen-plus'
+    - ('openai', 'gpt-4o') -> 'openai/gpt-4o'
+    - ('openai_compatible', 'some-model') -> 'openai/some-model'
+    - ('ollama', 'llama3') -> 'ollama/llama3'
+    
+    Special case for DashScope embeddings:
+    - ('dashscope', 'text-embedding-v4', True) -> 'openai/text-embedding-v4'
+      (DashScope embeddings must use OpenAI-compatible endpoint)
+    """
+    ui_model = ui_model.strip()
+    
+    # If model already has a prefix, use it as-is
+    if '/' in ui_model:
+        return ui_model
+    
+    # DashScope embeddings must use openai/ prefix for litellm (OpenAI-compatible mode)
+    # DashScope LLM uses native dashscope/ prefix
+    if is_embedding and ui_provider == 'dashscope':
+        return f'openai/{ui_model}'
+    
+    # openai_compatible uses openai/ prefix for litellm
+    if ui_provider == 'openai_compatible':
+        return f'openai/{ui_model}'
+    
+    # All other providers use their name as prefix
+    return f'{ui_provider}/{ui_model}'
 
 
 def _load_raw_config() -> Dict[str, Any]:
@@ -63,9 +153,13 @@ async def get_settings() -> Dict[str, Any]:
     """
     Get current system settings.
 
-    Returns LLM configuration with api_key masked for display.
+    Returns LLM and embedding configuration with api_key masked for display.
     The raw api_key value (env var name or masked key) is returned
     so the frontend can show what's currently configured.
+    
+    The provider and model are parsed from litellm format for the UI:
+    - If stored model is 'dashscope/qwen-plus', returns provider='dashscope', model='qwen-plus'
+    - Legacy configs (provider='dashscope', model='qwen-plus') are handled correctly
     """
     try:
         from kb.config import Config
@@ -73,13 +167,43 @@ async def get_settings() -> Dict[str, Any]:
 
         raw = _load_raw_config()
         llm = raw.get("llm", {})
+        embedding = raw.get("embedding", {})
+        
+        # Parse LLM config
+        llm_stored_provider = llm.get("provider", "dashscope")
+        llm_stored_model = llm.get("model", "qwen-plus")
+        llm_ui_provider = _determine_ui_provider(llm_stored_provider, llm_stored_model)
+        
+        # Parse model name for UI
+        if llm_stored_provider == "litellm" or "/" in llm_stored_model:
+            _, llm_ui_model = _parse_litellm_model(llm_stored_model)
+        else:
+            llm_ui_model = llm_stored_model
+        
+        # Parse Embedding config
+        emb_stored_provider = embedding.get("provider", "dashscope")
+        emb_stored_model = embedding.get("model", "text-embedding-v4")
+        emb_base_url = embedding.get("base_url", "")
+        emb_ui_provider = _determine_ui_provider(emb_stored_provider, emb_stored_model, emb_base_url, is_embedding=True)
+        
+        # Parse model name for UI
+        if emb_stored_provider == "litellm" or "/" in emb_stored_model:
+            _, emb_ui_model = _parse_litellm_model(emb_stored_model)
+        else:
+            emb_ui_model = emb_stored_model
 
         return {
             "llm": {
-                "provider": llm.get("provider", "dashscope"),
-                "model": llm.get("model", "qwen-plus"),
+                "provider": llm_ui_provider,
+                "model": llm_ui_model,
                 "api_key": _mask_api_key(llm.get("api_key", "")),
                 "base_url": llm.get("base_url", ""),
+            },
+            "embedding": {
+                "provider": emb_ui_provider,
+                "model": emb_ui_model,
+                "api_key": _mask_api_key(embedding.get("api_key", "")),
+                "base_url": embedding.get("base_url", ""),
             },
             "paths": {
                 "data_dir": str(config.data_dir),
@@ -95,10 +219,9 @@ async def update_llm_settings(request: LLMConfigRequest) -> Dict[str, Any]:
     """
     Update LLM model service configuration.
 
-    Supports both old and new provider formats:
-    - Old: provider=dashscope, model=qwen-plus
-    - Old: provider=openai_compatible, model=qwen-plus, base_url=...
-    - New: provider=litellm, model=dashscope/qwen-plus
+    The UI sends actual provider names (dashscope, openai, anthropic, ollama, openai_compatible)
+    and plain model names (qwen-plus, gpt-4o). This endpoint converts them to litellm format
+    for storage: provider='litellm', model='{provider}/{model}'.
 
     api_key accepts either:
     - An environment variable name in ${VAR_NAME} format
@@ -110,10 +233,11 @@ async def update_llm_settings(request: LLMConfigRequest) -> Dict[str, Any]:
     Returns:
         Updated LLM configuration (api_key masked).
     """
-    if request.provider not in VALID_PROVIDERS:
+    # Support both new UI providers and legacy providers for backward compatibility
+    if request.provider not in VALID_UI_PROVIDERS and request.provider not in LEGACY_PROVIDERS:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid provider '{request.provider}'. Must be one of: {', '.join(sorted(VALID_PROVIDERS))}"
+            detail=f"Invalid provider '{request.provider}'. Must be one of: {', '.join(sorted(VALID_UI_PROVIDERS))}"
         )
 
     if not request.model.strip():
@@ -122,6 +246,7 @@ async def update_llm_settings(request: LLMConfigRequest) -> Dict[str, Any]:
     if not request.api_key.strip():
         raise HTTPException(status_code=400, detail="api_key cannot be empty")
 
+    # base_url is required for openai_compatible, optional for others
     if request.provider == "openai_compatible" and not request.base_url:
         raise HTTPException(
             status_code=400,
@@ -131,16 +256,21 @@ async def update_llm_settings(request: LLMConfigRequest) -> Dict[str, Any]:
     try:
         raw = _load_raw_config()
 
+        # Build litellm model string from UI provider and model
+        ui_provider = request.provider
+        ui_model = request.model.strip()
+        
+        # For legacy providers (dashscope, openai_compatible, litellm),
+        # we still convert to the new litellm format
+        litellm_model = _build_litellm_model(ui_provider, ui_model)
+        
         llm_config: Dict[str, Any] = {
-            "provider": request.provider,
-            "model": request.model.strip(),
+            "provider": "litellm",
+            "model": litellm_model,
             "api_key": request.api_key.strip(),
         }
         if request.base_url:
             llm_config["base_url"] = request.base_url.strip()
-        elif "base_url" in raw.get("llm", {}):
-            # Remove base_url if it was previously set but not provided now
-            pass
 
         raw["llm"] = llm_config
         _save_raw_config(raw)
@@ -152,14 +282,107 @@ async def update_llm_settings(request: LLMConfigRequest) -> Dict[str, Any]:
         except Exception:
             pass
 
+        # Return the UI format (not the stored litellm format)
         return {
             "llm": {
-                "provider": llm_config["provider"],
-                "model": llm_config["model"],
+                "provider": ui_provider,
+                "model": ui_model,
                 "api_key": _mask_api_key(llm_config["api_key"]),
                 "base_url": llm_config.get("base_url", ""),
             },
             "message": "LLM configuration updated successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save settings: {str(e)}")
+
+
+@router.put("/settings/embedding")
+async def update_embedding_settings(request: EmbeddingConfigRequest) -> Dict[str, Any]:
+    """
+    Update embedding model service configuration.
+
+    The UI sends actual provider names (dashscope, openai, anthropic, ollama, openai_compatible)
+    and plain model names (text-embedding-v4, text-embedding-3-small). This endpoint converts
+    them to litellm format for storage: provider='litellm', model='{provider}/{model}'.
+
+    api_key accepts either:
+    - An environment variable name in ${VAR_NAME} format
+    - A raw API key value
+
+    Args:
+        request: EmbeddingConfigRequest with provider, model, api_key, and optional base_url.
+
+    Returns:
+        Updated embedding configuration (api_key masked).
+    """
+    # Support both new UI providers and legacy providers for backward compatibility
+    if request.provider not in VALID_UI_PROVIDERS and request.provider not in LEGACY_PROVIDERS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid provider '{request.provider}'. Must be one of: {', '.join(sorted(VALID_UI_PROVIDERS))}"
+        )
+
+    if not request.model.strip():
+        raise HTTPException(status_code=400, detail="model cannot be empty")
+
+    if not request.api_key.strip():
+        raise HTTPException(status_code=400, detail="api_key cannot be empty")
+
+    # base_url is required for openai_compatible, optional for others
+    if request.provider == "openai_compatible" and not request.base_url:
+        raise HTTPException(
+            status_code=400,
+            detail="base_url is required for openai_compatible provider"
+        )
+
+    try:
+        raw = _load_raw_config()
+
+        # Build litellm model string from UI provider and model
+        ui_provider = request.provider
+        ui_model = request.model.strip()
+        
+        # For legacy providers (dashscope, openai_compatible, litellm),
+        # we still convert to the new litellm format
+        # is_embedding=True handles DashScope's special OpenAI-compatible mode
+        litellm_model = _build_litellm_model(ui_provider, ui_model, is_embedding=True)
+        
+        # Determine base_url
+        base_url = request.base_url.strip() if request.base_url else None
+        
+        # Auto-set base_url for DashScope embeddings (requires OpenAI-compatible endpoint)
+        if ui_provider == 'dashscope' and not base_url:
+            base_url = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+        
+        embedding_config: Dict[str, Any] = {
+            "provider": "litellm",
+            "model": litellm_model,
+            "api_key": request.api_key.strip(),
+        }
+        if base_url:
+            embedding_config["base_url"] = base_url
+
+        raw["embedding"] = embedding_config
+        _save_raw_config(raw)
+
+        # Invalidate the cached config so next request reloads
+        try:
+            from kb.web.dependencies import get_config
+            get_config.cache_clear()
+        except Exception:
+            pass
+
+        # Return the UI format (not the stored litellm format)
+        return {
+            "embedding": {
+                "provider": ui_provider,
+                "model": ui_model,
+                "api_key": _mask_api_key(embedding_config["api_key"]),
+                "base_url": embedding_config.get("base_url", ""),
+            },
+            "message": "Embedding configuration updated successfully"
         }
     except HTTPException:
         raise
@@ -187,8 +410,8 @@ def _test_llm_sync() -> Dict[str, Any]:
 
     config = Config()
     llm_config = config.get("llm", {})
-    provider_name = llm_config.get("provider", "dashscope")
-    model = llm_config.get("model", "qwen-plus")
+    provider_name = llm_config.get("provider", "litellm")
+    model = llm_config.get("model", "dashscope/qwen-plus")
     api_key = llm_config.get("api_key", "")
 
     if not api_key:
@@ -198,14 +421,9 @@ def _test_llm_sync() -> Dict[str, Any]:
     try:
         from kb.processors.tag_extractor import LiteLLMProvider
 
-        if provider_name == "litellm":
-            llm_model = model
-        elif provider_name == "dashscope":
-            llm_model = model if "/" in model else f"dashscope/{model}"
-        elif provider_name == "openai_compatible":
-            llm_model = model if "/" in model else f"openai/{model}"
-        else:
-            llm_model = model
+        # The stored model is always in litellm format (e.g., "dashscope/qwen-plus")
+        # If it's legacy format without provider prefix, add dashscope/
+        llm_model = model if "/" in model else f"dashscope/{model}"
 
         base_url = llm_config.get("base_url", None)
         provider = LiteLLMProvider(api_key=api_key, model=llm_model, api_base=base_url)
@@ -267,3 +485,14 @@ def _test_embedding_sync() -> Dict[str, Any]:
     except Exception as e:
         latency = int((time.time() - start) * 1000)
         return {"success": False, "error": str(e), "latency_ms": latency}
+
+
+@router.get("/settings/doctor")
+async def run_doctor() -> Dict[str, Any]:
+    """
+    Run system diagnostics and return structured results.
+    
+    Returns version info, check results, and any issues found.
+    """
+    from kb.commands.doctor import run_diagnostics
+    return run_diagnostics()

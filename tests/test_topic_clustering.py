@@ -425,3 +425,118 @@ class TestTopicQueryService:
         assert trend[0]["topic_id"] == cid
         assert trend[0]["label"] == "AI Topic"
         assert "period" in trend[0] and "count" in trend[0]
+
+
+# ---------------------------------------------------------------------------
+# TestTopicQueryTimeline
+# ---------------------------------------------------------------------------
+
+
+class TestTopicQueryTimeline:
+    def test_get_timeline_data_returns_correct_schema(self, db, mock_storage):
+        cid = _insert_cluster(db, "ML", [1.0, 0.0], doc_count=1)
+        _insert_doc(db, "doc1", title="Deep Learning", collected_at="2026-03-01")
+        db.execute(
+            "INSERT INTO knowledge_topics (knowledge_id, cluster_id, confidence) VALUES ('doc1', ?, 0.9)",
+            (cid,),
+        )
+        db.commit()
+
+        query = TopicQuery(storage=mock_storage)
+        data = query.get_timeline_data()
+
+        assert len(data) == 1
+        row = data[0]
+        assert row["id"] == "doc1"
+        assert row["title"] == "Deep Learning"
+        assert row["topic_label"] == "ML"
+        assert row["collected_at"] == "2026-03-01"
+        assert "confidence" in row
+
+    def test_get_timeline_data_sorted_by_collected_at_asc(self, db, mock_storage):
+        cid = _insert_cluster(db, "Topic A", [1.0, 0.0], doc_count=2)
+        _insert_doc(db, "doc_old", collected_at="2026-01-01")
+        _insert_doc(db, "doc_new", collected_at="2026-06-01")
+        for doc_id in ["doc_old", "doc_new"]:
+            db.execute(
+                "INSERT INTO knowledge_topics (knowledge_id, cluster_id) VALUES (?, ?)",
+                (doc_id, cid),
+            )
+        db.commit()
+
+        query = TopicQuery(storage=mock_storage)
+        data = query.get_timeline_data()
+
+        assert data[0]["id"] == "doc_old"
+        assert data[1]["id"] == "doc_new"
+
+    def test_get_timeline_data_excludes_docs_without_topic(self, db, mock_storage):
+        cid = _insert_cluster(db, "AI", [1.0, 0.0], doc_count=1)
+        _insert_doc(db, "classified_doc", collected_at="2026-01-01")
+        _insert_doc(db, "unclassified_doc", collected_at="2026-02-01")
+        db.execute(
+            "INSERT INTO knowledge_topics (knowledge_id, cluster_id) VALUES ('classified_doc', ?)",
+            (cid,),
+        )
+        db.commit()
+
+        query = TopicQuery(storage=mock_storage)
+        data = query.get_timeline_data()
+
+        ids = [r["id"] for r in data]
+        assert "classified_doc" in ids
+        assert "unclassified_doc" not in ids
+
+    def test_get_timeline_data_empty_returns_empty_list(self, db, mock_storage):
+        query = TopicQuery(storage=mock_storage)
+        assert query.get_timeline_data() == []
+
+    def test_get_timeline_data_limit_respected(self, db, mock_storage):
+        cid = _insert_cluster(db, "Topic", [1.0, 0.0], doc_count=5)
+        for i in range(5):
+            doc_id = f"doc{i}"
+            _insert_doc(db, doc_id, collected_at=f"2026-0{i+1}-01")
+            db.execute(
+                "INSERT INTO knowledge_topics (knowledge_id, cluster_id) VALUES (?, ?)",
+                (doc_id, cid),
+            )
+        db.commit()
+
+        query = TopicQuery(storage=mock_storage)
+        data = query.get_timeline_data(limit=3)
+        assert len(data) <= 3
+
+
+# ---------------------------------------------------------------------------
+# TestTimelineAPIValidation
+# ---------------------------------------------------------------------------
+
+
+class TestTimelineAPIValidation:
+    def _make_client(self):
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        from kb.web.routes.topics import router
+
+        app = FastAPI()
+        app.include_router(router, prefix="/api")
+        return TestClient(app)
+
+    def test_limit_below_1_returns_400(self):
+        client = self._make_client()
+        response = client.get("/api/topics/timeline?limit=0")
+        assert response.status_code == 400
+
+    def test_limit_above_2000_returns_400(self):
+        client = self._make_client()
+        response = client.get("/api/topics/timeline?limit=2001")
+        assert response.status_code == 400
+
+    def test_valid_limit_accepted(self):
+        from unittest.mock import patch
+        client = self._make_client()
+        with patch("kb.web.dependencies.get_topic_query") as mock_tq:
+            mock_tq.return_value.get_timeline_data.return_value = []
+            mock_tq.return_value.get_topics.return_value = []
+            response = client.get("/api/topics/timeline?limit=100")
+        assert response.status_code == 200

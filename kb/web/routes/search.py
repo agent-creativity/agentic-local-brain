@@ -5,8 +5,8 @@ Provides endpoints for keyword search, semantic search, and RAG queries.
 """
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
+from pydantic import BaseModel, Field
 
 router = APIRouter()
 
@@ -35,6 +35,24 @@ class RAGResponse(BaseModel):
     """Response model for RAG query results."""
     answer: str
     sources: List[Dict[str, Any]]
+    question: str
+
+
+class RAGChatRequest(BaseModel):
+    """Request model for enhanced RAG chat with conversation support."""
+    question: str
+    session_id: Optional[str] = None
+    tags: Optional[List[str]] = None
+    top_k: int = 5
+    options: Dict[str, Any] = Field(default_factory=lambda: {
+        "use_graph": True,
+        "use_topics": True,
+        "use_reranking": True
+    })
+
+
+class RAGSuggestRequest(BaseModel):
+    """Request model for RAG query suggestions."""
     question: str
 
 
@@ -216,3 +234,246 @@ async def rag_query(request: RAGRequest, background_tasks: BackgroundTasks = Non
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"RAG query failed: {str(e)}")
+
+
+# =============================================================================
+# Enhanced RAG Chat Endpoints (v0.7)
+# =============================================================================
+
+@router.post("/rag/chat")
+async def rag_chat(request: RAGChatRequest, background_tasks: BackgroundTasks) -> Dict[str, Any]:
+    """
+    Enhanced RAG with multi-turn conversation support.
+
+    Uses the full retrieval pipeline with query expansion, hybrid retrieval,
+    reranking, context enrichment, and conversation history.
+
+    Args:
+        request: RAGChatRequest with question, optional session_id, tags, top_k, and options.
+
+    Returns:
+        Dict containing EnhancedRAGResult fields (answer, sources, confidence, etc.)
+
+    Raises:
+        400: Empty question
+        503: Pipeline unavailable
+        500: Pipeline execution failed
+    """
+    if not request.question or not request.question.strip():
+        raise HTTPException(status_code=400, detail={"error": "Question is required"})
+
+    try:
+        from kb.web.dependencies import get_retrieval_pipeline, get_reading_history
+
+        pipeline = get_retrieval_pipeline()
+
+        # Run the enhanced pipeline
+        result = pipeline.run(
+            question=request.question,
+            session_id=request.session_id,
+            tags=request.tags,
+            top_k=request.top_k,
+            options=request.options,
+        )
+
+        # Record in reading history (background task)
+        if background_tasks:
+            def _track_rag_chat():
+                try:
+                    get_reading_history().record_rag_query(request.question)
+                except Exception:
+                    pass
+            background_tasks.add_task(_track_rag_chat)
+
+        return result.to_dict()
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": f"Pipeline unavailable: {str(e)}"}
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": f"RAG chat failed: {str(e)}"}
+        )
+
+
+@router.get("/rag/conversations")
+async def list_conversations(limit: int = 20) -> Dict[str, Any]:
+    """
+    List all conversation sessions.
+
+    Args:
+        limit: Maximum number of sessions to return (default: 20).
+
+    Returns:
+        Dict with sessions list containing session_id, created_at, turn_count, last_question.
+    """
+    try:
+        from kb.web.dependencies import get_conversation_manager
+
+        conversation_manager = get_conversation_manager()
+        sessions = conversation_manager.list_sessions(limit=limit)
+
+        return {"sessions": sessions, "total": len(sessions)}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": f"Failed to list conversations: {str(e)}"}
+        )
+
+
+@router.get("/rag/conversations/{session_id}")
+async def get_conversation(session_id: str) -> Dict[str, Any]:
+    """
+    Get full conversation by session ID.
+
+    Args:
+        session_id: The conversation session ID.
+
+    Returns:
+        Dict with session details including all turns.
+
+    Raises:
+        404: Session not found
+    """
+    try:
+        from kb.web.dependencies import get_conversation_manager
+
+        conversation_manager = get_conversation_manager()
+        session = conversation_manager.get_session(session_id)
+
+        if session is None:
+            raise HTTPException(
+                status_code=404,
+                detail={"error": f"Conversation session not found: {session_id}"}
+            )
+
+        return session.to_dict()
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": f"Failed to get conversation: {str(e)}"}
+        )
+
+
+@router.delete("/rag/conversations/{session_id}")
+async def delete_conversation(session_id: str) -> Dict[str, Any]:
+    """
+    Delete a conversation session.
+
+    Args:
+        session_id: The conversation session ID to delete.
+
+    Returns:
+        Dict with success status.
+
+    Raises:
+        404: Session not found
+    """
+    try:
+        from kb.web.dependencies import get_conversation_manager
+
+        conversation_manager = get_conversation_manager()
+        deleted = conversation_manager.delete_session(session_id)
+
+        if not deleted:
+            raise HTTPException(
+                status_code=404,
+                detail={"error": f"Conversation session not found: {session_id}"}
+            )
+
+        return {"success": True, "session_id": session_id}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": f"Failed to delete conversation: {str(e)}"}
+        )
+
+
+@router.delete("/rag/conversations")
+async def delete_all_conversations() -> Dict[str, Any]:
+    """
+    Delete all conversation sessions (manual bulk cleanup).
+
+    Returns:
+        Dict with success status and count of deleted sessions.
+    """
+    try:
+        from kb.web.dependencies import get_conversation_manager
+
+        conversation_manager = get_conversation_manager()
+        deleted_count = conversation_manager.cleanup_all()
+
+        return {"success": True, "deleted_count": deleted_count}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": f"Failed to clear conversations: {str(e)}"}
+        )
+
+
+@router.post("/rag/suggest")
+async def rag_suggest(request: RAGSuggestRequest) -> Dict[str, Any]:
+    """
+    Get query suggestions/refinements.
+
+    Uses the query expander to generate alternative phrasings and
+    extract entities from the question.
+
+    Args:
+        request: RAGSuggestRequest with question.
+
+    Returns:
+        Dict with suggestions (rewrites) and entities.
+
+    Raises:
+        400: Empty question
+        503: Query expansion service unavailable
+    """
+    if not request.question or not request.question.strip():
+        raise HTTPException(status_code=400, detail={"error": "Question is required"})
+
+    try:
+        from kb.web.dependencies import get_config
+        from kb.query.query_expander import LLMQueryExpander, NoOpQueryExpander, ExpandedQuery
+
+        config = get_config()
+
+        # Try to create LLM query expander
+        try:
+            expander = LLMQueryExpander(config.to_dict())
+            if not expander.llm_available:
+                expander = NoOpQueryExpander()
+        except Exception:
+            expander = NoOpQueryExpander()
+
+        # Expand the query
+        expanded = expander.expand(request.question)
+
+        return {
+            "question": request.question,
+            "suggestions": expanded.rewrites,
+            "entities": expanded.entities,
+            "intent": expanded.intent,
+        }
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": f"Query expansion service unavailable: {str(e)}"}
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": f"Failed to generate suggestions: {str(e)}"}
+        )

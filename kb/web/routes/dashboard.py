@@ -3,6 +3,7 @@ Dashboard routes for Knowledge Base Web API.
 
 Provides endpoints for statistics and recent items.
 """
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
@@ -64,3 +65,104 @@ async def get_recent_items(
         return items
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get recent items: {str(e)}")
+
+
+@router.get("/rag-stats")
+async def get_rag_stats() -> Dict[str, Any]:
+    """
+    Get RAG-specific analytics.
+
+    Returns statistics about RAG usage including total queries,
+    conversation sessions, and recent activity.
+
+    Returns:
+        Dict with:
+        - total_queries: Total number of RAG queries recorded
+        - total_conversations: Total number of conversation sessions
+        - avg_turns_per_session: Average turns per conversation session
+        - recent_queries: List of recent RAG queries
+        - queries_today: Number of queries today
+        - queries_this_week: Number of queries in the last 7 days
+    """
+    try:
+        from kb.web.dependencies import get_sqlite_storage
+
+        storage = get_sqlite_storage()
+        conn = storage.conn
+        cursor = conn.cursor()
+
+        # Initialize result with defaults
+        result = {
+            "total_queries": 0,
+            "total_conversations": 0,
+            "avg_turns_per_session": 0.0,
+            "recent_queries": [],
+            "queries_today": 0,
+            "queries_this_week": 0,
+        }
+
+        # Check if reading_history table exists
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='reading_history'"
+        )
+        if cursor.fetchone():
+            # Get total RAG queries
+            cursor.execute(
+                "SELECT COUNT(*) FROM reading_history WHERE action_type = 'rag_query'"
+            )
+            result["total_queries"] = cursor.fetchone()[0]
+
+            # Get queries today
+            cursor.execute(
+                """SELECT COUNT(*) FROM reading_history
+                   WHERE action_type = 'rag_query'
+                   AND date(created_at) = date('now')"""
+            )
+            result["queries_today"] = cursor.fetchone()[0]
+
+            # Get queries this week
+            cursor.execute(
+                """SELECT COUNT(*) FROM reading_history
+                   WHERE action_type = 'rag_query'
+                   AND created_at >= datetime('now', '-7 days')"""
+            )
+            result["queries_this_week"] = cursor.fetchone()[0]
+
+            # Get recent queries
+            cursor.execute(
+                """SELECT query, created_at
+                   FROM reading_history
+                   WHERE action_type = 'rag_query' AND query IS NOT NULL
+                   ORDER BY created_at DESC
+                   LIMIT 10"""
+            )
+            result["recent_queries"] = [
+                {"query": row[0], "timestamp": row[1]}
+                for row in cursor.fetchall()
+            ]
+
+        # Check if rag_conversations table exists
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='rag_conversations'"
+        )
+        if cursor.fetchone():
+            # Get total conversation sessions
+            cursor.execute("SELECT COUNT(*) FROM rag_conversations")
+            result["total_conversations"] = cursor.fetchone()[0]
+
+            # Get average turns per session
+            cursor.execute(
+                """SELECT AVG(turn_count) FROM (
+                    SELECT COUNT(*) as turn_count
+                    FROM rag_conversation_turns
+                    GROUP BY session_id
+                )"""
+            )
+            avg_turns = cursor.fetchone()[0]
+            result["avg_turns_per_session"] = round(avg_turns, 2) if avg_turns else 0.0
+
+        cursor.close()
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get RAG stats: {str(e)}")

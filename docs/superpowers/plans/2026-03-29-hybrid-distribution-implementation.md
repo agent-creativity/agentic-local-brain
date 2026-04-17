@@ -1207,7 +1207,7 @@ After completing all tasks:
 
 **HTTP Server Structure Required:**
 ```
-localbrain.oss-cn-shanghai.aliyuncs.com/
+localbrain.io.alibaba-inc.com/
 ├── version.json
 ├── binary_installer/
 │   ├── install.sh

@@ -1,5 +1,5 @@
 # 基于 Agent + IM + Skill + CLI 的理念，打造一个 Local First 的本地知识大脑系统LocalBrain
-> 两个周末、110 次提交、一个 AI 虚拟团队 —— 我是如何与AI协作从0打造一个本地LLM知识管理产品Agentic Local Brain，配合QoderWork+小Q使用更佳，详情参考：http://localbrain.oss-cn-shanghai.aliyuncs.com
+> 两个周末、110 次提交、一个 AI 虚拟团队 —— 我是如何与AI协作从0打造一个本地LLM知识管理产品Agentic Local Brain，配合QoderWork+小Q使用更佳，详情参考：https://localbrain.io.alibaba-inc.com
 
 ---
 
@@ -195,10 +195,10 @@ Skill 是 AI Agent 的能力扩展机制。一个 Skill 定义了：
 - **命令映射**：意图如何映射到具体的 CLI 命令
 - **结果解析**：如何把 CLI 输出翻译成自然语言回复
 
- 以`knowledge-collect-localbrain` Skill为例：
+ 以`localbrain-collect` Skill为例：
 
 ```yaml
-name: knowledge-collect-localbrain
+name: localbrain-collect
 version: 0.6.1
 description: 收集知识到本地知识库
 
@@ -223,7 +223,7 @@ intent_recognition:
     action: note
 ```
 
-**30 秒安装，即插即用**。具体参考：http://localbrain.oss-cn-shanghai.aliyuncs.com/docs/Skill-安装
+**30 秒安装，即插即用**。具体参考：https://localbrain.io.alibaba-inc.com/docs/Skill-安装
 
 更重要的是，Skill 是**可组合**的。知识收集只是第一个 Skill，未来可以扩展：
 - `knowledge-mine` —— 知识挖掘（v0.6 已实现）
@@ -927,7 +927,7 @@ localbrain test llm
 最快的方式：在你的 AI 编程助手（Qoder、OpenClaw、Copaw 等）的聊天窗口中粘贴以下消息：
 
 ```
-帮我安装或更新这个知识收集技能：http://127.0.0.1:8080/docs/skills/knowledge-collect-localbrain/SKILL.md
+帮我安装或更新这个知识收集技能：http://127.0.0.1:11201/docs/skills/localbrain-collect/SKILL.md
 ```
 
 就是这么简单！AI 助手会自动下载并安装该 Skill。前提是 LocalBrain 已安装并且 Web 服务器正在运行（`localbrain web -b`）。
@@ -949,7 +949,7 @@ localbrain test llm
 小Q：已保存。标签：Python、并发、性能优化。
 ```
 
-访问 `http://127.0.0.1:8080` 查看你的知识库。
+访问 `http://127.0.0.1:11201` 查看你的知识库。
 
 Dashboard 显示：
 - 知识条目总数（32 条）
@@ -1033,9 +1033,9 @@ LocalBrain 就是这样的定位，并正在朝这个方向不断深化。
 
 如果你想试试 LocalBrain，这里有三个入口：
 
-- **产品主页**：[http://localbrain.oss-cn-shanghai.aliyuncs.com/](http://localbrain.oss-cn-shanghai.aliyuncs.com/)
-- **Skill 一键安装**：[http://localbrain.oss-cn-shanghai.aliyuncs.com/docs/skill-install.html](http://localbrain.oss-cn-shanghai.aliyuncs.com/docs/skill-install.html)
-- **五分钟快速开始**：[http://localbrain.oss-cn-shanghai.aliyuncs.com/docs/五分钟本地快速安装配置](http://localbrain.oss-cn-shanghai.aliyuncs.com/docs/五分钟本地快速安装配置)
+- **产品主页**：[https://localbrain.io.alibaba-inc.com/](https://localbrain.io.alibaba-inc.com/)
+- **Skill 一键安装**：[https://localbrain.io.alibaba-inc.com/docs/skill-install.html](https://localbrain.io.alibaba-inc.com/docs/skill-install.html)
+- **五分钟快速开始**：[https://localbrain.io.alibaba-inc.com/docs/五分钟本地快速安装配置](https://localbrain.io.alibaba-inc.com/docs/五分钟本地快速安装配置)
 
 有任何问题或建议，欢迎在钉钉里找我聊聊。这个项目还在快速迭代，你的反馈会让它变得更好。
 ![](https://oss-ata.alibaba.com/article/2026/04/9d50e61a-3543-4c63-808b-92887afa1ca0.png)

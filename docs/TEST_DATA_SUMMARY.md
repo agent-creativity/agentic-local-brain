@@ -242,19 +242,19 @@ kb tags list
 ### Web API验证
 ```bash
 # 获取统计信息
-curl http://127.0.0.1:8080/api/stats
+curl http://127.0.0.1:11201/api/stats
 
 # 按类型查询
-curl http://127.0.0.1:8080/api/items?content_type=file
-curl http://127.0.0.1:8080/api/items?content_type=webpage
-curl http://127.0.0.1:8080/api/items?content_type=note
-curl http://127.0.0.1:8080/api/items?content_type=bookmark
-curl http://127.0.0.1:8080/api/items?content_type=email
-curl http://127.0.0.1:8080/api/items?content_type=paper
+curl http://127.0.0.1:11201/api/items?content_type=file
+curl http://127.0.0.1:11201/api/items?content_type=webpage
+curl http://127.0.0.1:11201/api/items?content_type=note
+curl http://127.0.0.1:11201/api/items?content_type=bookmark
+curl http://127.0.0.1:11201/api/items?content_type=email
+curl http://127.0.0.1:11201/api/items?content_type=paper
 
 # 按标签查询
-curl http://127.0.0.1:8080/api/items?tags=Python
-curl http://127.0.0.1:8080/api/items?tags=深度学习
+curl http://127.0.0.1:11201/api/items?tags=Python
+curl http://127.0.0.1:11201/api/items?tags=深度学习
 ```
 
 ### 验证结果
@@ -269,7 +269,7 @@ curl http://127.0.0.1:8080/api/items?tags=深度学习
 ## 访问方式
 
 ### Web界面
-- **URL**: http://127.0.0.1:8080
+- **URL**: http://127.0.0.1:11201
 - **功能**: 浏览、搜索、过滤知识项
 
 ### CLI命令

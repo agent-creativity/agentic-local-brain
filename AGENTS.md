@@ -65,12 +65,22 @@ kb/
 │   ├── base.py           # Abstract BaseProcessor class
 │   ├── chunker.py        # Document chunking
 │   ├── embedder.py       # Text vectorization (DashScope/OpenAI)
-│   └── tag_extractor.py  # LLM-based tagging
+│   ├── tag_extractor.py  # LLM-based tagging
+│   └── wiki_compiler.py  # LLM-powered wiki article compilation (v0.7)
 ├── query/                # Search and retrieval
-│   ├── models.py         # SearchResult, RAGResult dataclasses
+│   ├── models.py         # Data models (SearchResult, RAGResult, EnhancedRAGResult, etc.)
 │   ├── semantic_search.py
 │   ├── keyword_search.py
-│   └── rag.py            # RAG query implementation
+│   ├── rag.py            # RAG query implementation (v0.6)
+│   ├── retrieval_pipeline.py  # Multi-stage retrieval orchestrator (v0.7)
+│   ├── query_expander.py      # Query expansion and rewriting (v0.7)
+│   ├── reranker.py            # LLM-based result reranking (v0.7)
+│   ├── context_builder.py     # Token-aware context assembly (v0.7)
+│   ├── conversation.py        # Multi-turn conversation management (v0.7)
+│   ├── prompt_templates.py    # Configurable prompt templates (v0.7)
+│   ├── graph_query.py         # Knowledge graph traversal (v0.6)
+│   ├── topic_query.py         # Topic/cluster queries (v0.6)
+│   └── reading_history.py     # Reading pattern tracking (v0.6)
 ├── storage/              # Data persistence
 │   ├── sqlite_storage.py # Metadata and tags
 │   └── chroma_storage.py # Vector storage
@@ -81,7 +91,8 @@ kb/
         ├── dashboard.py
         ├── items.py
         ├── tags.py
-        └── search.py
+        ├── search.py
+        └── wiki.py        # Wiki article API endpoints (v0.7)
 ```
 
 ## Technology Stack
@@ -97,6 +108,7 @@ kb/
 | Web Scraping | httpx, readability-lxml | - |
 | AI/ML (Embedding) | DashScope (text-embedding-v4) | 1.14+ |
 | AI/ML (LLM) | DashScope (qwen-plus/qwen-max) | 1.14+ |
+| LLM Integration | litellm | 1.30+ |
 | Configuration | PyYAML | 6.0+ |
 | Testing | pytest | 7.0+ |
 
@@ -122,6 +134,9 @@ kb tags list                     # List all tags
 kb web                           # Start web server
 kb test embedding                # Test embedding service
 kb test llm                      # Test LLM service
+kb wiki compile                  # Compile wiki articles from topics
+kb wiki list                     # List compiled articles
+kb wiki show <article_id>        # Show article content
 ```
 
 ### Web API (`kb/web/app.py`)
@@ -136,7 +151,26 @@ REST API endpoints:
 - `POST /api/search/semantic` - Semantic search
 - `POST /api/search/rag` - RAG query
 
-API docs available at `http://localhost:8080/docs` when server is running.
+Enhanced RAG (v0.7):
+- `POST /api/rag/chat` - Multi-turn RAG with conversation support
+- `GET /api/rag/conversations` - List conversation sessions
+- `GET /api/rag/conversations/{session_id}` - Get full conversation
+- `DELETE /api/rag/conversations/{session_id}` - Delete conversation
+- `POST /api/rag/suggest` - Query suggestions
+- `GET /api/dashboard/rag-stats` - RAG analytics
+
+Wiki (v0.7):
+- `GET /api/wiki/tree` - Wiki structure tree
+- `GET /api/wiki/articles` - List articles
+- `GET /api/wiki/articles/{article_id}` - Get article
+- `GET /api/wiki/search` - Search wiki
+- `GET /api/wiki/categories/{category_id}/articles` - Articles by category
+- `GET /api/wiki/topics/{topic_id}/articles` - Articles by topic
+- `GET /api/wiki/entities` - Entity cards
+- `GET /api/wiki/entities/{entity_id}` - Get entity card
+- `GET /api/wiki/stats` - Wiki statistics
+
+API docs available at `http://localhost:11201/docs` when server is running.
 
 ### Configuration (`kb/config.py`)
 
@@ -155,6 +189,11 @@ llm:
 chunking:
   max_chunk_size: 1000
   overlap: 100
+wiki:
+  enabled: true
+  compilation:
+    max_article_length: 3000
+    min_cluster_size: 2
 ```
 
 ## Key Design Patterns
@@ -270,6 +309,12 @@ Source → Collector → Markdown File (with YAML front matter)
            SQLite (metadata) + Chroma (embeddings)
 ```
 
+### Wiki Compilation Pipeline
+
+```
+Topic Clusters → Wiki Compiler → LLM → Wiki Articles (SQLite)
+```
+
 ### Query Pipeline
 
 ```
@@ -277,7 +322,9 @@ User Query → Embedding → Chroma Similarity Search → Ranked Results
          or
 User Query → SQLite FTS5 → Matched Documents
          or
-User Question → Semantic Search → Context → LLM → Answer
+User Question → Query Expansion → Hybrid Retrieval (Semantic + Keyword RRF)
+              → LLM Reranking → Entity/Topic Enrichment
+              → Context Assembly → LLM → Answer + Sources
 ```
 
 ## Environment Variables

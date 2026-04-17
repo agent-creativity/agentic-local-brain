@@ -55,14 +55,14 @@
                     <p>Simply paste this message into your AI agent's chat window:</p>
                 </div>
 
-                <pre><code>Help me install or update this knowledge collection skill: http://127.0.0.1:8080/docs/skills/knowledge-collect-localbrain/SKILL.md</code></pre>
+                <pre><code>Help me install or update this knowledge collection skill: http://127.0.0.1:11201/docs/skills/localbrain-collect/SKILL.md</code></pre>
 
                 <p>That's it! Your agent will automatically download and install the skill. This works with Qoder, OpenClaw, Copaw, and most AI coding agents that support skill installation.</p>
 
                 <h3>Skill Resources</h3>
                 <ul>
-                    <li>📄 <a href="skills/knowledge-collect-localbrain/SKILL.md" target="_blank">View SKILL.md</a> — The skill definition file (view online)</li>
-                    <li>📦 <a href="skills/knowledge-collect-localbrain/SKILL.md" download>Download SKILL.md</a> — Download for manual installation</li>
+                    <li>📄 <a href="skills/localbrain-collect/SKILL.md" target="_blank">View SKILL.md</a> — The skill definition file (view online)</li>
+                    <li>📦 <a href="skills/localbrain-collect/SKILL.md" download>Download SKILL.md</a> — Download for manual installation</li>
                 </ul>
 
                 <p>The skill consists of a single <code>SKILL.md</code> file — no additional scripts or dependencies required.</p>
@@ -70,7 +70,7 @@
                 <h2>What is a Skill?</h2>
                 <ul>
                     <li>A <strong>Skill</strong> is a plugin/extension that enhances your AI coding agent with new capabilities</li>
-                    <li>The Agentic Local Brain Skill (<code>knowledge-collect-localbrain</code>) enables your agent to collect knowledge from your daily workflow</li>
+                    <li>The Agentic Local Brain Skill (<code>localbrain-collect</code>) enables your agent to collect knowledge from your daily workflow</li>
                     <li>When installed, you can simply tell your agent things like <em>"save this article to my knowledge base"</em> or <em>"collect this code snippet"</em> and it will be automatically processed and stored</li>
                 </ul>
 
@@ -109,7 +109,7 @@
                             <li>Type "Install Skill" and select the option</li>
                         </ul>
                     </li>
-                    <li>Search for <code>knowledge-collect-localbrain</code></li>
+                    <li>Search for <code>localbrain-collect</code></li>
                     <li>Click <strong>"Install"</strong></li>
                     <li>The skill will be automatically configured and ready to use</li>
                 </ol>
@@ -125,11 +125,11 @@
                         <pre><code>cd ~/.qoder/skills/</code></pre>
                     </li>
                     <li>Create the skill directory:
-                        <pre><code>mkdir -p knowledge-collect-localbrain
-cd knowledge-collect-localbrain</code></pre>
+                        <pre><code>mkdir -p localbrain-collect
+cd localbrain-collect</code></pre>
                     </li>
                     <li>Copy the skill manifest file from the Agentic Local Brain project:
-                        <pre><code>cp /path/to/agentic-local-brain/.qoder/skills/knowledge-collect-localbrain/skill.md ./</code></pre>
+                        <pre><code>cp /path/to/agentic-local-brain/.qoder/skills/localbrain-collect/skill.md ./</code></pre>
                     </li>
                     <li>Restart Qoder to load the new skill</li>
                 </ol>
@@ -142,7 +142,7 @@ cd knowledge-collect-localbrain</code></pre>
                     <li>Navigate to <strong>Settings → Skills/Plugins</strong></li>
                     <li>Search for <code>Agentic Local Brain</code> or <code>knowledge-collect</code></li>
                     <li>Click <strong>Install</strong> and follow the prompts</li>
-                    <li>Configure the connection URL (default: <code>http://127.0.0.1:8080</code>)</li>
+                    <li>Configure the connection URL (default: <code>http://127.0.0.1:11201</code>)</li>
                 </ol>
 
                 <h3>Manual Installation</h3>
@@ -151,8 +151,8 @@ cd knowledge-collect-localbrain</code></pre>
                         <pre><code>cd ~/.openclaw/skills/</code></pre>
                     </li>
                     <li>Copy the skill manifest file:
-                        <pre><code>mkdir -p knowledge-collect-localbrain
-cp /path/to/agentic-local-brain/.qoder/skills/knowledge-collect-localbrain/skill.md ~/.openclaw/skills/knowledge-collect-localbrain/</code></pre>
+                        <pre><code>mkdir -p localbrain-collect
+cp /path/to/agentic-local-brain/.qoder/skills/localbrain-collect/skill.md ~/.openclaw/skills/localbrain-collect/</code></pre>
                     </li>
                     <li>Configure the connection to your local brain instance in OpenClaw's settings</li>
                     <li>Restart OpenClaw</li>
@@ -164,7 +164,7 @@ cp /path/to/agentic-local-brain/.qoder/skills/knowledge-collect-localbrain/skill
                 <ol>
                     <li>Open Copaw</li>
                     <li>Go to <strong>Settings → Extensions → Skill Store</strong></li>
-                    <li>Search for <code>knowledge-collect-localbrain</code></li>
+                    <li>Search for <code>localbrain-collect</code></li>
                     <li>Click <strong>Install</strong> and <strong>Enable</strong></li>
                     <li>Verify the connection in settings</li>
                 </ol>
@@ -179,7 +179,7 @@ cd ~/.copaw/plugins/
 cd %USERPROFILE%\.copaw\plugins\</code></pre>
                     </li>
                     <li>Add the skill configuration:
-                        <pre><code>mkdir -p knowledge-collect-localbrain
+                        <pre><code>mkdir -p localbrain-collect
 # Copy skill files to this directory</code></pre>
                     </li>
                     <li>Restart Copaw</li>
@@ -233,7 +233,7 @@ You have access to a knowledge collection system. Use these commands:
 - To save a file: `localbrain collect file <path>`
 - To search: `localbrain search semantic "query"`
 
-The web API is available at http://127.0.0.1:8080/api/</code></pre>
+The web API is available at http://127.0.0.1:11201/api/</code></pre>
                     </li>
                 </ol>
 
@@ -246,7 +246,7 @@ The web API is available at http://127.0.0.1:8080/api/</code></pre>
 # If not, add to PATH or create symlink</code></pre>
                     </li>
                     <li><strong>The agent needs to be able to call CLI commands or HTTP API</strong></li>
-                    <li><strong>API endpoint</strong>: <code>http://127.0.0.1:8080/api/</code> (when web server is running)</li>
+                    <li><strong>API endpoint</strong>: <code>http://127.0.0.1:11201/api/</code> (when web server is running)</li>
                 </ol>
 
                 <p><strong>Key API endpoints for skill integration:</strong></p>
@@ -314,7 +314,7 @@ localbrain bookmark collect</code></pre>
                         <pre><code>localbrain search keyword "Test skill installation"</code></pre>
                     </li>
                     <li><strong>Or check the web UI</strong>:
-                        <p>Open <a href="http://127.0.0.1:8080" target="_blank">http://127.0.0.1:8080</a> in your browser</p>
+                        <p>Open <a href="http://127.0.0.1:11201" target="_blank">http://127.0.0.1:11201</a> in your browser</p>
                     </li>
                 </ol>
 
@@ -341,9 +341,9 @@ localbrain bookmark collect</code></pre>
                     <li>Start the server if not running:
                         <pre><code>localbrain web -b</code></pre>
                     </li>
-                    <li>Check if port 8080 is already in use:
+                    <li>Check if port 11201 is already in use:
                         <pre><code># macOS/Linux
-lsof -i :8080
+lsof -i :11201
 
 # Kill process if needed
 kill -9 &lt;PID&gt;</code></pre>
@@ -353,11 +353,11 @@ kill -9 &lt;PID&gt;</code></pre>
                 <h3>Permission denied</h3>
                 <ul>
                     <li>Check file permissions on the skill directory:
-                        <pre><code>ls -la ~/.qoder/skills/knowledge-collect-localbrain/</code></pre>
+                        <pre><code>ls -la ~/.qoder/skills/localbrain-collect/</code></pre>
                     </li>
                     <li>Fix permissions if needed:
                         <pre><code># macOS/Linux
-chmod -R 755 ~/.qoder/skills/knowledge-collect-localbrain/
+chmod -R 755 ~/.qoder/skills/localbrain-collect/
 
 # Ensure localbrain is executable
 chmod +x ~/.localbrain/bin/localbrain</code></pre>
@@ -413,14 +413,14 @@ localbrain test embedding</code></pre>
                     <p>只需在你的 AI 编程助手的聊天窗口中粘贴以下消息：</p>
                 </div>
 
-                <pre><code>帮我安装或更新这个知识收集技能：http://127.0.0.1:8080/docs/skills/knowledge-collect-localbrain/SKILL.md</code></pre>
+                <pre><code>帮我安装或更新这个知识收集技能：http://127.0.0.1:11201/docs/skills/localbrain-collect/SKILL.md</code></pre>
 
                 <p>就是这么简单！你的 AI 助手会自动下载并安装该 Skill。此方法适用于 Qoder、OpenClaw、Copaw 以及大多数支持 Skill 安装的 AI 编程助手。</p>
 
                 <h3>Skill 资源</h3>
                 <ul>
-                    <li>📄 <a href="skills/knowledge-collect-localbrain/SKILL.md" target="_blank">查看 SKILL.md</a> — Skill 定义文件（在线查看）</li>
-                    <li>📦 <a href="skills/knowledge-collect-localbrain/SKILL.md" download>下载 SKILL.md</a> — 下载用于手动安装</li>
+                    <li>📄 <a href="skills/localbrain-collect/SKILL.md" target="_blank">查看 SKILL.md</a> — Skill 定义文件（在线查看）</li>
+                    <li>📦 <a href="skills/localbrain-collect/SKILL.md" download>下载 SKILL.md</a> — 下载用于手动安装</li>
                 </ul>
 
                 <p>该 Skill 仅由一个 <code>SKILL.md</code> 文件组成，无需额外的脚本或依赖。</p>
@@ -428,7 +428,7 @@ localbrain test embedding</code></pre>
                 <h2>什么是 Skill？</h2>
                 <ul>
                     <li><strong>Skill</strong> 是一种插件/扩展，用于增强 AI 编程助手的功能</li>
-                    <li>Agentic Local Brain Skill（<code>knowledge-collect-localbrain</code>）使您的助手能够从日常工作流程中收集知识</li>
+                    <li>Agentic Local Brain Skill（<code>localbrain-collect</code>）使您的助手能够从日常工作流程中收集知识</li>
                     <li>安装后，您只需告诉助手诸如<em>"把这篇文章保存到我的知识库"</em>或<em>"收集这段代码片段"</em>，它就会自动处理并存储</li>
                 </ul>
 
@@ -467,7 +467,7 @@ localbrain test embedding</code></pre>
                             <li>输入 "Install Skill" 并选择该选项</li>
                         </ul>
                     </li>
-                    <li>搜索 <code>knowledge-collect-localbrain</code></li>
+                    <li>搜索 <code>localbrain-collect</code></li>
                     <li>点击<strong>"Install"</strong></li>
                     <li>Skill 将自动配置并可以使用</li>
                 </ol>
@@ -483,11 +483,11 @@ localbrain test embedding</code></pre>
                         <pre><code>cd ~/.qoder/skills/</code></pre>
                     </li>
                     <li>创建 skill 目录：
-                        <pre><code>mkdir -p knowledge-collect-localbrain
-cd knowledge-collect-localbrain</code></pre>
+                        <pre><code>mkdir -p localbrain-collect
+cd localbrain-collect</code></pre>
                     </li>
                     <li>从 Agentic Local Brain 项目复制 skill 配置文件：
-                        <pre><code>cp /path/to/agentic-local-brain/.qoder/skills/knowledge-collect-localbrain/skill.md ./</code></pre>
+                        <pre><code>cp /path/to/agentic-local-brain/.qoder/skills/localbrain-collect/skill.md ./</code></pre>
                     </li>
                     <li>重启 Qoder 以加载新的 Skill</li>
                 </ol>
@@ -500,7 +500,7 @@ cd knowledge-collect-localbrain</code></pre>
                     <li>进入 <strong>Settings → Skills/Plugins</strong></li>
                     <li>搜索 <code>Agentic Local Brain</code> 或 <code>knowledge-collect</code></li>
                     <li>点击 <strong>Install</strong> 并按照提示操作</li>
-                    <li>配置连接 URL（默认：<code>http://127.0.0.1:8080</code>）</li>
+                    <li>配置连接 URL（默认：<code>http://127.0.0.1:11201</code>）</li>
                 </ol>
 
                 <h3>手动安装</h3>
@@ -509,8 +509,8 @@ cd knowledge-collect-localbrain</code></pre>
                         <pre><code>cd ~/.openclaw/skills/</code></pre>
                     </li>
                     <li>复制 skill 配置文件：
-                        <pre><code>mkdir -p knowledge-collect-localbrain
-cp /path/to/agentic-local-brain/.qoder/skills/knowledge-collect-localbrain/skill.md ~/.openclaw/skills/knowledge-collect-localbrain/</code></pre>
+                        <pre><code>mkdir -p localbrain-collect
+cp /path/to/agentic-local-brain/.qoder/skills/localbrain-collect/skill.md ~/.openclaw/skills/localbrain-collect/</code></pre>
                     </li>
                     <li>在 OpenClaw 设置中配置到本地 brain 实例的连接</li>
                     <li>重启 OpenClaw</li>
@@ -522,7 +522,7 @@ cp /path/to/agentic-local-brain/.qoder/skills/knowledge-collect-localbrain/skill
                 <ol>
                     <li>打开 Copaw</li>
                     <li>进入 <strong>Settings → Extensions → Skill Store</strong></li>
-                    <li>搜索 <code>knowledge-collect-localbrain</code></li>
+                    <li>搜索 <code>localbrain-collect</code></li>
                     <li>点击 <strong>Install</strong> 并 <strong>Enable</strong></li>
                     <li>在设置中验证连接</li>
                 </ol>
@@ -537,7 +537,7 @@ cd ~/.copaw/plugins/
 cd %USERPROFILE%\.copaw\plugins\</code></pre>
                     </li>
                     <li>添加 skill 配置：
-                        <pre><code>mkdir -p knowledge-collect-localbrain
+                        <pre><code>mkdir -p localbrain-collect
 # 将 skill 文件复制到此目录</code></pre>
                     </li>
                     <li>重启 Copaw</li>
@@ -591,7 +591,7 @@ cd ~/.windsurf/extensions/
 - 保存文件：`localbrain collect file <path>`
 - 搜索：`localbrain search semantic "查询"`
 
-Web API 地址：http://127.0.0.1:8080/api/</code></pre>
+Web API 地址：http://127.0.0.1:11201/api/</code></pre>
                     </li>
                 </ol>
 
@@ -604,7 +604,7 @@ Web API 地址：http://127.0.0.1:8080/api/</code></pre>
 # 如果没有，添加到 PATH 或创建符号链接</code></pre>
                     </li>
                     <li><strong>助手需要能够调用 CLI 命令或 HTTP API</strong></li>
-                    <li><strong>API 端点</strong>：<code>http://127.0.0.1:8080/api/</code>（当 web 服务器运行时）</li>
+                    <li><strong>API 端点</strong>：<code>http://127.0.0.1:11201/api/</code>（当 web 服务器运行时）</li>
                 </ol>
 
                 <p><strong>Skill 集成的关键 API 端点：</strong></p>
@@ -672,7 +672,7 @@ localbrain bookmark collect</code></pre>
                         <pre><code>localbrain search keyword "测试 Skill 安装"</code></pre>
                     </li>
                     <li><strong>或检查 Web UI</strong>：
-                        <p>在浏览器中打开 <a href="http://127.0.0.1:8080" target="_blank">http://127.0.0.1:8080</a></p>
+                        <p>在浏览器中打开 <a href="http://127.0.0.1:11201" target="_blank">http://127.0.0.1:11201</a></p>
                     </li>
                 </ol>
 
@@ -699,9 +699,9 @@ localbrain bookmark collect</code></pre>
                     <li>如果未运行，启动服务器：
                         <pre><code>localbrain web -b</code></pre>
                     </li>
-                    <li>检查端口 8080 是否被占用：
+                    <li>检查端口 11201 是否被占用：
                         <pre><code># macOS/Linux
-lsof -i :8080
+lsof -i :11201
 
 # 如需终止进程
 kill -9 &lt;PID&gt;</code></pre>
@@ -711,11 +711,11 @@ kill -9 &lt;PID&gt;</code></pre>
                 <h3>权限被拒绝</h3>
                 <ul>
                     <li>检查 Skill 目录的文件权限：
-                        <pre><code>ls -la ~/.qoder/skills/knowledge-collect-localbrain/</code></pre>
+                        <pre><code>ls -la ~/.qoder/skills/localbrain-collect/</code></pre>
                     </li>
                     <li>如需修复权限：
                         <pre><code># macOS/Linux
-chmod -R 755 ~/.qoder/skills/knowledge-collect-localbrain/
+chmod -R 755 ~/.qoder/skills/localbrain-collect/
 
 # 确保 localbrain 可执行
 chmod +x ~/.localbrain/bin/localbrain</code></pre>

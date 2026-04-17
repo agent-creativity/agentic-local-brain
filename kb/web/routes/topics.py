@@ -11,9 +11,6 @@ from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
 
-# Track rebuild state
-_rebuild_state = {"running": False, "last_result": None, "last_error": None}
-
 
 @router.get("/topics")
 async def get_topics() -> Dict[str, Any]:
@@ -146,40 +143,37 @@ async def rebuild_topics() -> Dict[str, Any]:
     """
     Trigger a full topic clustering rebuild.
 
-    Runs HDBSCAN clustering on all document embeddings and
-    generates LLM topic labels. Returns immediately if already running.
+    Delegates to mining_runner for unified progress tracking and history logging.
+    Equivalent to: POST /api/mining/run {"steps": ["topics"]}
     """
-    if _rebuild_state["running"]:
-        return {"status": "already_running", "message": "Topic rebuild is already in progress."}
+    from kb.processors.mining_runner import is_running, run_mining
 
-    _rebuild_state["running"] = True
-    _rebuild_state["last_result"] = None
-    _rebuild_state["last_error"] = None
+    if is_running():
+        return {"status": "already_running", "message": "A mining run is already in progress."}
 
     try:
-        result = await asyncio.to_thread(_run_rebuild)
-        _rebuild_state["last_result"] = result
-        return {"status": "success", "result": result}
+        result = await asyncio.to_thread(
+            run_mining,
+            mode="incremental",
+            steps=["topics"],
+            triggered_by="web",
+        )
+        if result.get("status") == "completed":
+            return {"status": "success", "result": result}
+        else:
+            return {"status": result.get("status", "unknown"), "result": result}
     except Exception as e:
-        _rebuild_state["last_error"] = str(e)
         raise HTTPException(status_code=500, detail=f"Topic rebuild failed: {str(e)}")
-    finally:
-        _rebuild_state["running"] = False
-
-
-def _run_rebuild() -> Dict[str, Any]:
-    """Run topic clustering in a thread (blocking)."""
-    from kb.processors.topic_clusterer import TopicClusterer
-
-    clusterer = TopicClusterer.from_config()
-    return clusterer.cluster_all()
 
 
 @router.get("/topics/rebuild/status")
 async def rebuild_status() -> Dict[str, Any]:
-    """Get the current state of topic rebuild."""
+    """Get the current state of mining run (includes topic rebuild)."""
+    from kb.processors.mining_runner import get_run_state
+
+    state = get_run_state()
     return {
-        "running": _rebuild_state["running"],
-        "last_result": _rebuild_state["last_result"],
-        "last_error": _rebuild_state["last_error"],
+        "running": state["running"],
+        "last_result": None,
+        "last_error": state.get("error"),
     }

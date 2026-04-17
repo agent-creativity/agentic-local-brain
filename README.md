@@ -12,6 +12,8 @@
 - **Graceful Degradation**: Works without LLM/embedding services using built-in fallback algorithms
 - **Cross-Platform**: Flexible installation options — Python package (recommended, no security warnings), standalone binary (no Python required), or install from source
 - **Knowledge Mining** (v0.6): Automatic knowledge graph construction, cross-document relationship discovery, topic clustering and trend analysis, smart recommendations based on reading patterns
+- **Enhanced Retrieval** (v0.7): Multi-turn RAG chat with query expansion, hybrid retrieval (keyword + semantic fusion via RRF), LLM reranking, knowledge graph context enrichment, configurable prompt templates, and conversation history management
+- **LLM Wiki** (v0.7): Auto-generate wiki articles from topic clusters using LLM synthesis, with entity summary cards, wiki-link cross-references (`[[entity-slug]]`), staleness tracking, and automatic recompilation
 
 ## Installation
 
@@ -221,6 +223,72 @@ The system continues to work when LLM or embedding services are unavailable:
 
 Documents are **always saved** to the filesystem and SQLite, regardless of service availability. Use `localbrain test embedding` and `localbrain test llm` to verify service connectivity.
 
+## Enhanced RAG (v0.7)
+
+The Enhanced RAG system provides a multi-stage retrieval pipeline for more accurate and contextual answers:
+
+```
+Query → Query Expansion → Hybrid Retrieval → LLM Reranking → Context Enrichment → Answer Generation
+         (rewrite &        (keyword +         (relevance          (entities + topics)
+          expand)          semantic RRF)       scoring)
+```
+
+**Pipeline Stages:**
+1. **Query Expansion** — Rewrites and expands queries for better recall
+2. **Hybrid Retrieval** — Combines keyword (FTS5) and semantic search with Reciprocal Rank Fusion (RRF)
+3. **LLM Reranking** — Uses LLM to score and reorder results by relevance
+4. **Context Enrichment** — Adds entity and topic context from knowledge graph
+5. **Context Assembly** — Token-aware context building within budget
+6. **Answer Generation** — LLM synthesizes answer with source attribution
+
+**Multi-turn Conversation:**
+```bash
+# CLI: RAG query (single-turn)
+localbrain search rag "What is machine learning?"
+
+# API: Multi-turn chat with session management
+POST /api/rag/chat
+{
+  "query": "Can you elaborate on neural networks?",
+  "session_id": "optional-session-id"
+}
+```
+
+**Configurable Prompt Templates:**
+- `general` — Balanced for everyday questions
+- `technical` — Optimized for code and technical content
+- `academic` — Structured for research topics
+- `creative` — Flexible for creative exploration
+
+## LLM Wiki (v0.7)
+
+The LLM Wiki feature synthesizes collected knowledge into readable wiki articles:
+
+**What it does:**
+- **Topic Articles** — LLM synthesizes documents from topic clusters into coherent reference articles
+- **Entity Summary Cards** — Concise summaries of entities appearing across multiple documents
+- **Wiki-link Cross-references** — Articles link to related entities using `[[entity-slug]]` syntax
+- **Staleness Tracking** — Automatically detects when source documents change and flags articles for recompilation
+
+**CLI Commands:**
+```bash
+# Compile wiki articles from topic clusters
+localbrain wiki compile                 # compile stale articles only
+localbrain wiki compile --force         # recompile all articles
+
+# List compiled articles
+localbrain wiki list                    # hierarchical view (default)
+localbrain wiki list --flat             # flat list view
+localbrain wiki list --type entity      # entity cards only
+
+# View article
+localbrain wiki show <article-slug>     # display article content
+```
+
+**Web UI:** Browse the wiki through the web interface at the Wiki page, with hierarchical navigation by topic and category.
+
+**Integration with Mining Pipeline:** Wiki compilation is integrated as Step 5 of `localbrain mine run`. Skip with `--skip-wiki` if needed.
+
 ## Web API
 
 Start the web server:
@@ -232,7 +300,7 @@ localbrain web --stop             # stop background server
 localbrain web --status           # check server status
 ```
 
-API endpoints (default: http://localhost:8080):
+API endpoints (default: http://localhost:11201):
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -249,8 +317,23 @@ API endpoints (default: http://localhost:8080):
 | GET | `/api/topics/{id}/documents` | Documents in topic |
 | GET | `/api/topics/trend` | Topic trends |
 | GET | `/api/recommendations` | Smart recommendations |
+| POST | `/api/rag/chat` | Enhanced RAG with multi-turn conversation |
+| GET | `/api/rag/conversations` | List conversation sessions |
+| GET | `/api/rag/conversations/{session_id}` | Get full conversation |
+| DELETE | `/api/rag/conversations/{session_id}` | Delete conversation |
+| POST | `/api/rag/suggest` | Query suggestions |
+| GET | `/api/dashboard/rag-stats` | RAG analytics |
+| GET | `/api/wiki/tree` | Wiki structure tree |
+| GET | `/api/wiki/articles` | List articles (params: article_type, limit, offset) |
+| GET | `/api/wiki/articles/{article_id}` | Get article content |
+| GET | `/api/wiki/search` | Search wiki articles |
+| GET | `/api/wiki/categories/{category_id}/articles` | Articles by category |
+| GET | `/api/wiki/topics/{topic_id}/articles` | Articles by topic |
+| GET | `/api/wiki/entities` | List entity cards |
+| GET | `/api/wiki/entities/{entity_id}` | Get entity card |
+| GET | `/api/wiki/stats` | Wiki statistics |
 
-API docs available at `http://localhost:8080/docs` when server is running.
+API docs available at `http://localhost:11201/docs` when server is running.
 
 ## Configuration
 
@@ -259,27 +342,67 @@ Configuration file: `~/.localbrain/config.yaml`
 ```yaml
 data_dir: ~/.knowledge-base
 
-# Update server (for self-update functionality)
+# Update server URL (for self-update functionality)
 update_server_url: http://localbrain.oss-cn-shanghai.aliyuncs.com
 
 embedding:
-  provider: dashscope
-  model: text-embedding-v4
+  provider: litellm
+  model: openai/text-embedding-v4
   api_key: ${DASHSCOPE_API_KEY}
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  encoding_format: float
 
 llm:
-  provider: dashscope
-  model: qwen-plus
+  provider: litellm
+  model: dashscope/qwen-plus
   api_key: ${DASHSCOPE_API_KEY}
 
 chunking:
   max_chunk_size: 1000
-  overlap: 100
+  chunk_overlap: 100
+
+storage:
+  type: chroma
+  persist_directory: ~/.knowledge-base/db/chroma
+
+query:
+  rag:
+    top_k: 5
+    temperature: 0.3
+    max_tokens: 1000
+    context_budget: 4000
+    context_format: hierarchical
+    reranking:
+      enabled: true
+      top_n_candidates: 20
+      weight_retrieval: 0.4
+      weight_rerank: 0.6
+    conversation:
+      max_turns: 20
+      session_timeout_minutes: 30
+      history_turns_in_context: 5
+    templates:
+      default: general
+  pipeline:
+    top_k: 10
+    rerank_top_k: 5
+    context_budget: 4000
 
 logging:
+  log_dir: ""
   level: INFO
-  max_bytes: 10485760    # 10MB
+  max_bytes: 10485760
   backup_count: 5
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+wiki:
+  enabled: true
+  max_source_tokens_per_topic: 8000
+  entity_card_threshold: 3
+  temperature: 0.3
+  model: null
+  max_article_words: 3000
+  max_subcategories: 5
 ```
 
 ### Environment Variables

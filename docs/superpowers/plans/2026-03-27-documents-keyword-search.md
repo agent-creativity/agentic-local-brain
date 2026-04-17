@@ -174,7 +174,7 @@ kb web
 
 - [ ] **Step 7: Open browser and navigate to Documents page**
 
-URL: `http://localhost:8080`
+URL: `http://localhost:11201`
 Click on "Knowledge Collected" / "知识收集" in the sidebar
 
 - [ ] **Step 8: Verify search input appears**

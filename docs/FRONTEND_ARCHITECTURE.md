@@ -117,6 +117,69 @@ Enter question → Semantic search finds relevant docs
               → Display answer + source documents
 ```
 
+### 2.5 RAG Chat (v0.7 Enhanced Retrieval)
+
+**Purpose**: Multi-turn conversational Q&A with advanced retrieval capabilities
+
+**Layout**:
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│  RAG Chat                                                                 │
+├────────────────┬─────────────────────────────────┬───────────────────────┤
+│  Conversations  │  Chat Area                      │  Sources              │
+│                │                                 │                       │
+│  [+ New Chat]  │  User: What is RAG?             │  Used in last answer: │
+│                │                                 │                       │
+│  ▸ RAG Basics  │  AI: RAG stands for Retrieval-  │  ┌─────────────────┐ │
+│    (12 msgs)   │  Augmented Generation...        │  │ 📄 RAG Paper     │ │
+│                │                                 │  │ Score: 0.92     │ │
+│  ▸ Vector DBs  │  User: How does it differ from  │  └─────────────────┘ │
+│    (5 msgs)    │  fine-tuning?                   │                       │
+│                │                                 │  ┌─────────────────┐ │
+│                │  AI: Unlike fine-tuning...      │  │ 🌐 RAG Guide     │ │
+│                │                                 │  │ Score: 0.87     │ │
+│                │  ─────────────────────────────  │  └─────────────────┘ │
+│                │  💡 Confidence: 85%             │                       │
+│                │  🏷️ rag, llm, retrieval         │                       │
+│                │  ─────────────────────────────  │  Entity Chips:        │
+│                │  [📎 3 sources] [🔍 Similar]    │  [RAG] [Fine-tuning]  │
+│                │                                 │  [Vector Store]       │
+├────────────────┴─────────────────────────────────┴───────────────────────┤
+│  [🔗 Use Graph] [📊 Use Topics] │ [Type a follow-up...        ] [Send] │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+**User Flow**:
+```
+RAG Chat page → Click "+ New Chat" or select existing conversation
+              → Enter question in chat input
+              → System processes:
+                 1. Query expansion (optional)
+                 2. Multi-source retrieval (semantic + graph + topics)
+                 3. Reranking by relevance
+                 4. Context assembly with token budget
+                 5. LLM generation with enriched context
+              → Display answer with:
+                 - Markdown formatted response
+                 - Confidence badge
+                 - Source cards with scores
+                 - Entity chips (clickable for more info)
+              → Ask follow-up questions (conversation context maintained)
+              → Toggle graph/topic enrichment for enhanced retrieval
+```
+
+**Features**:
+| Feature | Description |
+|---------|-------------|
+| Multi-turn Chat | Conversation context maintained across messages |
+| Source Panel | Shows documents used in current answer |
+| Confidence Badge | AI-generated confidence score (0-100%) |
+| Entity Chips | Extracted entities clickable for exploration |
+| Graph Enrichment | Toggle to include knowledge graph relationships |
+| Topic Enrichment | Toggle to include topic cluster context |
+| Conversation History | Sidebar shows past conversations |
+| Suggested Questions | Auto-generated follow-up suggestions |
+
 ---
 
 ## 3. Data Models
@@ -719,6 +782,13 @@ interface AppState {
   searchResults: SearchResult[]
   ragAnswer: RAGResult | null
   
+  // RAG Chat (v0.7)
+  ragMessages: RAGChatMessage[]
+  ragCurrentSessionId: string | null
+  ragConversations: RAGConversation[]
+  ragUseGraph: boolean
+  ragUseTopics: boolean
+  
   // UI State
   loading: {
     stats: boolean
@@ -770,6 +840,13 @@ deleteTag(tagName: string): Promise<void>
 performKeywordSearch(query: string, contentType?: string, limit?: number): Promise<void>
 performSemanticSearch(query: string, tags?: string[], topK?: number): Promise<void>
 performRAGQuery(question: string, tags?: string[], topK?: number): Promise<void>
+
+// RAG Chat (v0.7)
+startNewRAGChat(): Promise<void>
+loadRAGConversation(sessionId: string): Promise<void>
+sendRAGMessage(message: string, useGraph?: boolean, useTopics?: boolean): Promise<void>
+deleteRAGConversation(sessionId: string): Promise<void>
+fetchRAGSuggestions(sessionId: string): Promise<string[]>
 
 // UI
 showToast(type: string, message: string): void
@@ -931,7 +1008,7 @@ const API_CONFIG = {
 
 // For external deployments
 const API_CONFIG_EXTERNAL = {
-  baseURL: 'http://localhost:8080/api',
+  baseURL: 'http://localhost:11201/api',
   // ... same as above
 }
 ```

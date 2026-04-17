@@ -18,11 +18,13 @@ from kb.commands.init import init
 from kb.commands.collect import collect
 from kb.commands.search import search
 from kb.commands.manage import config, stats, tag, export, test, web
+from kb.commands.backup import backup
 from kb.commands.topics import topics
 from kb.commands.mine import mine
 from kb.commands.uninstall import uninstall
 from kb.commands.doctor import doctor
 from kb.commands.self_update import self_update
+from kb.commands.wiki import wiki
 
 
 @click.group(invoke_without_command=True)
@@ -58,11 +60,13 @@ cli.add_command(tag)
 cli.add_command(export)
 cli.add_command(test)
 cli.add_command(web)
+cli.add_command(backup)
 cli.add_command(topics)
 cli.add_command(mine)
 cli.add_command(uninstall)
 cli.add_command(doctor)
 cli.add_command(self_update)
+cli.add_command(wiki)
 
 
 # Backward compatibility: keep old command names as aliases

@@ -33,7 +33,7 @@
         'skill-install.html': { en: 'Skill Installation', zh: 'Skill 安装' },
         'core-concepts.html': { en: 'Core Concepts', zh: '核心概念' },
         'architecture.html': { en: 'Architecture', zh: '系统架构' },
-        'configuration.html': { en: 'Configuration', zh: '配置指南' },
+        'configuration.html': { en: 'Configuration Guide', zh: '配置指南' },
         'cli-reference.html': { en: 'CLI Reference', zh: 'CLI 参考' },
         'api-reference.html': { en: 'API Reference', zh: 'API 参考' },
         'roadmap.html': { en: 'Roadmap', zh: '发展路线' },

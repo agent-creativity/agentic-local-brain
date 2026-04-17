@@ -38,8 +38,10 @@
                     file: 'File',
                     tags: 'Tags Management',
                     search: 'Search',
-                    mining: 'Knowledge Mining (Todo)',
-                    rag: 'Enhanced Retrieval (Todo)',
+                    mining: 'Knowledge Mining',
+                    wiki: 'LLM Wiki',
+                    rag: 'Enhanced Retrieval',
+                    backup: 'Backup',
                     settings: 'System Settings'
                 },
                 dashboard: {
@@ -236,6 +238,96 @@
                     hourAgo: 'hour ago',
                     daysAgo: 'days ago',
                     dayAgo: 'day ago'
+                },
+                rag: {
+                    title: 'Enhanced Retrieval',
+                    subtitle: 'Ask questions about your knowledge base with AI-powered answers',
+                    newConversation: 'New Conversation',
+                    placeholder: 'Ask a question about your knowledge base...',
+                    send: 'Send',
+                    sending: 'Sending...',
+                    emptyStateTitle: 'Start a conversation',
+                    emptyStateDesc: 'Ask a question about your knowledge base to get AI-powered answers with source citations.',
+                    thinking: 'Thinking...',
+                    sources: 'Sources',
+                    entities: 'Entities',
+                    topicContext: 'Topic Context',
+                    confidence: 'Confidence',
+                    viewFull: 'View full',
+                    turns: 'turns',
+                    turn: 'turn',
+                    deleteConfirm: 'Delete this conversation?',
+                    clearAllConfirm: 'Are you sure you want to clear all conversation history? This action cannot be undone.',
+                    clearAll: 'Clear All History',
+                    useGraph: 'Knowledge Graph',
+                    useTopics: 'Topics',
+                    noSources: 'No sources available',
+                    noEntities: 'No entities extracted',
+                    noTopicContext: 'No topic context',
+                    relevance: 'Relevance',
+                    errorMessage: 'Sorry, I encountered an error. Please try again.',
+                    loadingConversations: 'Loading conversations...',
+                    noConversations: 'No conversations yet',
+                    allHistoryCleared: 'All conversation history cleared'
+                },
+                wiki: {
+                    title: 'LLM Wiki',
+                    topicArticles: 'Topic Articles',
+                    entityCards: 'Entity Cards',
+                    lastCompiled: 'Last compiled',
+                    words: 'words',
+                    sources: 'sources',
+                    version: 'v',
+                    backToWiki: '← Back to Wiki',
+                    backToCategory: 'Back to Category',
+                    sourceDocuments: 'Source Documents',
+                    relatedEntities: 'Related Entities',
+                    searchPlaceholder: 'Search wiki articles...',
+                    emptyState: 'No wiki articles yet. Run knowledge mining to compile your knowledge into wiki articles.',
+                    emptySearch: 'No articles match your search.',
+                    emptyCategory: 'No articles in this category.',
+                    compile: 'Compile Wiki',
+                    topics: 'topics',
+                    categories: 'categories',
+                    articles: 'articles',
+                    compiledAt: 'Compiled',
+                    referencedEntities: 'Referenced Entities',
+                    welcomeTitle: 'Welcome to LLM Wiki',
+                    welcomeText: 'Select a category from the sidebar to explore your knowledge base.',
+                    searchResults: 'Search Results'
+                },
+                backup: {
+                    title: 'Backup Management',
+                    subtitle: 'Create and manage knowledge base backups',
+                    createNew: 'Create New Backup',
+                    backupHistory: 'Backup History',
+                    backupTasks: 'Backup Tasks',
+                    description: 'Description',
+                    descriptionPlaceholder: 'Optional description for this backup...',
+                    create: 'Create Backup',
+                    creating: 'Creating...',
+                    delete: 'Delete',
+                    deleteConfirm: 'Are you sure you want to delete this backup?',
+                    size: 'Size',
+                    createdAt: 'Created',
+                    location: 'Location',
+                    status: 'Status',
+                    noBackups: 'No backups found',
+                    noBackupsDesc: 'Create your first backup to get started',
+                    noTasks: 'No tasks found',
+                    taskId: 'Task ID',
+                    cloudProvider: 'Cloud Storage',
+                    localOnly: 'Local only',
+                    statusCompleted: 'Completed',
+                    statusRunning: 'Running',
+                    statusFailed: 'Failed',
+                    statusPending: 'Pending',
+                    error: 'Error',
+                    loadError: 'Failed to load backups',
+                    createSuccess: 'Backup created successfully',
+                    createError: 'Failed to create backup',
+                    deleteSuccess: 'Backup deleted successfully',
+                    deleteError: 'Failed to delete backup'
                 }
             },
             zh: {
@@ -255,8 +347,10 @@
                     file: '文件',
                     tags: '标签管理',
                     search: '搜索',
-                    mining: '知识挖掘 (Todo)',
-                    rag: '增强检索 (Todo)',
+                    mining: '知识挖掘',
+                    wiki: 'LLM 维基',
+                    rag: '增强检索',
+                    backup: '备份管理',
                     settings: '系统配置'
                 },
                 dashboard: {
@@ -453,6 +547,96 @@
                     hourAgo: '小时前',
                     daysAgo: '天前',
                     dayAgo: '天前'
+                },
+                rag: {
+                    title: '增强检索',
+                    subtitle: '基于知识库的 AI 智能问答',
+                    newConversation: '新建对话',
+                    placeholder: '向知识库提问...',
+                    send: '发送',
+                    sending: '发送中...',
+                    emptyStateTitle: '开始对话',
+                    emptyStateDesc: '向知识库提问，获取基于来源的 AI 智能回答。',
+                    thinking: '思考中...',
+                    sources: '参考来源',
+                    entities: '实体',
+                    topicContext: '主题上下文',
+                    confidence: '置信度',
+                    viewFull: '查看完整',
+                    turns: '轮',
+                    turn: '轮',
+                    deleteConfirm: '删除此对话？',
+                    useGraph: '知识图谱',
+                    useTopics: '主题',
+                    noSources: '暂无来源',
+                    noEntities: '未提取到实体',
+                    noTopicContext: '无主题上下文',
+                    relevance: '相关度',
+                    errorMessage: '抱歉，出现了错误。请重试。',
+                    loadingConversations: '加载对话中...',
+                    noConversations: '暂无对话',
+                    clearAllConfirm: '确认清除所有会话记录？此操作不可恢复。',
+                    clearAll: '清除全部历史',
+                    allHistoryCleared: '已清除所有会话记录'
+                },
+                wiki: {
+                    title: 'LLM 维基',
+                    topicArticles: '主题文章',
+                    entityCards: '实体卡片',
+                    lastCompiled: '最后编译',
+                    words: '字',
+                    sources: '个来源',
+                    version: 'v',
+                    backToWiki: '← 返回维基',
+                    backToCategory: '返回分类',
+                    sourceDocuments: '源文档',
+                    relatedEntities: '相关实体',
+                    searchPlaceholder: '搜索维基文章...',
+                    emptyState: '暂无维基文章。运行知识挖掘以将您的知识编译为维基文章。',
+                    emptySearch: '没有匹配的文章。',
+                    emptyCategory: '该分类下暂无文章。',
+                    compile: '编译维基',
+                    topics: '主题',
+                    categories: '分类',
+                    articles: '文章',
+                    compiledAt: '编译时间',
+                    referencedEntities: '引用实体',
+                    welcomeTitle: '欢迎使用 LLM 维基',
+                    welcomeText: '从侧边栏选择一个分类来探索您的知识库。',
+                    searchResults: '搜索结果'
+                },
+                backup: {
+                    title: '备份管理',
+                    subtitle: '创建和管理知识库备份',
+                    createNew: '创建新备份',
+                    backupHistory: '备份历史',
+                    backupTasks: '备份任务',
+                    description: '描述',
+                    descriptionPlaceholder: '可选的备份描述...',
+                    create: '创建备份',
+                    creating: '创建中...',
+                    delete: '删除',
+                    deleteConfirm: '确定要删除此备份吗？',
+                    size: '大小',
+                    createdAt: '创建时间',
+                    location: '位置',
+                    status: '状态',
+                    noBackups: '暂无备份',
+                    noBackupsDesc: '创建你的第一个备份开始',
+                    noTasks: '暂无任务',
+                    taskId: '任务ID',
+                    cloudProvider: '云存储',
+                    localOnly: '仅本地',
+                    statusCompleted: '已完成',
+                    statusRunning: '运行中',
+                    statusFailed: '失败',
+                    statusPending: '待执行',
+                    error: '错误',
+                    loadError: '加载备份失败',
+                    createSuccess: '备份创建成功',
+                    createError: '备份创建失败',
+                    deleteSuccess: '备份删除成功',
+                    deleteError: '备份删除失败'
                 }
             }
         };
@@ -957,6 +1141,12 @@
         .badge-note { background: #fef9c3; color: #a16207; }
         .badge-paper { background: #ffedd5; color: #c2410c; }
         .badge-email { background: #fce7f3; color: #be185d; }
+
+        /* Backup status badges */
+        .backup-status-completed { background: #c6f6d5; color: #22543d; }
+        .backup-status-running { background: #bee3f8; color: #2c5282; }
+        .backup-status-failed { background: #fed7d7; color: #742a2a; }
+        .backup-status-pending { background: #feebc8; color: #7c2d12; }
         
         /* Tag chips */
         .tag {
@@ -2031,21 +2221,22 @@
         
         /* File Page */
         .file-list {
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
         .file-item {
             display: flex;
             align-items: center;
-            padding: 14px 20px;
-            border-bottom: 1px solid var(--border);
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 20px;
             transition: all 0.2s;
         }
-        .file-item:last-child { border-bottom: none; }
         .file-item:hover {
-            background: var(--bg);
+            border-color: var(--type-file);
+            box-shadow: var(--shadow-sm);
         }
         .file-icon {
             width: 40px;
@@ -2073,10 +2264,10 @@
         .file-path {
             font-size: 0.8rem;
             color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            overflow-wrap: break-word;
+            word-break: break-all;
             font-family: monospace;
+            max-width: 100%;
         }
         .file-stats {
             display: flex;
@@ -2144,6 +2335,533 @@
         @media (max-width: 480px) {
             .type-breakdown-row {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        /* ---- RAG Chat Styles ---- */
+        .rag-container {
+            display: flex;
+            height: calc(100vh - 120px);
+            gap: 16px;
+            overflow: hidden;
+        }
+        .rag-sidebar {
+            width: 240px;
+            flex-shrink: 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .rag-sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .rag-new-chat-btn {
+            width: 100%;
+            padding: 10px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .rag-new-chat-btn:hover {
+            background: var(--primary-hover);
+        }
+        .rag-conversations-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        .rag-conversation-item {
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+            position: relative;
+        }
+        .rag-conversation-item:hover {
+            background: var(--bg);
+        }
+        .rag-conversation-item.active {
+            background: var(--primary-light);
+        }
+        .rag-conversation-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+        .rag-conversation-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .rag-conversation-delete {
+            opacity: 0;
+            transition: opacity 0.2s;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+        .rag-conversation-item:hover .rag-conversation-delete {
+            opacity: 1;
+        }
+        .rag-conversation-delete:hover {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+        .rag-clear-all-btn {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            background: transparent;
+            border: 1px solid var(--danger);
+            border-radius: 6px;
+            color: var(--danger);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .rag-clear-all-btn:hover {
+            background: #fee2e2;
+        }
+        .rag-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .rag-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .rag-message {
+            display: flex;
+            gap: 12px;
+            max-width: 85%;
+        }
+        .rag-message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .rag-message.assistant {
+            align-self: flex-start;
+        }
+        .rag-message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .rag-message.user .rag-message-avatar {
+            background: var(--primary-light);
+        }
+        .rag-message.assistant .rag-message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .rag-message-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .rag-message.user .rag-message-content-wrapper {
+            align-items: flex-end;
+        }
+        .rag-message-content {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .rag-message.user .rag-message-content {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .rag-message.assistant .rag-message-content {
+            background: var(--bg);
+            color: var(--text);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border);
+        }
+        .rag-message.assistant .rag-message-content.error {
+            background: #fee2e2;
+            color: var(--danger);
+            border-color: #fecaca;
+        }
+        .rag-message-content pre {
+            background: rgba(0,0,0,0.05);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        .rag-message-content code {
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .rag-message-content p {
+            margin: 0 0 8px 0;
+        }
+        .rag-message-content p:last-child {
+            margin-bottom: 0;
+        }
+        .rag-message-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .rag-confidence-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            background: var(--bg);
+            border: 1px solid var(--border);
+        }
+        .rag-confidence-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .rag-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--card-bg);
+        }
+        .rag-input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .rag-textarea {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.95rem;
+            resize: none;
+            min-height: 48px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+        .rag-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .rag-send-btn {
+            padding: 12px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .rag-send-btn:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+        .rag-send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .rag-options {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .rag-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .rag-option input[type="checkbox"] {
+            cursor: pointer;
+        }
+        .rag-sources-panel {
+            width: 300px;
+            flex-shrink: 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .rag-sources-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+        .rag-sources-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        .rag-source-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+        .rag-source-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+        .rag-source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .rag-source-title-row {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            min-width: 0;
+        }
+        .rag-source-title {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+        .rag-source-score {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+        .rag-source-score-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+        .rag-source-score-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        .rag-source-preview {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .rag-source-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        .rag-source-tag {
+            padding: 2px 8px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        .rag-source-link {
+            font-size: 0.8rem;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        .rag-source-link:hover {
+            text-decoration: underline;
+        }
+        .rag-entities-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .rag-section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .rag-entity-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .rag-entity-chip {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .rag-topic-box {
+            margin-top: 16px;
+            padding: 12px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-radius: 8px;
+        }
+        .rag-topic-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #1e40af;
+            margin-bottom: 4px;
+        }
+        .rag-topic-desc {
+            font-size: 0.8rem;
+            color: #3b82f6;
+            line-height: 1.4;
+        }
+        .rag-empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
+        .rag-empty-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        .rag-empty-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .rag-empty-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            max-width: 400px;
+        }
+        .rag-typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+        .rag-typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: rag-typing-bounce 1.4s infinite ease-in-out both;
+        }
+        .rag-typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .rag-typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes rag-typing-bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        .rag-citation {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin: 0 2px;
+            cursor: pointer;
+            vertical-align: super;
+        }
+        .rag-citation:hover {
+            background: var(--primary);
+            color: white;
+        }
+        @media (max-width: 1200px) {
+            .rag-sources-panel {
+                display: none;
+            }
+        }
+        @media (max-width: 768px) {
+            .rag-sidebar {
+                display: none;
+            }
+            .rag-container {
+                flex-direction: column;
+                height: auto;
+                min-height: calc(100vh - 120px);
+            }
+            .rag-main {
+                min-height: 500px;
             }
         }
 
@@ -2434,6 +3152,360 @@
         .related-doc-meta { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
         .related-doc-reason { font-size: 12px; color: var(--text-secondary); }
         .related-doc-score { font-size: 11px; color: var(--primary); font-weight: 500; }
+
+        /* Wiki Page Styles */
+        .wiki-content h1, .wiki-content h2, .wiki-content h3 {
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        .wiki-content p {
+            margin-bottom: 12px;
+        }
+        .wiki-content a.wiki-link {
+            color: #1890ff;
+            text-decoration: none;
+            border-bottom: 1px dashed #1890ff;
+            cursor: pointer;
+        }
+        .wiki-content a.wiki-link:hover {
+            color: #40a9ff;
+            border-bottom-style: solid;
+        }
+        .wiki-page {
+            display: flex;
+            height: calc(100vh - 60px);
+            max-width: 1400px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        /* Split Panel Layout */
+        .wiki-sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: #f8f9fa;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .wiki-sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #fff;
+        }
+        
+        .wiki-sidebar-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+            color: #1e293b;
+        }
+        
+        .wiki-search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+            box-sizing: border-box;
+        }
+        
+        .wiki-search-input:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
+        
+        .wiki-sidebar-stats {
+            padding: 8px 16px;
+            font-size: 0.8em;
+            color: #64748b;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .wiki-tree-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 8px;
+        }
+        
+        .wiki-tree-topic {
+            margin-bottom: 4px;
+        }
+        
+        .wiki-tree-topic-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            color: #1e293b;
+            transition: background 0.15s;
+        }
+        
+        .wiki-tree-topic-header:hover {
+            background: #e2e8f0;
+        }
+        
+        .wiki-tree-arrow {
+            margin-right: 8px;
+            font-size: 0.7em;
+            transition: transform 0.2s;
+            color: #64748b;
+        }
+        
+        .wiki-tree-arrow.expanded {
+            transform: rotate(90deg);
+        }
+        
+        .wiki-tree-badge {
+            margin-left: auto;
+            font-size: 0.75em;
+            color: #64748b;
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .wiki-tree-categories {
+            margin-left: 20px;
+            margin-top: 2px;
+        }
+        
+        .wiki-tree-category {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #334155;
+            transition: all 0.15s;
+            margin-bottom: 2px;
+        }
+        
+        .wiki-tree-category:hover {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        
+        .wiki-tree-category.active {
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-weight: 500;
+        }
+        
+        .wiki-tree-category-icon {
+            margin-right: 8px;
+            font-size: 0.9em;
+        }
+        
+        .wiki-content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
+            background: #fff;
+        }
+        
+        .wiki-welcome {
+            text-align: center;
+            padding: 80px 20px;
+            color: #64748b;
+        }
+        
+        .wiki-welcome-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .wiki-welcome-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+        
+        .wiki-welcome-text {
+            font-size: 1em;
+            max-width: 400px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .wiki-category-header {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .wiki-category-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 8px 0;
+        }
+        
+        .wiki-category-breadcrumb {
+            font-size: 0.9em;
+            color: #64748b;
+        }
+        
+        .wiki-category-breadcrumb span {
+            color: #334155;
+        }
+        
+        .wiki-article-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        
+        .wiki-article-card {
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+        
+        .wiki-article-card:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .wiki-article-card-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        
+        .wiki-article-card-meta {
+            font-size: 0.85em;
+            color: #64748b;
+        }
+        
+        .wiki-article-category-badge {
+            display: inline-block;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            margin-right: 8px;
+        }
+        
+        .wiki-article-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .wiki-article-breadcrumb {
+            font-size: 0.9em;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+        
+        .wiki-article-breadcrumb a {
+            color: #4a90d9;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .wiki-article-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .wiki-article-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        .wiki-article-content {
+            line-height: 1.8;
+            font-size: 1em;
+            color: #334155;
+        }
+        
+        .wiki-article-meta {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 2px solid #e2e8f0;
+            font-size: 0.85em;
+            color: #94a3b8;
+        }
+        
+        .wiki-article-meta-section {
+            margin-bottom: 16px;
+        }
+        
+        .wiki-article-meta-label {
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+        
+        .wiki-tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .wiki-tag {
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        
+        .wiki-tag.source {
+            background: #f0f7ff;
+            color: #4a90d9;
+        }
+        
+        .wiki-tag.source:hover {
+            background: #dceafa;
+        }
+        
+        .wiki-source-type {
+            color: #64748b;
+            font-weight: 500;
+            margin-right: 4px;
+        }
+        
+        .wiki-tag.entity {
+            background: #f0fff4;
+            color: #2d8659;
+        }
+        
+        .wiki-tag.entity:hover {
+            background: #d4f5e0;
+        }
+        
+        .wiki-back-link {
+            display: inline-flex;
+            align-items: center;
+            color: #4a90d9;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-bottom: 16px;
+            text-decoration: none;
+        }
+        
+        .wiki-back-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -2505,7 +3577,7 @@
                     </div>
                     
                     <div class="nav-item" :class="{ active: isMiningPage }"
-                         @click="navigateTo('graph')">
+                         @click="navigateTo('mining')">
                         <span class="nav-icon">⛏️</span> {{ locale === 'en' ? 'Knowledge Mining' : '知识挖掘' }}
                     </div>
                     <div class="nav-submenu">
@@ -2527,11 +3599,21 @@
                         </div>
                     </div>
 
-                    <div class="nav-item nav-item-disabled" :class="{ active: currentPage === 'rag' }"
-                         @click="showToast('功能开发中，敬请期待', 'info')">
-                        <span class="nav-icon">🔍</span> {{ t('nav.rag') }}
+                    <div class="nav-item" :class="{ active: currentPage === 'wiki' }"
+                         @click="navigateTo('wiki')">
+                        <span class="nav-icon">📖</span> {{ t('nav.wiki') }}
+                    </div>
+
+                    <div class="nav-item" :class="{ active: currentPage === 'rag' }"
+                         @click="navigateTo('rag')">
+                        <span class="nav-icon">🔍</span> {{ locale === 'en' ? 'Enhanced Retrieval' : '增强检索' }}
                     </div>
                     
+                    <div class="nav-item" :class="{ active: currentPage === 'backup' }" 
+                         @click="navigateTo('backup')">
+                        <span class="nav-icon">💾</span> {{ t('nav.backup') }}
+                    </div>
+
                     <div class="nav-item" :class="{ active: currentPage === 'settings' }" 
                          @click="navigateTo('settings')">
                         <span class="nav-icon">⚙️</span> {{ t('nav.settings') }}
@@ -3630,25 +4712,48 @@
                             <h1 class="page-title">{{ t('nav.settings') }}</h1>
                             <p class="page-subtitle">{{ locale === 'en' ? 'Configure your knowledge base settings' : '配置你的知识库设置' }}</p>
                         </div>
-                        <a href="/docs/config-reference.html" target="_blank" class="btn" style="text-decoration: none; border: 1px solid var(--border); background: var(--bg);">
-                            {{ locale === 'en' ? 'Configuration Reference' : '配置参考文档' }}
-                        </a>
+
                     </div>
 
-                    <div class="card">
-                        <div class="card-body">
-                            <h3 style="margin-bottom: 16px;">{{ locale === 'en' ? 'Installation Info' : '安装信息' }}</h3>
-                            <div class="detail-section">
-                                <div class="detail-label">{{ locale === 'en' ? 'Version' : '版本' }}</div>
-                                <div class="detail-value">v{{ version || '-' }}</div>
+                    <!-- Guidance Info Box -->
+                    <div class="card" style="margin-top: 16px; background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); border: 1px solid #bae6fd;">
+                        <div class="card-body" style="padding: 16px;">
+                            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                                <div style="font-size: 20px;">💡</div>
+                                <div>
+                                    <p style="margin: 0; color: #0369a1; font-size: 14px; line-height: 1.6;">
+                                        {{ locale === 'en'
+                                            ? 'For lightweight collection and knowledge mining, you can configure local models via Ollama. For large-scale knowledge processing, we recommend using higher-performance cloud models.'
+                                            : '对于轻量的知识收集和挖掘，可以配置使用 Ollama 本地模型。对于大量的知识处理和挖掘，建议配置性能更好的云端模型。' }}
+                                    </p>
+                                    <p style="margin: 8px 0 0 0; font-size: 13px;">
+                                        <a href="/docs/configuration.html" target="_blank" style="color: #0284c7; font-weight: 500;">
+                                            {{ locale === 'en' ? 'Configuration Guide' : '配置指南' }} →
+                                        </a>
+                                    </p>
+                                </div>
                             </div>
-                            <div class="detail-section">
-                                <div class="detail-label">{{ locale === 'en' ? 'Data Directory' : '数据目录' }}</div>
-                                <div class="detail-value" style="font-family: monospace;">{{ settingsPaths.data_dir || '-' }}</div>
-                            </div>
-                            <div class="detail-section">
-                                <div class="detail-label">{{ locale === 'en' ? 'Install Directory' : '应用目录' }}</div>
-                                <div class="detail-value" style="font-family: monospace;">{{ settingsPaths.install_dir || '-' }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Alibaba Cloud Coding Plan Info -->
+                    <div class="card" style="margin-top: 12px; background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border: 1px solid #fcd34d;">
+                        <div class="card-body" style="padding: 14px 16px;">
+                            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                <div style="font-size: 18px;">🎁</div>
+                                <div>
+                                    <p style="margin: 0; color: #92400e; font-size: 13px; line-height: 1.5;">
+                                        <strong>{{ locale === 'en' ? 'Alibaba Cloud Coding Plan' : '阿里云 Coding Plan' }}</strong>
+                                        {{ locale === 'en'
+                                            ? '— Free access to Qwen and embedding models. Perfect for getting started!'
+                                            : '— 免费使用通义千问和 Embedding 模型，快速上手首选！' }}
+                                    </p>
+                                    <p style="margin: 6px 0 0 0; font-size: 12px;">
+                                        <a href="/docs/configuration.html#-coding-planopenai--8" target="_blank" style="color: #b45309; font-weight: 500;">
+                                            {{ locale === 'en' ? 'View Configuration Guide' : '查看配置指南' }} →
+                                        </a>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -3657,10 +4762,15 @@
                     <div class="card" style="margin-top: 16px;">
                         <div class="card-body">
                             <h3 style="margin-bottom: 4px;">{{ locale === 'en' ? 'LLM Model Service' : '大语言模型配置' }}</h3>
-                            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px;">
+                            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
                                 {{ locale === 'en'
-                                    ? 'Configure the LLM provider for auto-tagging and RAG queries. api_key accepts an environment variable name (e.g. ${DASHSCOPE_API_KEY}) or a raw key value.'
-                                    : '配置用于自动打标签和 RAG 问答的 LLM 服务。api_key 支持填写环境变量名（如 ${DASHSCOPE_API_KEY}）或原始 key 值。' }}
+                                    ? 'Configure the LLM provider for auto-tagging and auto-summarization during collection, and for building knowledge graphs during knowledge mining.'
+                                    : '配置用于收集过程中的自动打标签和自动摘要，以及知识挖掘过程中构建知识图谱。' }}
+                            </p>
+                            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 20px; padding: 8px 12px; background: rgba(245, 158, 11, 0.1); border-radius: 6px; border-left: 3px solid var(--warning);">
+                                {{ locale === 'en'
+                                    ? 'Collection can degrade to work without LLM (using built-in tag extraction). Knowledge mining and knowledge graph construction require LLM.'
+                                    : '收集过程可以在无 LLM 时降级运行（使用内置标签提取）。知识挖掘和知识图谱构建强依赖 LLM。' }}
                             </p>
 
                             <!-- Provider -->
@@ -3670,9 +4780,11 @@
                                 </label>
                                 <select v-model="llmSettings.provider"
                                         style="width: 100%; max-width: 320px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;">
-                                    <option value="dashscope">dashscope {{ locale === 'en' ? '(Legacy, auto-mapped)' : '（旧格式，自动映射）' }}</option>
-                                    <option value="openai_compatible">openai_compatible {{ locale === 'en' ? '(Legacy, auto-mapped)' : '（旧格式，自动映射）' }}</option>
-                                    <option value="litellm">litellm {{ locale === 'en' ? '(Recommended)' : '（推荐）' }}</option>
+                                    <option value="dashscope">DashScope {{ locale === 'en' ? '(Alibaba Cloud)' : '（阿里云百炼）' }}</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="ollama">Ollama {{ locale === 'en' ? '(Local Model)' : '（本地模型）' }}</option>
+                                    <option value="openai_compatible">OpenAI Compatible {{ locale === 'en' ? '(Other Compatible Services)' : '（其他兼容服务）' }}</option>
                                 </select>
                             </div>
 
@@ -3681,15 +4793,10 @@
                                 <label style="display: block; font-weight: 500; margin-bottom: 6px;">
                                     {{ locale === 'en' ? 'Model' : '模型' }}
                                 </label>
-                                <input type="text" v-model="llmSettings.model" placeholder="e.g. qwen-plus  or  dashscope/qwen-plus"
+                                <input type="text" v-model="llmSettings.model" :placeholder="locale === 'en' ? 'e.g. qwen-plus, gpt-4o, claude-3-5-sonnet-20241022' : '如 qwen-plus、gpt-4o、claude-3-5-sonnet-20241022'"
                                        style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" />
                                 <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
-                                    <span v-if="llmSettings.provider === 'litellm'">
-                                        {{ locale === 'en' ? 'Use provider/model format, e.g.: dashscope/qwen-plus, openai/gpt-4o, anthropic/claude-3-5-sonnet-20241022' : '使用 provider/model 格式，如：dashscope/qwen-plus、openai/gpt-4o、anthropic/claude-3-5-sonnet-20241022' }}
-                                    </span>
-                                    <span v-else>
-                                        {{ locale === 'en' ? 'e.g. qwen-plus, qwen-turbo, qwen-max' : '如 qwen-plus、qwen-turbo、qwen-max' }}
-                                    </span>
+                                    {{ locale === 'en' ? 'Model name only, e.g.: qwen-plus, gpt-4o, claude-3-5-sonnet-20241022' : '仅需填写模型名称，如：qwen-plus、gpt-4o、claude-3-5-sonnet-20241022' }}
                                 </div>
                             </div>
 
@@ -3708,19 +4815,19 @@
                                 </div>
                             </div>
 
-                            <!-- Base URL (for openai_compatible / litellm with custom endpoint) -->
-                            <div v-if="llmSettings.provider === 'openai_compatible' || llmSettings.provider === 'litellm'"
+                            <!-- Base URL (for ollama / openai_compatible with custom endpoint) -->
+                            <div v-if="llmSettings.provider === 'ollama' || llmSettings.provider === 'openai_compatible'"
                                  style="margin-bottom: 16px;">
                                 <label style="display: block; font-weight: 500; margin-bottom: 6px;">
                                     Base URL
                                     <span v-if="llmSettings.provider === 'openai_compatible'"
                                           style="color: var(--danger); font-size: 12px; font-weight: normal; margin-left: 4px;">*</span>
                                     <span v-else style="color: var(--text-secondary); font-size: 12px; font-weight: normal; margin-left: 4px;">
-                                        {{ locale === 'en' ? '(optional, for custom endpoints)' : '（可选，自定义端点）' }}
+                                        {{ locale === 'en' ? '(optional, default: http://localhost:11434/v1)' : '（可选，默认：http://localhost:11434/v1）' }}
                                     </span>
                                 </label>
                                 <input type="text" v-model="llmSettings.base_url"
-                                       placeholder="http://localhost:11434/v1"
+                                       :placeholder="llmSettings.provider === 'ollama' ? 'http://localhost:11434/v1' : 'https://your-api-endpoint/v1'"
                                        style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; font-family: monospace;" />
                             </div>
 
@@ -3740,19 +4847,13 @@
                                     : (locale === 'en' ? 'Save' : '保存') }}
                             </button>
 
-                            <!-- Test Buttons -->
-                            <div style="display: flex; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                            <!-- Test LLM Button -->
+                            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
                                 <button class="btn" @click="testLLM" :disabled="testingLLM"
                                         style="border: 1px solid var(--border); background: var(--bg);">
                                     {{ testingLLM
                                         ? (locale === 'en' ? 'Testing LLM...' : '测试 LLM 中...')
                                         : (locale === 'en' ? 'Test LLM Connection' : '测试 LLM 连接') }}
-                                </button>
-                                <button class="btn" @click="testEmbedding" :disabled="testingEmbedding"
-                                        style="border: 1px solid var(--border); background: var(--bg);">
-                                    {{ testingEmbedding
-                                        ? (locale === 'en' ? 'Testing Embedding...' : '测试 Embedding 中...')
-                                        : (locale === 'en' ? 'Test Embedding Connection' : '测试 Embedding 连接') }}
                                 </button>
                             </div>
 
@@ -3769,9 +4870,119 @@
                                     <strong>LLM Failed</strong> &mdash; {{ llmTestResult.error }}
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Embedding Model Configuration -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 4px;">{{ locale === 'en' ? 'Embedding Model Service' : 'Embedding 模型配置' }}</h3>
+                            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                                {{ locale === 'en'
+                                    ? 'Used during collection to build document vector data for semantic search.'
+                                    : '配置用于收集过程中建立文档向量数据，支持语义搜索。' }}
+                            </p>
+                            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 20px; padding: 8px 12px; background: rgba(245, 158, 11, 0.1); border-radius: 6px; border-left: 3px solid var(--warning);">
+                                {{ locale === 'en'
+                                    ? 'When not configured, collection still works but semantic search and RAG will be unavailable (keyword search only).'
+                                    : '未配置时收集仍可正常工作，但语义搜索和 RAG 问答将不可用（仅支持关键词搜索）。' }}
+                            </p>
+
+                            <!-- Provider -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    {{ locale === 'en' ? 'Provider' : '服务提供商' }}
+                                </label>
+                                <select v-model="embeddingSettings.provider"
+                                        style="width: 100%; max-width: 320px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;">
+                                    <option value="dashscope">DashScope {{ locale === 'en' ? '(Alibaba Cloud)' : '（阿里云百炼）' }}</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="ollama">Ollama {{ locale === 'en' ? '(Local Model)' : '（本地模型）' }}</option>
+                                    <option value="openai_compatible">OpenAI Compatible {{ locale === 'en' ? '(Other Compatible Services)' : '（其他兼容服务）' }}</option>
+                                </select>
+                            </div>
+
+                            <!-- Model -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    {{ locale === 'en' ? 'Model' : '模型' }}
+                                </label>
+                                <input type="text" v-model="embeddingSettings.model" :placeholder="locale === 'en' ? 'e.g. text-embedding-v4, text-embedding-3-small' : '如 text-embedding-v4、text-embedding-3-small'"
+                                       style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" />
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                                    {{ locale === 'en' ? 'Model name only, e.g.: text-embedding-v4, text-embedding-3-small' : '仅需填写模型名称，如：text-embedding-v4、text-embedding-3-small' }}
+                                </div>
+                            </div>
+
+                            <!-- API Key -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    API Key
+                                </label>
+                                <input type="text" v-model="embeddingSettings.api_key"
+                                       placeholder="${DASHSCOPE_API_KEY}  or  sk-..."
+                                       style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; font-family: monospace;" />
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                                    {{ locale === 'en'
+                                        ? 'Enter an environment variable name like ${DASHSCOPE_API_KEY}, or paste the raw key directly.'
+                                        : '输入环境变量名如 ${DASHSCOPE_API_KEY}，或直接粘贴原始 key 值。' }}
+                                </div>
+                            </div>
+
+                            <!-- Base URL (for ollama / openai_compatible / dashscope-embedding with custom endpoint) -->
+                            <div v-if="embeddingSettings.provider === 'ollama' || embeddingSettings.provider === 'openai_compatible' || embeddingSettings.provider === 'dashscope'"
+                                 style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    Base URL
+                                    <span v-if="embeddingSettings.provider === 'openai_compatible'"
+                                          style="color: var(--danger); font-size: 12px; font-weight: normal; margin-left: 4px;">*</span>
+                                    <span v-else-if="embeddingSettings.provider === 'dashscope'"
+                                          style="color: var(--text-secondary); font-size: 12px; font-weight: normal; margin-left: 4px;">
+                                        {{ locale === 'en' ? '(auto-filled for DashScope embedding)' : '（DashScope Embedding 自动填充）' }}
+                                    </span>
+                                    <span v-else style="color: var(--text-secondary); font-size: 12px; font-weight: normal; margin-left: 4px;">
+                                        {{ locale === 'en' ? '(optional, default: http://localhost:11434/v1)' : '（可选，默认：http://localhost:11434/v1）' }}
+                                    </span>
+                                </label>
+                                <input type="text" v-model="embeddingSettings.base_url"
+                                       :placeholder="embeddingSettings.provider === 'ollama' ? 'http://localhost:11434/v1' : (embeddingSettings.provider === 'dashscope' ? 'https://dashscope.aliyuncs.com/compatible-mode/v1' : 'https://your-api-endpoint/v1')"
+                                       style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; font-family: monospace;" />
+                                <div v-if="embeddingSettings.provider === 'dashscope'" style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                                    {{ locale === 'en'
+                                        ? 'DashScope embeddings use OpenAI-compatible mode. Leave empty for default endpoint.'
+                                        : 'DashScope Embedding 使用 OpenAI 兼容模式。留空使用默认端点。' }}
+                                </div>
+                            </div>
+
+                            <!-- Error / Success feedback -->
+                            <div v-if="embeddingSettingsError"
+                                 style="color: var(--danger); font-size: 13px; margin-bottom: 12px; padding: 8px 12px; background: rgba(220,53,69,0.08); border-radius: 6px;">
+                                {{ embeddingSettingsError }}
+                            </div>
+                            <div v-if="embeddingSettingsSaved"
+                                 style="color: #28a745; font-size: 13px; margin-bottom: 12px; padding: 8px 12px; background: rgba(40,167,69,0.08); border-radius: 6px;">
+                                {{ locale === 'en' ? 'Configuration saved.' : '配置已保存。' }}
+                            </div>
+
+                            <button class="btn btn-primary" @click="saveEmbeddingSettings" :disabled="embeddingSettingsSaving">
+                                {{ embeddingSettingsSaving
+                                    ? (locale === 'en' ? 'Saving...' : '保存中...')
+                                    : (locale === 'en' ? 'Save' : '保存') }}
+                            </button>
+
+                            <!-- Test Embedding Button -->
+                            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                                <button class="btn" @click="testEmbedding" :disabled="testingEmbedding"
+                                        style="border: 1px solid var(--border); background: var(--bg);">
+                                    {{ testingEmbedding
+                                        ? (locale === 'en' ? 'Testing Embedding...' : '测试 Embedding 中...')
+                                        : (locale === 'en' ? 'Test Embedding Connection' : '测试 Embedding 连接') }}
+                                </button>
+                            </div>
 
                             <!-- Embedding Test Result -->
-                            <div v-if="embeddingTestResult" style="margin-top: 8px; padding: 12px; border-radius: 6px; font-size: 13px;"
+                            <div v-if="embeddingTestResult" style="margin-top: 12px; padding: 12px; border-radius: 6px; font-size: 13px;"
                                  :style="{ background: embeddingTestResult.success ? 'rgba(40,167,69,0.08)' : 'rgba(220,53,69,0.08)', color: embeddingTestResult.success ? '#28a745' : 'var(--danger)' }">
                                 <div v-if="embeddingTestResult.success">
                                     <strong>Embedding OK</strong> &mdash;
@@ -3785,8 +4996,593 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Installation Info -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 16px;">{{ locale === 'en' ? 'Installation Info' : '安装信息' }}</h3>
+                            <div class="detail-section">
+                                <div class="detail-label">{{ locale === 'en' ? 'Version' : '版本' }}</div>
+                                <div class="detail-value">v{{ version || '-' }}</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">{{ locale === 'en' ? 'Data Directory' : '数据目录' }}</div>
+                                <div class="detail-value" style="font-family: monospace;">{{ settingsPaths.data_dir || '-' }}</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">{{ locale === 'en' ? 'Install Directory' : '应用目录' }}</div>
+                                <div class="detail-value" style="font-family: monospace;">{{ settingsPaths.install_dir || '-' }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Diagnostics -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 4px;">{{ locale === 'en' ? 'System Diagnostics' : '系统诊断' }}</h3>
+                            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                                {{ locale === 'en' ? 'Run system health checks to diagnose configuration issues.' : '运行系统健康检查，诊断配置问题。' }}
+                            </p>
+                            <button class="btn" @click="runDoctor" :disabled="doctorLoading"
+                                    style="border: 1px solid var(--border); background: var(--bg);">
+                                {{ doctorLoading
+                                    ? (locale === 'en' ? 'Running...' : '运行中...')
+                                    : (locale === 'en' ? 'Run Diagnostics' : '运行诊断') }}
+                            </button>
+
+                            <!-- Doctor Results -->
+                            <div v-if="doctorResults" style="margin-top: 16px;">
+                                <!-- Overall Status -->
+                                <div v-if="doctorResults.error" style="padding: 12px; border-radius: 6px; background: rgba(220,53,69,0.08); color: var(--danger); font-size: 13px;">
+                                    <strong>{{ locale === 'en' ? 'Error' : '错误' }}</strong>: {{ doctorResults.error }}
+                                </div>
+                                <div v-else>
+                                    <!-- Summary Header -->
+                                    <div v-if="doctorResults.all_passed" style="padding: 10px 12px; border-radius: 6px; background: rgba(40,167,69,0.08); color: #28a745; font-size: 13px; margin-bottom: 12px;">
+                                        <strong>✓ {{ locale === 'en' ? 'All checks passed!' : '所有检查通过！' }}</strong>
+                                    </div>
+                                    <div v-else style="padding: 10px 12px; border-radius: 6px; background: rgba(238,102,102,0.08); color: #ee6666; font-size: 13px; margin-bottom: 12px;">
+                                        <strong>⚠ {{ locale === 'en' ? 'Issues found' : '发现问题' }} ({{ doctorResults.issues.length }})</strong>
+                                    </div>
+
+                                    <!-- Check Results -->
+                                    <div style="border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
+                                        <!-- Installation -->
+                                        <div style="padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.installation.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.installation.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'Installation' : '安装' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.installation.message }}</span>
+                                        </div>
+                                        <!-- Configuration -->
+                                        <div style="padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.config.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.config.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'Configuration' : '配置文件' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.config.message }}</span>
+                                        </div>
+                                        <!-- Data Directory -->
+                                        <div style="padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.data_dir.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.data_dir.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'Data Directory' : '数据目录' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.data_dir.message }}</span>
+                                        </div>
+                                        <!-- Embedding Service -->
+                                        <div style="padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.embedding.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.embedding.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'Embedding' : '向量服务' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.embedding.message }}</span>
+                                        </div>
+                                        <!-- LLM Service -->
+                                        <div style="padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.llm.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.llm.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'LLM Service' : 'LLM 服务' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.llm.message }}</span>
+                                        </div>
+                                        <!-- PATH Environment -->
+                                        <div style="padding: 10px 12px; display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.path_env.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.path_env.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'PATH Env' : '环境变量' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.path_env.message }}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Issues List -->
+                                    <div v-if="doctorResults.issues && doctorResults.issues.length > 0" style="margin-top: 12px;">
+                                        <div v-for="issue in doctorResults.issues" :key="issue" style="padding: 6px 10px; margin-bottom: 4px; border-radius: 4px; background: rgba(238,102,102,0.06); font-size: 12px; color: #ee6666;">
+                                            • {{ issue }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- Backup Page -->
+                <div v-if="currentPage === 'backup'">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">{{ t('backup.title') }}</h1>
+                            <p class="page-subtitle">{{ t('backup.subtitle') }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Create Backup Section -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 16px;">{{ t('backup.createNew') }}</h3>
+                            
+                            <!-- Description -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    {{ t('backup.description') }}
+                                </label>
+                                <input type="text" v-model="backupForm.description"
+                                       :placeholder="t('backup.descriptionPlaceholder')"
+                                       style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" />
+                            </div>
+
+                            <!-- Cloud Provider -->
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    {{ t('backup.cloudProvider') }}
+                                </label>
+                                <select v-model="backupForm.cloudProvider"
+                                        style="width: 100%; max-width: 320px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;">
+                                    <option value="">{{ t('backup.localOnly') }}</option>
+                                    <option value="oss">Alibaba Cloud OSS</option>
+                                    <option value="s3">AWS S3</option>
+                                </select>
+                            </div>
+
+                            <button class="btn btn-primary" @click="createBackup" :disabled="backupCreating">
+                                {{ backupCreating ? t('backup.creating') : t('backup.create') }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Backup List Section -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 16px;">{{ t('backup.backupHistory') }}</h3>
+                            
+                            <div v-if="loading.backups" class="loading" style="padding: 40px;">
+                                <div class="spinner"></div>
+                            </div>
+                            <div v-else-if="backups.length === 0" class="empty-state" style="padding: 40px;">
+                                <div class="empty-state-icon">💾</div>
+                                <div class="empty-state-title">{{ t('backup.noBackups') }}</div>
+                                <p style="color: var(--text-secondary); margin-top: 8px;">{{ t('backup.noBackupsDesc') }}</p>
+                            </div>
+                            <div v-else>
+                                <div v-for="backup in backups" :key="backup.id" 
+                                     style="border-bottom: 1px solid var(--border); padding: 16px 0; display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 500; margin-bottom: 4px;">{{ backup.filename }}</div>
+                                        <div style="font-size: 13px; color: var(--text-secondary);">
+                                            <span>{{ t('backup.size') }}: {{ formatBackupSize(backup.size) }}</span>
+                                            <span style="margin: 0 8px;">·</span>
+                                            <span>{{ t('backup.createdAt') }}: {{ formatDate(backup.created_at) }}</span>
+                                            <span v-if="backup.location || backup.cloud_location || backup.path" style="margin: 0 8px;">·</span>
+                                            <span v-if="backup.location || backup.cloud_location || backup.path">{{ t('backup.location') }}: {{ backup.location || backup.cloud_location || backup.path }}</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-danger" @click="deleteBackup(backup.id)" style="margin-left: 16px;">
+                                        {{ t('backup.delete') }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Backup Tasks Section -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 16px;">{{ t('backup.backupTasks') }}</h3>
+                            
+                            <div v-if="loading.backupTasks" class="loading" style="padding: 40px;">
+                                <div class="spinner"></div>
+                            </div>
+                            <div v-else-if="backupTasks.length === 0" class="empty-state" style="padding: 40px;">
+                                <div class="empty-state-icon">📋</div>
+                                <div class="empty-state-title">{{ t('backup.noTasks') }}</div>
+                            </div>
+                            <div v-else>
+                                <div v-for="task in backupTasks.slice(0, 10)" :key="task.id" 
+                                     style="border-bottom: 1px solid var(--border); padding: 16px 0;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <div style="font-weight: 500;">{{ t('backup.taskId') }}: {{ task.id }}</div>
+                                        <span :class="'backup-status-' + task.status" 
+                                              style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;">
+                                            {{ getBackupStatusLabel(task.status) }}
+                                        </span>
+                                    </div>
+                                    <div style="font-size: 13px; color: var(--text-secondary);">
+                                        <span>{{ t('backup.createdAt') }}: {{ formatDate(task.created_at) }}</span>
+                                        <span v-if="task.cloud_provider" style="margin: 0 8px;">·</span>
+                                        <span v-if="task.cloud_provider">{{ t('backup.cloudProvider') }}: {{ task.cloud_provider }}</span>
+                                    </div>
+                                    <div v-if="task.error" style="margin-top: 8px; padding: 8px 12px; background: rgba(220,53,69,0.08); border-radius: 6px; color: var(--danger); font-size: 13px;">
+                                        <strong>{{ t('backup.error') }}:</strong> {{ task.error }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wiki Page -->
+                <div v-if="currentPage === 'wiki'" class="wiki-page">
+                    <!-- LEFT SIDEBAR: Persistent tree navigation -->
+                    <div class="wiki-sidebar">
+                        <!-- Header with title and search -->
+                        <div class="wiki-sidebar-header">
+                            <h2 class="wiki-sidebar-title">{{ t('wiki.title') }}</h2>
+                            <input type="text" v-model="wikiSearchQuery" @input="searchWikiArticles" 
+                                   :placeholder="t('wiki.searchPlaceholder')"
+                                   class="wiki-search-input">
+                        </div>
+                        
+                        <!-- Stats bar -->
+                        <div v-if="wikiStats" class="wiki-sidebar-stats">
+                            {{ wikiStats.topic_count || 0 }} {{ t('wiki.topics') }} · 
+                            {{ wikiStats.category_count || 0 }} {{ t('wiki.categories') }} · 
+                            {{ wikiStats.total_count || 0 }} {{ t('wiki.articles') }}
+                        </div>
+                        
+                        <!-- Tree container -->
+                        <div class="wiki-tree-container">
+                            <!-- Loading -->
+                            <div v-if="wikiLoading && wikiTree.length === 0" style="text-align:center;padding:40px;color:#999">
+                                Loading...
+                            </div>
+                            
+                            <!-- Empty state -->
+                            <div v-else-if="wikiTree.length === 0" style="text-align:center;padding:40px 20px;color:#999">
+                                <div style="font-size:2em;margin-bottom:12px">📖</div>
+                                <div style="font-size:0.9em">{{ t('wiki.emptyState') }}</div>
+                            </div>
+                            
+                            <!-- Topics tree -->
+                            <div v-else v-for="topic in wikiTree" :key="topic.topic_id" class="wiki-tree-topic">
+                                <!-- L1: Topic header (collapsible) -->
+                                <div @click="toggleWikiTopic(topic.topic_id)" class="wiki-tree-topic-header">
+                                    <span class="wiki-tree-arrow" :class="{ expanded: wikiSelectedTopic === topic.topic_id }">▶</span>
+                                    <span>{{ topic.label }}</span>
+
+                                </div>
+                                
+                                <!-- L2: Categories (shown when topic expanded) -->
+                                <div v-if="wikiSelectedTopic === topic.topic_id" class="wiki-tree-categories">
+                                    <div v-for="cat in topic.categories" :key="cat.category_id"
+                                         @click.stop="selectWikiCategory(cat)"
+                                         class="wiki-tree-category"
+                                         :class="{ active: wikiSelectedCategory && wikiSelectedCategory.category_id === cat.category_id }">
+                                        <span class="wiki-tree-category-icon">📁</span>
+                                        <span>{{ cat.name }}</span>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- RIGHT CONTENT AREA: Dynamic content based on selection -->
+                    <div class="wiki-content-area">
+                        <!-- WELCOME / DEFAULT STATE -->
+                        <div v-if="wikiView === 'index' && !wikiSearchQuery">
+                            <div class="wiki-welcome">
+                                <div class="wiki-welcome-icon">📖</div>
+                                <div class="wiki-welcome-title">{{ t('wiki.welcomeTitle') || 'Welcome to LLM Wiki' }}</div>
+                                <div class="wiki-welcome-text">{{ t('wiki.welcomeText') || 'Select a category from the sidebar to explore your knowledge base.' }}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- SEARCH RESULTS -->
+                        <div v-else-if="wikiSearchQuery">
+                            <div class="wiki-category-header">
+                                <div class="wiki-category-title">{{ t('wiki.searchResults') || 'Search Results' }}</div>
+                                <div class="wiki-category-breadcrumb">"{{ wikiSearchQuery }}"</div>
+                            </div>
+                            
+                            <div v-if="wikiCategoryArticles.length === 0" style="text-align:center;padding:40px;color:#999">
+                                {{ t('wiki.emptySearch') }}
+                            </div>
+                            <div v-else class="wiki-article-grid">
+                                <div v-for="article in wikiCategoryArticles" :key="article.article_id"
+                                     @click="loadWikiArticle(article.article_id)"
+                                     class="wiki-article-card">
+                                    <div class="wiki-article-card-title">{{ article.title }}</div>
+                                    <div class="wiki-article-card-meta">{{ article.word_count }} {{ t('wiki.words') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- TOPIC VIEW: Articles in a topic (all categories) -->
+                        <div v-else-if="wikiView === 'topic'">
+                            <div class="wiki-category-header">
+                                <div class="wiki-category-breadcrumb">
+                                    <span style="font-weight:500;color:#1e293b">{{ wikiSelectedTopicInfo ? wikiSelectedTopicInfo.topic_label : '' }}</span>
+                                </div>
+                                <h1 class="wiki-category-title">{{ wikiSelectedTopicInfo ? wikiSelectedTopicInfo.topic_label : '' }}</h1>
+                                <p style="color:#64748b;margin:8px 0 0 0">
+                                    {{ wikiTopicArticles.length }} {{ t('wiki.articles') || 'articles' }} across all categories
+                                </p>
+                            </div>
+                            
+                            <div v-if="wikiLoading" style="text-align:center;padding:40px;color:#999">
+                                Loading...
+                            </div>
+                            <div v-else-if="wikiTopicArticles.length === 0" style="text-align:center;padding:40px;color:#999">
+                                {{ t('wiki.emptyTopic') || 'No articles in this topic.' }}
+                            </div>
+                            <div v-else class="wiki-article-grid">
+                                <div v-for="article in wikiTopicArticles" :key="article.article_id"
+                                     @click="loadWikiArticle(article.article_id)"
+                                     class="wiki-article-card">
+                                    <div class="wiki-article-card-title">{{ article.title }}</div>
+                                    <div class="wiki-article-card-meta">
+                                        <span v-if="article.category_name" class="wiki-article-category-badge">📁 {{ article.category_name }}</span>
+                                        <span>{{ article.word_count }} {{ t('wiki.words') }} · {{ t('wiki.version') }}{{ article.version }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- CATEGORY VIEW: Articles in a category -->
+                        <div v-else-if="wikiView === 'category'">
+                            <div class="wiki-category-header">
+                                <div class="wiki-category-breadcrumb">
+                                    <span>{{ wikiSelectedCategory ? wikiSelectedCategory._topicLabel : '' }}</span>
+                                    <span style="margin:0 8px;color:#cbd5e1">›</span>
+                                    <span style="font-weight:500;color:#1e293b">{{ wikiSelectedCategory ? wikiSelectedCategory.name : '' }}</span>
+                                </div>
+                                <h1 class="wiki-category-title">{{ wikiSelectedCategory ? wikiSelectedCategory.name : '' }}</h1>
+                                <p v-if="wikiSelectedCategory && wikiSelectedCategory.description" style="color:#64748b;margin:8px 0 0 0">
+                                    {{ wikiSelectedCategory.description }}
+                                </p>
+                            </div>
+                            
+                            <div v-if="wikiLoading" style="text-align:center;padding:40px;color:#999">
+                                Loading...
+                            </div>
+                            <div v-else-if="wikiCategoryArticles.length === 0" style="text-align:center;padding:40px;color:#999">
+                                {{ t('wiki.emptyCategory') || 'No articles in this category.' }}
+                            </div>
+                            <div v-else class="wiki-article-grid">
+                                <div v-for="article in wikiCategoryArticles" :key="article.article_id"
+                                     @click="loadWikiArticle(article.article_id)"
+                                     class="wiki-article-card">
+                                    <div class="wiki-article-card-title">{{ article.title }}</div>
+                                    <div class="wiki-article-card-meta">{{ article.word_count }} {{ t('wiki.words') }} · {{ t('wiki.version') }}{{ article.version }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- ARTICLE VIEW -->
+                        <div v-else-if="wikiView === 'article' && wikiCurrentArticle">
+                            <!-- Back link -->
+                            <a @click="backToCategory()" class="wiki-back-link">
+                                ← {{ t('wiki.backToCategory') || 'Back to Category' }}
+                            </a>
+                            
+                            <div class="wiki-article-header">
+                                <!-- Breadcrumb -->
+                                <div class="wiki-article-breadcrumb">
+                                    <span>{{ wikiCurrentArticle.topic_label }}</span>
+                                    <span style="margin:0 8px">›</span>
+                                    <span>{{ wikiCurrentArticle.category_name }}</span>
+                                </div>
+                                
+                                <!-- Article title -->
+                                <h2 class="wiki-article-title">{{ wikiCurrentArticle.title }}</h2>
+                            </div>
+                            
+                            <!-- Article content -->
+                            <div class="wiki-article-content wiki-content" v-html="renderWikiContent(wikiCurrentArticle.content)" 
+                                 @click="handleWikiLinkClick($event)"></div>
+                            
+                            <!-- Article metadata -->
+                            <div class="wiki-article-meta">
+                                <div class="wiki-article-meta-section">
+                                    {{ t('wiki.compiledAt') }}: {{ formatWikiDate(wikiCurrentArticle.compiled_at) }}
+                                    <span style="margin:0 12px">·</span>
+                                    {{ t('wiki.version') }}{{ wikiCurrentArticle.version }}
+                                    <span style="margin:0 12px">·</span>
+                                    {{ wikiCurrentArticle.word_count }} {{ t('wiki.words') }}
+                                </div>
+                                
+                                <!-- Source Documents -->
+                                <div v-if="wikiCurrentArticle.source_documents && wikiCurrentArticle.source_documents.length > 0" class="wiki-article-meta-section">
+                                    <div class="wiki-article-meta-label">{{ t('wiki.sourceDocuments') }}:</div>
+                                    <div class="wiki-tag-list">
+                                        <span v-for="doc in wikiCurrentArticle.source_documents" :key="doc.id"
+                                              @click="viewItem(doc.id)"
+                                              class="wiki-tag source">
+                                            <span v-if="doc.source_type" class="wiki-source-type">[{{ doc.source_type }}]</span>
+                                            {{ doc.title || doc.id }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Referenced Entities -->
+                                <div v-if="wikiCurrentArticle.entity_details && wikiCurrentArticle.entity_details.length > 0" class="wiki-article-meta-section">
+                                    <div class="wiki-article-meta-label">{{ t('wiki.referencedEntities') }}:</div>
+                                    <div class="wiki-tag-list">
+                                        <span v-for="entity in wikiCurrentArticle.entity_details" :key="entity.slug"
+                                              @click="navigateToGraphEntity(entity)"
+                                              class="wiki-tag entity">
+                                            {{ entity.name || entity.slug }} →
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mining Console Page -->
+                <div v-if="currentPage === 'mining'">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">{{ locale === 'en' ? 'Mining Console' : '挖掘控制台' }}</h1>
+                            <p class="page-subtitle">{{ locale === 'en' ? 'Trigger knowledge mining and view history' : '触发知识挖掘并查看历史记录' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 12px;">{{ locale === 'en' ? 'Run Mining Pipeline' : '运行挖掘流水线' }}</h3>
+                            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                                <button class="btn btn-primary" @click="startMining('incremental')" :disabled="miningStatus.running">
+                                    {{ miningStatus.running ? (locale === 'en' ? 'Running...' : '运行中...') : (locale === 'en' ? 'Incremental Build' : '增量构建') }}
+                                </button>
+                                <button class="btn btn-secondary" @click="confirmFullMining" :disabled="miningStatus.running" style="border-color: #ee6666; color: #ee6666;">
+                                    {{ locale === 'en' ? 'Full Rebuild' : '全量重建' }}
+                                </button>
+                                <span v-if="miningStatus.running" style="color: var(--text-secondary); font-size: 13px;">
+                                    {{ locale === 'en' ? 'Pipeline is running, please wait...' : '流水线运行中，请稍候...' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Display -->
+                    <div v-if="miningStatus.running || (miningStatus.steps && miningStatus.steps.length > 0 && miningStatus.run_id)" class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 style="margin: 0;">
+                                    {{ locale === 'en' ? 'Current Run' : '当前任务' }}
+                                    <span style="font-size: 12px; color: var(--text-secondary); margin-left: 8px;">#{{ miningStatus.run_id }}</span>
+                                </h3>
+                                <span style="font-size: 13px; color: var(--text-secondary);">
+                                    {{ locale === 'en' ? 'Elapsed' : '已运行' }}: {{ formatDuration(miningStatus.elapsed_seconds || 0) }}
+                                    <span v-if="miningStatus.estimated_remaining_seconds != null">
+                                        · {{ locale === 'en' ? 'Remaining' : '预计剩余' }}: {{ formatDuration(miningStatus.estimated_remaining_seconds) }}
+                                    </span>
+                                    <span v-if="miningStatus.workers" style="margin-left: 8px;">
+                                        · {{ miningStatus.workers }} {{ locale === 'en' ? 'workers' : '路并发' }}
+                                    </span>
+                                </span>
+                            </div>
+                            <div v-for="step in miningStatus.steps" :key="step.step" style="margin-bottom: 14px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                    <span style="font-weight: 500; font-size: 14px;">
+                                        <span v-if="step.status === 'completed'" style="color: #91cc75;">&#10003;</span>
+                                        <span v-else-if="step.status === 'running'" style="color: var(--primary-color);">&#9679;</span>
+                                        <span v-else-if="step.status === 'failed'" style="color: #ee6666;">&#10007;</span>
+                                        <span v-else style="color: var(--text-secondary);">&#9675;</span>
+                                        {{ formatStepName(step.step) }}
+                                    </span>
+                                    <span style="font-size: 12px; color: var(--text-secondary);">
+                                        <span v-if="step.status === 'running' || step.status === 'completed'">
+                                            {{ step.processed }}/{{ step.total }}
+                                            <span v-if="step.failed > 0" style="color: #ee6666;"> ({{ step.failed }} {{ locale === 'en' ? 'failed' : '失败' }})</span>
+                                        </span>
+                                        <span v-else-if="step.status === 'pending'">{{ locale === 'en' ? 'Pending' : '待执行' }}</span>
+                                        <span v-else-if="step.status === 'failed'" style="color: #ee6666;">{{ locale === 'en' ? 'Failed' : '失败' }}</span>
+                                    </span>
+                                </div>
+                                <div style="background: var(--bg-secondary); border-radius: 4px; height: 6px; overflow: hidden;">
+                                    <div :style="{
+                                        width: (step.total > 0 ? Math.min(100, (step.processed / step.total) * 100) : 0) + '%',
+                                        height: '100%',
+                                        borderRadius: '4px',
+                                        background: step.status === 'failed' ? '#ee6666' : step.status === 'completed' ? '#91cc75' : 'var(--primary-color)',
+                                        transition: 'width 0.5s ease'
+                                    }"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mining History -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 12px;">{{ locale === 'en' ? 'Mining History' : '挖掘历史' }}</h3>
+                            <div v-if="miningHistory.length === 0" style="padding: 24px; text-align: center; color: var(--text-secondary);">
+                                {{ locale === 'en' ? 'No mining history yet.' : '暂无挖掘历史记录。' }}
+                            </div>
+                            <div v-else style="max-height: 500px; overflow-y: auto;">
+                                <div v-for="record in miningHistory.slice().reverse()" :key="record.run_id"
+                                     style="border-bottom: 1px solid var(--border-color); padding: 8px 0; cursor: pointer;"
+                                     @click="record._expanded = !record._expanded">
+                                    <!-- Compact summary row -->
+                                    <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+                                        <span style="font-family: monospace; color: var(--text-secondary); min-width: 60px;">#{{ record.run_id }}</span>
+                                        <span :style="{ color: record.mode === 'full' ? '#ee6666' : 'var(--primary-color)', fontWeight: 500, minWidth: '36px' }">
+                                            {{ record.mode === 'full' ? (locale === 'en' ? 'Full' : '全量') : (locale === 'en' ? 'Incr' : '增量') }}
+                                        </span>
+                                        <span v-if="record.status === 'completed'" style="color: #91cc75;">&#10003;</span>
+                                        <span v-else-if="record.status === 'partial'" style="color: #fac858;">&#9888;</span>
+                                        <span v-else-if="record.status === 'failed'" style="color: #ee6666;">&#10007;</span>
+                                        <span v-else-if="record.status === 'running'" style="color: var(--primary-color);">&#9679;</span>
+                                        <span style="color: var(--text-secondary); flex: 1;">
+                                            <template v-for="(s, idx) in (record.steps || [])" :key="s.step">
+                                                <span style="font-size: 12px;">
+                                                    {{ formatStepName(s.step) }}:{{ s.processed || 0 }}<span v-if="s.failed > 0" style="color: #ee6666;">/{{ s.failed }}!</span>{{ idx < record.steps.length - 1 ? '  ' : '' }}
+                                                </span>
+                                            </template>
+                                        </span>
+                                        <span style="color: var(--text-secondary); font-size: 12px; white-space: nowrap;">{{ formatDuration(record.total_duration_seconds || 0) }}</span>
+                                        <span style="color: var(--text-secondary); font-size: 12px; white-space: nowrap;">{{ record.started_at ? record.started_at.substring(5, 16).replace('T', ' ') : '' }}</span>
+                                        <span style="color: var(--text-secondary); font-size: 11px;">{{ record._expanded ? '&#9650;' : '&#9660;' }}</span>
+                                    </div>
+                                    <!-- Error summary (always visible if present) -->
+                                    <div v-if="!record._expanded && (record.error || (record.steps || []).some(s => s.error))" style="color: #ee6666; font-size: 11px; margin: 2px 0 0 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        {{ record.error || (record.steps || []).map(s => s.error).filter(Boolean)[0] || '' }}
+                                    </div>
+                                    <!-- Expanded detail -->
+                                    <div v-if="record._expanded" style="margin: 8px 0 0 70px; font-size: 12px;">
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; color: var(--text-secondary); margin-bottom: 8px;">
+                                            <span>{{ locale === 'en' ? 'Trigger' : '触发' }}: {{ record.triggered_by }}</span>
+                                            <span>{{ locale === 'en' ? 'Started' : '开始' }}: {{ record.started_at ? record.started_at.substring(0, 19).replace('T', ' ') : '' }}</span>
+                                            <span>{{ locale === 'en' ? 'Duration' : '耗时' }}: {{ formatDuration(record.total_duration_seconds || 0) }}</span>
+                                            <span>{{ locale === 'en' ? 'Finished' : '结束' }}: {{ record.finished_at ? record.finished_at.substring(0, 19).replace('T', ' ') : '' }}</span>
+                                        </div>
+                                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                                            <thead>
+                                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                                    <th style="padding: 4px 8px; text-align: left;">{{ locale === 'en' ? 'Step' : '步骤' }}</th>
+                                                    <th style="padding: 4px 8px; text-align: left;">{{ locale === 'en' ? 'Status' : '状态' }}</th>
+                                                    <th style="padding: 4px 8px; text-align: right;">{{ locale === 'en' ? 'Processed' : '处理' }}</th>
+                                                    <th style="padding: 4px 8px; text-align: right;">{{ locale === 'en' ? 'Failed' : '失败' }}</th>
+                                                    <th style="padding: 4px 8px; text-align: right;">{{ locale === 'en' ? 'Time' : '耗时' }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="s in (record.steps || [])" :key="s.step" style="border-bottom: 1px solid var(--border-color);">
+                                                    <td style="padding: 4px 8px;">{{ formatStepName(s.step) }}</td>
+                                                    <td style="padding: 4px 8px;">
+                                                        <span v-if="s.status === 'completed'" style="color: #91cc75;">&#10003;</span>
+                                                        <span v-else-if="s.status === 'failed'" style="color: #ee6666;">&#10007;</span>
+                                                        <span v-else>{{ s.status }}</span>
+                                                    </td>
+                                                    <td style="padding: 4px 8px; text-align: right;">{{ s.processed || s.clusters || 0 }}</td>
+                                                    <td style="padding: 4px 8px; text-align: right;" :style="{ color: s.failed > 0 ? '#ee6666' : 'inherit' }">{{ s.failed || 0 }}</td>
+                                                    <td style="padding: 4px 8px; text-align: right;">{{ formatDuration(s.duration_seconds || 0) }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <!-- Topic clustering extra info -->
+                                        <div v-for="s in (record.steps || [])" :key="'extra-' + s.step">
+                                            <div v-if="s.step === 'topics' && s.clusters != null" style="margin-top: 4px; color: var(--text-secondary);">
+                                                {{ locale === 'en' ? 'Clusters' : '聚类' }}: {{ s.clusters }} · {{ locale === 'en' ? 'Classified' : '已分类' }}: {{ s.classified || 0 }} · {{ locale === 'en' ? 'Noise' : '噪声' }}: {{ s.noise || 0 }}
+                                            </div>
+                                            <div v-if="s.step === 'relations' && s.embedding_similarity != null" style="margin-top: 4px; color: var(--text-secondary);">
+                                                {{ locale === 'en' ? 'Similarity' : '相似度' }}: {{ s.embedding_similarity }} · {{ locale === 'en' ? 'Shared Entity' : '共享实体' }}: {{ s.shared_entity || 0 }}
+                                            </div>
+                                        </div>
+                                        <!-- Error detail -->
+                                        <div v-if="record.error || (record.steps || []).some(s => s.error)" style="margin-top: 6px; padding: 6px 8px; background: rgba(238,102,102,0.08); border-radius: 4px; color: #ee6666; font-size: 12px;">
+                                            <strong>{{ locale === 'en' ? 'Error' : '错误' }}:</strong> {{ record.error || (record.steps || []).map(s => s.error).filter(Boolean)[0] || '' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Knowledge Graph Page -->
                 <div v-if="currentPage === 'graph'">
@@ -4104,6 +5900,159 @@
                             </div>
                             <div v-if="(!readingHistory.recent_views || readingHistory.recent_views.length === 0) && (!readingHistory.recent_queries || readingHistory.recent_queries.length === 0)" style="text-align: center; padding: 20px; color: var(--text-secondary);">
                                 {{ locale === 'en' ? 'No reading history yet.' : '暂无阅读记录。' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RAG Chat Page -->
+                <div v-if="currentPage === 'rag'" style="height: calc(100vh - 72px);">
+                    <div class="rag-container">
+                        <!-- Left Sidebar - Conversation History -->
+                        <div class="rag-sidebar">
+                            <div class="rag-sidebar-header">
+                                <button class="rag-new-chat-btn" @click="startNewRagConversation">
+                                    <span>+</span> {{ t('rag.newConversation') }}
+                                </button>
+                            </div>
+                            <div class="rag-conversations-list">
+                                <div v-if="ragLoadingConversations" class="loading" style="padding: 20px;">
+                                    <div class="spinner" style="width: 24px; height: 24px;"></div>
+                                </div>
+                                <div v-else-if="ragConversations.length === 0" style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 0.85rem;">
+                                    {{ t('rag.noConversations') }}
+                                </div>
+                                <div v-else>
+                                    <div v-for="conv in ragConversations" :key="conv.session_id"
+                                         class="rag-conversation-item"
+                                         :class="{ active: ragCurrentSessionId === conv.session_id }"
+                                         @click="loadRagSession(conv.session_id)">
+                                        <div class="rag-conversation-title">{{ truncateText(conv.last_question || 'New Conversation', 40) }}</div>
+                                        <div class="rag-conversation-meta">
+                                            <span>{{ formatRagDate(conv.created_at) }}</span>
+                                            <span>{{ conv.turn_count }} {{ conv.turn_count === 1 ? t('rag.turn') : t('rag.turns') }}</span>
+                                            <button class="rag-conversation-delete" @click.stop="deleteRagConversation(conv.session_id)" title="Delete">
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button v-if="ragConversations.length > 0" class="rag-clear-all-btn" @click="clearAllRagConversations">
+                                        <span>🗑️</span> {{ t('rag.clearAll') }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Center - Chat Messages -->
+                        <div class="rag-main">
+                            <div id="rag-messages-container" class="rag-messages">
+                                <div v-if="ragMessages.length === 0" class="rag-empty-state">
+                                    <div class="rag-empty-icon">💬</div>
+                                    <div class="rag-empty-title">{{ t('rag.emptyStateTitle') }}</div>
+                                    <div class="rag-empty-desc">{{ t('rag.emptyStateDesc') }}</div>
+                                </div>
+                                <template v-else>
+                                    <div v-for="(msg, index) in ragMessages" :key="index"
+                                         class="rag-message"
+                                         :class="[msg.role, { selected: ragSelectedMessageIndex === index }]"
+                                         @click="selectRagMessage(index)">
+                                        <div class="rag-message-avatar">
+                                            {{ msg.role === 'user' ? '👤' : '🤖' }}
+                                        </div>
+                                        <div class="rag-message-content-wrapper">
+                                            <div class="rag-message-content"
+                                                 :class="{ error: msg.isError }"
+                                                 v-html="msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content">
+                                            </div>
+                                            <div v-if="msg.role === 'assistant'" class="rag-message-meta">
+                                                <span v-if="msg.confidence !== undefined" class="rag-confidence-badge"
+                                                      :title="t('rag.confidence') + ': ' + getConfidenceLabel(msg.confidence)">
+                                                    <span class="rag-confidence-dot" :style="{ background: getConfidenceColor(msg.confidence) }"></span>
+                                                    {{ getConfidenceLabel(msg.confidence) }}
+                                                </span>
+                                                <span>{{ formatRagDate(msg.timestamp) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="ragLoading" class="rag-typing-indicator">
+                                        <div class="rag-typing-dot"></div>
+                                        <div class="rag-typing-dot"></div>
+                                        <div class="rag-typing-dot"></div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="rag-input-area">
+                                <div class="rag-input-wrapper">
+                                    <textarea
+                                        v-model="ragInput"
+                                        class="rag-textarea"
+                                        :placeholder="t('rag.placeholder')"
+                                        rows="1"
+                                        @keydown="handleRagKeydown"
+                                        @input="$event.target.style.height = 'auto'; $event.target.style.height = $event.target.scrollHeight + 'px'"
+                                    ></textarea>
+                                    <button class="rag-send-btn" @click="sendRagMessage" :disabled="ragLoading || !ragInput.trim()">
+                                        <span>{{ ragLoading ? t('rag.sending') : t('rag.send') }}</span>
+                                    </button>
+                                </div>
+                                <div class="rag-options">
+                                    <label class="rag-option">
+                                        <input type="checkbox" v-model="ragUseGraph">
+                                        {{ t('rag.useGraph') }}
+                                    </label>
+                                    <label class="rag-option">
+                                        <input type="checkbox" v-model="ragUseTopics">
+                                        {{ t('rag.useTopics') }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Sidebar - Source Panel -->
+                        <div class="rag-sources-panel">
+                            <div class="rag-sources-header">{{ t('rag.sources') }}</div>
+                            <div class="rag-sources-content">
+                                <div v-if="getRagMessageSources().length === 0" style="text-align: center; padding: 20px; color: var(--text-secondary); font-size: 0.85rem;">
+                                    {{ t('rag.noSources') }}
+                                </div>
+                                <div v-else>
+                                    <div v-for="(source, idx) in getRagMessageSources()" :key="idx" class="rag-source-card">
+                                        <div class="rag-source-header">
+                                            <div class="rag-source-title-row">
+                                                <span v-if="getSourceContentType(source)" :class="'badge badge-' + getSourceContentType(source)" style="font-size: 0.7rem; margin-right: 6px;">{{ getSourceContentType(source) }}</span>
+                                                <span class="rag-source-title">{{ getSourceTitle(source) }}</span>
+                                            </div>
+                                            <span class="rag-source-score">{{ getSourceScorePercent(source) }}</span>
+                                        </div>
+                                        <div class="rag-source-score-bar">
+                                            <div class="rag-source-score-fill" :style="{ width: getSourceScoreWidth(source), background: getConfidenceColor(getSourceScore(source)) }"></div>
+                                        </div>
+                                        <div class="rag-source-preview">{{ truncateText(getSourceContent(source), 150) }}</div>
+                                        <div v-if="getSourceTags(source).length" class="rag-source-tags">
+                                            <span v-for="tag in getSourceTags(source).slice(0, 3)" :key="tag" class="rag-source-tag">{{ tag }}</span>
+                                        </div>
+                                        <span class="rag-source-link" @click="viewItem(getSourceKnowledgeId(source))">{{ t('rag.viewFull') }} →</span>
+                                    </div>
+                                </div>
+
+                                <!-- Entities Section -->
+                                <div v-if="getRagMessageEntities().length > 0" class="rag-entities-section">
+                                    <div class="rag-section-title">{{ t('rag.entities') }}</div>
+                                    <div class="rag-entity-chips">
+                                        <span v-for="entity in getRagMessageEntities().slice(0, 10)" :key="entity.name"
+                                              class="rag-entity-chip"
+                                              :style="{ background: getEntityTypeColor(entity.type) }">
+                                            {{ entity.name }}
+                                            <small style="opacity: 0.8;">{{ entity.type }}</small>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Topic Context Section -->
+                                <div v-if="getRagMessageTopicContext()" class="rag-topic-box">
+                                    <div class="rag-topic-label">{{ getRagMessageTopicContext().label }}</div>
+                                    <div class="rag-topic-desc">{{ getRagMessageTopicContext().description }}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -4431,7 +6380,9 @@
                         graph: false,
                         topics: false,
                         timeline: false,
-                        recommendations: false
+                        recommendations: false,
+                        backups: false,
+                        backupTasks: false
                     },
                     toasts: [],
                     showItemModal: false,
@@ -4466,6 +6417,16 @@
                     testingEmbedding: false,
                     llmTestResult: null,
                     embeddingTestResult: null,
+                    // Embedding settings
+                    embeddingSettings: {
+                        provider: 'dashscope',
+                        model: '',
+                        api_key: '',
+                        base_url: ''
+                    },
+                    embeddingSettingsSaving: false,
+                    embeddingSettingsSaved: false,
+                    embeddingSettingsError: '',
                     // Knowledge Mining data
                     graphData: { nodes: [], edges: [] },
                     graphStats: {},
@@ -4485,9 +6446,47 @@
                     topicDocuments: [],
                     timelineData: [],
                     timelineTopics: [],
+                    miningStatus: { running: false, steps: [] },
+                    miningHistory: [],
+                    miningPollingTimer: null,
                     recommendationsList: [],
                     readingHistory: {},
                     relatedDocuments: [],
+                    // RAG Chat data
+                    ragConversations: [],
+                    ragCurrentSessionId: null,
+                    ragMessages: [],
+                    ragInput: '',
+                    ragLoading: false,
+                    ragUseGraph: true,
+                    ragUseTopics: true,
+                    ragSelectedMessageIndex: null,
+                    ragLoadingConversations: false,
+                    // Doctor diagnostics
+                    doctorResults: null,
+                    doctorLoading: false,
+                    // Wiki state
+                    wikiTree: [],                    // [{topic_id, label, categories: [{category_id, name, article_count}]}]
+                    wikiSelectedTopic: null,         // Currently expanded L1 topic ID
+                    wikiSelectedCategory: null,      // Currently selected L2 category object
+                    wikiCategoryArticles: [],        // Articles in selected category
+                    wikiTopicArticles: [],           // Articles in selected topic (all categories)
+                    wikiSelectedTopicInfo: null,     // Selected topic info object
+                    wikiStats: null,                 // Stats from tree endpoint
+                    wikiSearchQuery: '',             // Search query
+                    wikiSearchTimer: null,           // Debounce timer for search
+                    wikiCurrentArticle: null,        // Current article being viewed
+                    wikiLoading: false,              // Loading state
+                    wikiView: 'index',               // 'index', 'category', 'topic', or 'article'
+                    // Backup state
+                    backups: [],
+                    backupTasks: [],
+                    backupForm: {
+                        description: '',
+                        cloudProvider: ''
+                    },
+                    backupCreating: false,
+                    backupTaskPollingTimer: null
                 };
             },
             computed: {
@@ -4499,7 +6498,7 @@
                            this.currentPage.startsWith('items-');
                 },
                 isMiningPage() {
-                    return ['graph', 'topics', 'timeline', 'recommendations'].includes(this.currentPage);
+                    return ['mining', 'graph', 'topics', 'timeline', 'recommendations'].includes(this.currentPage);
                 }
             },
             methods: {
@@ -4521,6 +6520,21 @@
                     document.documentElement.lang = this.locale;
                 },
                 navigateTo(page) {
+                    // Clear mining polling timer if leaving mining page
+                    if (this.currentPage === 'mining' && page !== 'mining') {
+                        if (this.miningPollingTimer) {
+                            clearInterval(this.miningPollingTimer);
+                            this.miningPollingTimer = null;
+                        }
+                    }
+                    // Clear backup task polling timer if leaving backup page
+                    if (this.currentPage === 'backup' && page !== 'backup') {
+                        if (this.backupTaskPollingTimer) {
+                            clearInterval(this.backupTaskPollingTimer);
+                            this.backupTaskPollingTimer = null;
+                        }
+                    }
+                    
                     this.currentPage = page;
                     this.itemsFilter.offset = 0;
                     this.itemsFilter.tag = '';
@@ -4580,6 +6594,13 @@
                         this.selectedEntity = null;
                         this.fetchGraph();
                         this.fetchGraphStats();
+                    } else if (page === 'mining') {
+                        this.fetchMiningStatus();
+                        this.fetchMiningHistory();
+                        // Start polling to catch up with backend state
+                        if (!this.miningPollingTimer) {
+                            this.miningPollingTimer = setInterval(() => this.fetchMiningStatus(), 2000);
+                        }
                     } else if (page === 'topics') {
                         this.fetchTopics();
                         this.fetchTopicTrend();
@@ -4588,6 +6609,26 @@
                     } else if (page === 'recommendations') {
                         this.fetchRecommendations();
                         this.fetchReadingHistory();
+                    } else if (page === 'rag') {
+                        this.loadRagConversations();
+                        if (!this.ragCurrentSessionId) {
+                            this.ragMessages = [];
+                        }
+                    } else if (page === 'wiki') {
+                        this.currentPage = 'wiki';
+                        this.wikiView = 'index';
+                        this.wikiCurrentArticle = null;
+                        this.wikiSelectedCategory = null;
+                        this.wikiCategoryArticles = [];
+                        this.wikiSearchQuery = '';
+                        this.loadWikiTree();
+                    } else if (page === 'backup') {
+                        this.loadBackups();
+                        this.loadBackupTasks();
+                        // Start polling for task updates
+                        if (!this.backupTaskPollingTimer) {
+                            this.backupTaskPollingTimer = setInterval(() => this.loadBackupTasks(), 5000);
+                        }
                     }
                 },
                 
@@ -4601,6 +6642,13 @@
                             model: data.llm?.model || '',
                             api_key: data.llm?.api_key || '',
                             base_url: data.llm?.base_url || ''
+                        };
+                        // Also load embedding settings
+                        this.embeddingSettings = {
+                            provider: data.embedding?.provider || 'dashscope',
+                            model: data.embedding?.model || '',
+                            api_key: data.embedding?.api_key || '',
+                            base_url: data.embedding?.base_url || ''
                         };
                         this.settingsPaths = {
                             data_dir: data.paths?.data_dir || '',
@@ -4668,6 +6716,53 @@
                         this.embeddingTestResult = { success: false, error: e.message };
                     } finally {
                         this.testingEmbedding = false;
+                    }
+                },
+
+                async runDoctor() {
+                    this.doctorLoading = true;
+                    this.doctorResults = null;
+                    try {
+                        const res = await fetch('/api/settings/doctor');
+                        this.doctorResults = await res.json();
+                    } catch (e) {
+                        this.doctorResults = { error: e.message };
+                    } finally {
+                        this.doctorLoading = false;
+                    }
+                },
+
+                async saveEmbeddingSettings() {
+                    this.embeddingSettingsSaving = true;
+                    this.embeddingSettingsSaved = false;
+                    this.embeddingSettingsError = '';
+                    try {
+                        const body = {
+                            provider: this.embeddingSettings.provider,
+                            model: this.embeddingSettings.model.trim(),
+                            api_key: this.embeddingSettings.api_key.trim(),
+                        };
+                        if (this.embeddingSettings.base_url) {
+                            body.base_url = this.embeddingSettings.base_url.trim();
+                        }
+                        const res = await fetch('/api/settings/embedding', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(body)
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                            this.embeddingSettingsError = data.detail || 'Failed to save settings';
+                        } else {
+                            this.embeddingSettingsSaved = true;
+                            // Update displayed api_key with masked value from server
+                            this.embeddingSettings.api_key = data.embedding?.api_key || this.embeddingSettings.api_key;
+                            setTimeout(() => { this.embeddingSettingsSaved = false; }, 3000);
+                        }
+                    } catch (e) {
+                        this.embeddingSettingsError = e.message || 'Failed to save settings';
+                    } finally {
+                        this.embeddingSettingsSaving = false;
                     }
                 },
 
@@ -5803,6 +7898,92 @@
                     window.addEventListener('resize', () => chart.resize());
                 },
 
+                formatDuration(seconds) {
+                    if (seconds == null || seconds === 0) return '0s';
+                    if (seconds < 60) return seconds + 's';
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    return mins + 'min ' + secs + 's';
+                },
+
+                formatStepName(step) {
+                    const names = {
+                        entities: this.locale === 'en' ? 'Entity Extraction' : '实体抽取',
+                        embeddings: this.locale === 'en' ? 'Doc Embedding' : '文档嵌入',
+                        relations: this.locale === 'en' ? 'Relation Discovery' : '关系发现',
+                        topics: this.locale === 'en' ? 'Topic Clustering' : '主题聚类'
+                    };
+                    return names[step] || step;
+                },
+
+                async fetchMiningStatus() {
+                    try {
+                        const res = await fetch('/api/mining/status');
+                        if (!res.ok) throw new Error('Failed to fetch mining status');
+                        this.miningStatus = await res.json();
+                        if (this.miningStatus.running && !this.miningPollingTimer) {
+                            this.miningPollingTimer = setInterval(() => this.fetchMiningStatus(), 2000);
+                        } else if (!this.miningStatus.running && this.miningPollingTimer) {
+                            clearInterval(this.miningPollingTimer);
+                            this.miningPollingTimer = null;
+                            this.fetchMiningHistory();
+                            // Show completion notification
+                            const steps = this.miningStatus.steps || [];
+                            const totalFailed = steps.reduce((sum, s) => sum + (s.failed || 0), 0);
+                            if (this.miningStatus.error) {
+                                this.showToast(this.locale === 'en' ? 'Mining failed: ' + this.miningStatus.error : '挖掘失败: ' + this.miningStatus.error, 'error');
+                            } else if (totalFailed > 0) {
+                                this.showToast(this.locale === 'en' ? 'Mining completed with ' + totalFailed + ' failures. Check history for details.' : '挖掘完成，有 ' + totalFailed + ' 个失败项。请查看历史记录。', 'error');
+                            } else {
+                                this.showToast(this.locale === 'en' ? 'Mining completed successfully!' : '挖掘完成！', 'success');
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Mining status error:', e);
+                    }
+                },
+
+                async fetchMiningHistory() {
+                    try {
+                        const res = await fetch('/api/mining/history?limit=20');
+                        if (!res.ok) throw new Error('Failed to fetch mining history');
+                        const data = await res.json();
+                        this.miningHistory = (data.records || []).map(r => ({ ...r, _expanded: false }));
+                    } catch (e) {
+                        console.error('Mining history error:', e);
+                    }
+                },
+
+                async startMining(mode) {
+                    if (this.miningStatus.running) return;
+                    try {
+                        const res = await fetch('/api/mining/run', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ mode: mode, workers: 3, confirm: mode === 'full' })
+                        });
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            throw new Error(err.detail || 'Failed to start mining');
+                        }
+                        // Start polling
+                        this.miningPollingTimer = setInterval(() => this.fetchMiningStatus(), 2000);
+                        this.fetchMiningStatus();
+                    } catch (e) {
+                        console.error('Start mining error:', e);
+                        this.showToast(e.message || 'Failed to start mining', 'error');
+                    }
+                },
+
+                confirmFullMining() {
+                    const msg = this.locale === 'en'
+                        ? 'Full rebuild will CLEAR and rebuild all entities, embeddings, relations, and topics. This may take several minutes. Continue?'
+                        : '全量重建将清除并重建所有实体、嵌入、关系和主题数据，可能需要数分钟。确认继续？';
+                    if (confirm(msg)) {
+                        this.startMining('full');
+                    }
+                },
+
                 async fetchRecommendations() {
                     this.loading.recommendations = true;
                     try {
@@ -5825,6 +8006,608 @@
                     } catch (e) {
                         console.error('Reading history error:', e);
                     }
+                },
+
+                // ---- RAG Chat Methods ----
+                async loadRagConversations() {
+                    this.ragLoadingConversations = true;
+                    try {
+                        const res = await fetch('/api/rag/conversations?limit=50');
+                        if (!res.ok) throw new Error('Failed to load conversations');
+                        const data = await res.json();
+                        this.ragConversations = data.sessions || [];
+                    } catch (e) {
+                        console.error('Load conversations error:', e);
+                        this.showToast(this.t('rag.loadingConversations'), 'error');
+                    } finally {
+                        this.ragLoadingConversations = false;
+                    }
+                },
+
+                async loadRagSession(sessionId) {
+                    try {
+                        const res = await fetch(`/api/rag/conversations/${sessionId}`);
+                        if (!res.ok) throw new Error('Failed to load session');
+                        const data = await res.json();
+                        this.ragCurrentSessionId = sessionId;
+                        // Convert turns to messages format
+                        this.ragMessages = [];
+                        if (data.turns) {
+                            data.turns.forEach(turn => {
+                                this.ragMessages.push({
+                                    role: turn.role,
+                                    content: turn.content,
+                                    sources: turn.sources || [],
+                                    timestamp: turn.timestamp
+                                });
+                            });
+                        }
+                        this.ragSelectedMessageIndex = this.ragMessages.length - 1;
+                        this.$nextTick(() => this.scrollRagToBottom());
+                    } catch (e) {
+                        console.error('Load session error:', e);
+                        this.showToast('Failed to load conversation', 'error');
+                    }
+                },
+
+                async sendRagMessage() {
+                    const question = this.ragInput.trim();
+                    if (!question || this.ragLoading) return;
+
+                    // Add user message immediately
+                    this.ragMessages.push({
+                        role: 'user',
+                        content: question,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    this.ragInput = '';
+                    this.ragLoading = true;
+                    this.ragSelectedMessageIndex = this.ragMessages.length - 1;
+                    this.$nextTick(() => this.scrollRagToBottom());
+
+                    try {
+                        const res = await fetch('/api/rag/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                question: question,
+                                session_id: this.ragCurrentSessionId,
+                                tags: [],
+                                top_k: 5,
+                                options: {
+                                    use_graph: this.ragUseGraph,
+                                    use_topics: this.ragUseTopics,
+                                    use_reranking: true
+                                }
+                            })
+                        });
+
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            throw new Error(err.detail?.error || 'Failed to get response');
+                        }
+
+                        const data = await res.json();
+
+                        // Update session ID if new conversation
+                        if (data.session_id && !this.ragCurrentSessionId) {
+                            this.ragCurrentSessionId = data.session_id;
+                            // Refresh conversation list
+                            this.loadRagConversations();
+                        }
+
+                        // Add AI response
+                        this.ragMessages.push({
+                            role: 'assistant',
+                            content: data.answer,
+                            sources: data.sources || [],
+                            entities: data.entities || [],
+                            topic_context: data.topic_context,
+                            confidence: data.confidence,
+                            timestamp: new Date().toISOString()
+                        });
+
+                        this.ragSelectedMessageIndex = this.ragMessages.length - 1;
+                    } catch (e) {
+                        console.error('RAG chat error:', e);
+                        this.ragMessages.push({
+                            role: 'assistant',
+                            content: this.t('rag.errorMessage'),
+                            isError: true,
+                            timestamp: new Date().toISOString()
+                        });
+                        this.showToast(e.message || 'Failed to get response', 'error');
+                    } finally {
+                        this.ragLoading = false;
+                        this.$nextTick(() => this.scrollRagToBottom());
+                    }
+                },
+
+                async deleteRagConversation(sessionId) {
+                    if (!confirm(this.t('rag.deleteConfirm'))) return;
+
+                    try {
+                        const res = await fetch(`/api/rag/conversations/${sessionId}`, {
+                            method: 'DELETE'
+                        });
+
+                        if (!res.ok) throw new Error('Failed to delete conversation');
+
+                        // Remove from list
+                        this.ragConversations = this.ragConversations.filter(c => c.session_id !== sessionId);
+
+                        // If current session was deleted, clear it
+                        if (this.ragCurrentSessionId === sessionId) {
+                            this.startNewRagConversation();
+                        }
+
+                        this.showToast('Conversation deleted', 'success');
+                    } catch (e) {
+                        console.error('Delete conversation error:', e);
+                        this.showToast('Failed to delete conversation', 'error');
+                    }
+                },
+
+                async clearAllRagConversations() {
+                    if (!confirm(this.t('rag.clearAllConfirm'))) return;
+
+                    try {
+                        const res = await fetch('/api/rag/conversations', {
+                            method: 'DELETE'
+                        });
+
+                        if (!res.ok) throw new Error('Failed to clear conversations');
+
+                        const data = await res.json();
+
+                        // Clear all conversations from list
+                        this.ragConversations = [];
+
+                        // Clear current session
+                        this.startNewRagConversation();
+
+                        this.showToast(`${this.t('rag.allHistoryCleared')} (${data.deleted_count})`, 'success');
+                    } catch (e) {
+                        console.error('Clear all conversations error:', e);
+                        this.showToast('Failed to clear conversation history', 'error');
+                    }
+                },
+
+                startNewRagConversation() {
+                    this.ragCurrentSessionId = null;
+                    this.ragMessages = [];
+                    this.ragSelectedMessageIndex = null;
+                },
+
+                selectRagMessage(index) {
+                    this.ragSelectedMessageIndex = index;
+                },
+
+                scrollRagToBottom() {
+                    const container = document.getElementById('rag-messages-container');
+                    if (container) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                },
+
+                getRagMessageSources() {
+                    if (this.ragSelectedMessageIndex === null) return [];
+                    const msg = this.ragMessages[this.ragSelectedMessageIndex];
+                    if (msg && msg.role === 'assistant') {
+                        return msg.sources || [];
+                    }
+                    // If selected message is user message, show sources from next assistant message
+                    if (msg && msg.role === 'user' && this.ragSelectedMessageIndex + 1 < this.ragMessages.length) {
+                        const nextMsg = this.ragMessages[this.ragSelectedMessageIndex + 1];
+                        if (nextMsg.role === 'assistant') {
+                            return nextMsg.sources || [];
+                        }
+                    }
+                    return [];
+                },
+
+                // Helper methods for backward-compatible source handling
+                // Supports both new format (dict with metadata) and old format (string ID)
+                isLegacySource(source) {
+                    return typeof source === 'string';
+                },
+
+                getSourceTitle(source) {
+                    if (this.isLegacySource(source)) {
+                        return 'Source (legacy)';
+                    }
+                    return source.metadata?.title || source.metadata?.source || 'Unknown';
+                },
+
+                getSourceContentType(source) {
+                    if (this.isLegacySource(source)) {
+                        return null;
+                    }
+                    return source.metadata?.content_type || null;
+                },
+
+                getSourceScore(source) {
+                    if (this.isLegacySource(source)) {
+                        return 0;
+                    }
+                    return source.score || 0;
+                },
+
+                getSourceScorePercent(source) {
+                    const score = this.getSourceScore(source);
+                    return score > 0 ? Math.round(score * 100) + '%' : 'N/A';
+                },
+
+                getSourceScoreWidth(source) {
+                    const score = this.getSourceScore(source);
+                    return (score * 100) + '%';
+                },
+
+                getSourceContent(source) {
+                    if (this.isLegacySource(source)) {
+                        return '';
+                    }
+                    return source.content || source.preview || '';
+                },
+
+                getSourceTags(source) {
+                    if (this.isLegacySource(source)) {
+                        return [];
+                    }
+                    return source.metadata?.tags || [];
+                },
+
+                getSourceKnowledgeId(source) {
+                    if (this.isLegacySource(source)) {
+                        return source; // Return the string ID itself
+                    }
+                    return source.metadata?.knowledge_id || source.id;
+                },
+
+                getRagMessageEntities() {
+                    if (this.ragSelectedMessageIndex === null) return [];
+                    const msg = this.ragMessages[this.ragSelectedMessageIndex];
+                    if (msg && msg.role === 'assistant') {
+                        return msg.entities || [];
+                    }
+                    if (msg && msg.role === 'user' && this.ragSelectedMessageIndex + 1 < this.ragMessages.length) {
+                        const nextMsg = this.ragMessages[this.ragSelectedMessageIndex + 1];
+                        if (nextMsg.role === 'assistant') {
+                            return nextMsg.entities || [];
+                        }
+                    }
+                    return [];
+                },
+
+                getRagMessageTopicContext() {
+                    if (this.ragSelectedMessageIndex === null) return null;
+                    const msg = this.ragMessages[this.ragSelectedMessageIndex];
+                    if (msg && msg.role === 'assistant') {
+                        return msg.topic_context;
+                    }
+                    if (msg && msg.role === 'user' && this.ragSelectedMessageIndex + 1 < this.ragMessages.length) {
+                        const nextMsg = this.ragMessages[this.ragSelectedMessageIndex + 1];
+                        if (nextMsg.role === 'assistant') {
+                            return nextMsg.topic_context;
+                        }
+                    }
+                    return null;
+                },
+
+                getConfidenceColor(confidence) {
+                    if (confidence === undefined || confidence === null) return '#999';
+                    if (confidence > 0.8) return '#22c55e'; // green
+                    if (confidence >= 0.5) return '#f59e0b'; // yellow
+                    return '#ef4444'; // red
+                },
+
+                getConfidenceLabel(confidence) {
+                    if (confidence === undefined || confidence === null) return 'N/A';
+                    return `${(confidence * 100).toFixed(0)}%`;
+                },
+
+                formatRagDate(dateStr) {
+                    if (!dateStr) return '';
+                    try {
+                        const date = new Date(dateStr);
+                        return date.toLocaleDateString(this.locale === 'zh' ? 'zh-CN' : 'en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    } catch {
+                        return dateStr;
+                    }
+                },
+
+                truncateText(text, maxLength) {
+                    if (!text) return '';
+                    if (text.length <= maxLength) return text;
+                    return text.substring(0, maxLength) + '...';
+                },
+
+                getEntityTypeColor(type) {
+                    const colors = {
+                        person: '#5470c6',
+                        concept: '#91cc75',
+                        tool: '#fac858',
+                        project: '#ee6666',
+                        organization: '#73c0de'
+                    };
+                    return colors[type] || '#999';
+                },
+
+                handleRagKeydown(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendRagMessage();
+                    }
+                },
+
+                renderMarkdown(text) {
+                    if (!text) return '';
+                    if (typeof marked !== 'undefined') {
+                        try {
+                            return marked.parse(text);
+                        } catch (e) {
+                            console.error('Markdown parse error:', e);
+                        }
+                    }
+                    return text.replace(/&/g, '&amp;')
+                               .replace(/</g, '&lt;')
+                               .replace(/>/g, '&gt;')
+                               .replace(/\n/g, '<br>');
+                },
+
+                // ---- Wiki Methods ----
+                async loadWikiTree() {
+                    this.wikiLoading = true;
+                    try {
+                        const res = await fetch('/api/wiki/tree');
+                        const data = await res.json();
+                        this.wikiTree = data.topics || [];
+                        this.wikiStats = data.stats || null;
+                    } catch (e) {
+                        console.error('Failed to load wiki tree:', e);
+                    }
+                    this.wikiLoading = false;
+                },
+
+                async toggleWikiTopic(topicId) {
+                    const isExpanding = this.wikiSelectedTopic !== topicId;
+                    this.wikiSelectedTopic = isExpanding ? topicId : null;
+                    
+                    if (isExpanding) {
+                        // Load all articles for this topic
+                        this.wikiLoading = true;
+                        this.wikiView = 'topic';
+                        this.wikiSelectedCategory = null;
+                        try {
+                            const res = await fetch(`/api/wiki/topics/${encodeURIComponent(topicId)}/articles`);
+                            const data = await res.json();
+                            this.wikiTopicArticles = data.articles || [];
+                            this.wikiSelectedTopicInfo = data.topic || { topic_id: topicId, topic_label: topicId };
+                        } catch (e) {
+                            console.error('Failed to load topic articles:', e);
+                            this.wikiTopicArticles = [];
+                        }
+                        this.wikiLoading = false;
+                    } else {
+                        // Collapsing - go back to index view
+                        this.wikiView = 'index';
+                        this.wikiTopicArticles = [];
+                        this.wikiSelectedTopicInfo = null;
+                    }
+                },
+
+                async selectWikiCategory(category) {
+                    this.wikiSelectedCategory = category;
+                    this.wikiView = 'category';
+                    this.wikiLoading = true;
+                    try {
+                        const res = await fetch(`/api/wiki/categories/${encodeURIComponent(category.category_id)}/articles`);
+                        const data = await res.json();
+                        this.wikiCategoryArticles = data.articles || [];
+                        // Store topic label for breadcrumb
+                        if (data.category && data.category.topic_label) {
+                            this.wikiSelectedCategory._topicLabel = data.category.topic_label;
+                        }
+                    } catch (e) {
+                        console.error('Failed to load category articles:', e);
+                    }
+                    this.wikiLoading = false;
+                },
+
+                async loadWikiArticle(articleId) {
+                    this.wikiLoading = true;
+                    // Clear search query so article view takes precedence
+                    this.wikiSearchQuery = '';
+                    try {
+                        const res = await fetch(`/api/wiki/articles/${encodeURIComponent(articleId)}`);
+                        if (res.ok) {
+                            this.wikiCurrentArticle = await res.json();
+                            this.wikiView = 'article';
+                        }
+                    } catch (e) {
+                        console.error('Failed to load wiki article:', e);
+                    }
+                    this.wikiLoading = false;
+                },
+
+                async searchWikiArticles() {
+                    // Debounce: cancel previous timer
+                    if (this.wikiSearchTimer) {
+                        clearTimeout(this.wikiSearchTimer);
+                    }
+                    
+                    // Clear results immediately if query is empty
+                    if (!this.wikiSearchQuery || this.wikiSearchQuery.length < 1) {
+                        this.wikiCategoryArticles = [];
+                        return;
+                    }
+                    
+                    // Debounce search by 300ms
+                    this.wikiSearchTimer = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`/api/wiki/search?q=${encodeURIComponent(this.wikiSearchQuery)}&limit=50`);
+                            const data = await res.json();
+                            this.wikiCategoryArticles = data.items || [];
+                        } catch (e) {
+                            console.error('Search failed:', e);
+                        }
+                    }, 300);
+                },
+
+                backToWikiIndex() {
+                    this.wikiView = 'index';
+                    this.wikiCurrentArticle = null;
+                    this.wikiSelectedCategory = null;
+                    this.wikiCategoryArticles = [];
+                    this.wikiTopicArticles = [];
+                    this.wikiSelectedTopicInfo = null;
+                    this.wikiSearchQuery = '';
+                },
+
+                backToCategory() {
+                    this.wikiView = 'category';
+                    this.wikiCurrentArticle = null;
+                },
+
+                navigateToGraphEntity(entity) {
+                    this.graphSearchFocusedEntityId = entity.entity_id;
+                    this.navigateTo('graph');
+                },
+
+                renderWikiContent(content) {
+                    if (!content) return '';
+                    // Parse [[entity-slug]] wiki-links and render as clickable links
+                    let rendered = content.replace(/\[\[([^\]]+)\]\]/g, (match, slug) => {
+                        return `<a href="javascript:void(0)" class="wiki-link" data-slug="${slug}">${slug.replace(/-/g, ' ')}</a>`;
+                    });
+                    // Render Markdown using marked
+                    return typeof marked !== 'undefined' ? marked.parse(rendered) : rendered;
+                },
+
+                formatWikiDate(dateStr) {
+                    if (!dateStr) return '';
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                },
+
+                handleWikiLinkClick(event) {
+                    const link = event.target.closest('.wiki-link');
+                    if (link) {
+                        const slug = link.dataset.slug;
+                        if (slug) {
+                            this.loadWikiArticle(slug);
+                        }
+                    }
+                },
+
+                // ---- Backup Methods ----
+                async loadBackups() {
+                    this.loading.backups = true;
+                    try {
+                        const res = await fetch('/api/backup/list');
+                        const data = await res.json();
+                        if (data.success) {
+                            this.backups = data.backups || [];
+                        } else {
+                            this.showToast(this.t('backup.loadError'), 'error');
+                        }
+                    } catch (e) {
+                        console.error('Failed to load backups:', e);
+                        this.showToast(this.t('backup.loadError'), 'error');
+                    } finally {
+                        this.loading.backups = false;
+                    }
+                },
+
+                async loadBackupTasks() {
+                    this.loading.backupTasks = true;
+                    try {
+                        const res = await fetch('/api/backup/status');
+                        const data = await res.json();
+                        if (data.success) {
+                            this.backupTasks = data.tasks || [];
+                        }
+                    } catch (e) {
+                        console.error('Failed to load backup tasks:', e);
+                    } finally {
+                        this.loading.backupTasks = false;
+                    }
+                },
+
+                async createBackup() {
+                    this.backupCreating = true;
+                    try {
+                        const body = {
+                            description: this.backupForm.description || null,
+                            cloud_provider: this.backupForm.cloudProvider || null
+                        };
+                        const res = await fetch('/api/backup/create', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(body)
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.showToast(this.t('backup.createSuccess'), 'success');
+                            this.backupForm.description = '';
+                            this.backupForm.cloudProvider = '';
+                            this.loadBackupTasks();
+                            // Refresh backup list after a delay
+                            setTimeout(() => this.loadBackups(), 3000);
+                        } else {
+                            this.showToast(data.error || this.t('backup.createError'), 'error');
+                        }
+                    } catch (e) {
+                        console.error('Failed to create backup:', e);
+                        this.showToast(this.t('backup.createError'), 'error');
+                    } finally {
+                        this.backupCreating = false;
+                    }
+                },
+
+                async deleteBackup(backupId) {
+                    if (!confirm(this.t('backup.deleteConfirm'))) {
+                        return;
+                    }
+                    try {
+                        const res = await fetch(`/api/backup/${backupId}`, {
+                            method: 'DELETE'
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.showToast(this.t('backup.deleteSuccess'), 'success');
+                            this.loadBackups();
+                        } else {
+                            this.showToast(data.error || this.t('backup.deleteError'), 'error');
+                        }
+                    } catch (e) {
+                        console.error('Failed to delete backup:', e);
+                        this.showToast(this.t('backup.deleteError'), 'error');
+                    }
+                },
+
+                formatBackupSize(bytes) {
+                    if (!bytes || bytes === 0) return '0 B';
+                    const k = 1024;
+                    const sizes = ['B', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                },
+
+                getBackupStatusLabel(status) {
+                    const labels = {
+                        'completed': this.t('backup.statusCompleted'),
+                        'running': this.t('backup.statusRunning'),
+                        'failed': this.t('backup.statusFailed'),
+                        'pending': this.t('backup.statusPending')
+                    };
+                    return labels[status] || status;
                 }
             },
             mounted() {
@@ -5833,6 +8616,16 @@
                 this.fetchStats();
                 this.fetchRecentByType();
                 this.fetchTags();
+            },
+            beforeUnmount() {
+                if (this.miningPollingTimer) {
+                    clearInterval(this.miningPollingTimer);
+                    this.miningPollingTimer = null;
+                }
+                if (this.backupTaskPollingTimer) {
+                    clearInterval(this.backupTaskPollingTimer);
+                    this.backupTaskPollingTimer = null;
+                }
             }
         }).mount('#app');
     </script>

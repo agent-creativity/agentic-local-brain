@@ -115,7 +115,7 @@ def generate_test_notes(count=25):
     
     if success_count > 0:
         print(f"Next steps:")
-        print(f"  1. Open web UI: http://127.0.0.1:8080")
+        print(f"  1. Open web UI: http://127.0.0.1:11201")
         print(f"  2. Navigate to 'Knowledge Collected' > 'Notes'")
         print(f"  3. Verify pagination shows 10 items per page")
         print(f"  4. Click 'Next →' to see page 2 and 3")

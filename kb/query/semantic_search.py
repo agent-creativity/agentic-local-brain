@@ -327,6 +327,79 @@ class SemanticSearch:
         page_results.sort(key=lambda x: x["max_score"], reverse=True)
         return page_results[:top_pages]
 
+    def search_batch(
+        self,
+        queries: List[str],
+        tags: Optional[List[str]] = None,
+        top_k: int = 5,
+        score_threshold: Optional[float] = None,
+    ) -> List[SearchResult]:
+        """
+        批量语义搜索
+
+        Execute semantic search for each query in the list, merge results,
+        and deduplicate by document ID (keeping highest score).
+
+        Args:
+            queries: List of search query texts
+            tags: Tag filter list, if provided only return documents with these tags
+            top_k: Number of results to return per query before merging
+            score_threshold: Score threshold, if not provided uses config default
+
+        Returns:
+            List[SearchResult]: Merged results sorted by score descending,
+                               deduplicated by document ID
+        """
+        if not queries:
+            return []
+
+        if score_threshold is None:
+            score_threshold = self.score_threshold
+
+        # Track results by document ID, keeping highest score
+        results_by_id: Dict[str, SearchResult] = {}
+
+        for query in queries:
+            if not query or not query.strip():
+                continue
+
+            try:
+                query_results = self.search(
+                    query=query,
+                    tags=tags,
+                    top_k=top_k,
+                    score_threshold=score_threshold,
+                )
+
+                for result in query_results:
+                    # Use id as primary, fall back to source from metadata
+                    doc_id = result.id or result.metadata.get("source", "")
+                    if not doc_id:
+                        continue
+
+                    # Keep result with highest score
+                    if doc_id not in results_by_id or result.score > results_by_id[doc_id].score:
+                        results_by_id[doc_id] = result
+
+            except Exception as e:
+                # Log warning but continue with other queries
+                logger.warning(f"Batch search query failed for '{query[:50]}...': {e}")
+                continue
+
+        # Sort by score descending
+        merged_results = sorted(
+            results_by_id.values(),
+            key=lambda x: x.score,
+            reverse=True,
+        )
+
+        logger.info(
+            f"Batch search completed: {len(queries)} queries, "
+            f"{len(merged_results)} unique results"
+        )
+
+        return merged_results
+
     def get_stats(self) -> Dict[str, Any]:
         """
         获取存储统计信息

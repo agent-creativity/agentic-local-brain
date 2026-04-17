@@ -87,6 +87,40 @@ storage:
   type: chroma
   persist_directory: ~/.knowledge-base/db/chroma
 
+# 查询配置
+query:
+  # RAG 查询配置
+  rag:
+    top_k: 5                    # RAG 检索的文档数量
+    temperature: 0.3             # LLM 生成温度
+    max_tokens: 1000             # LLM 最大 token 数
+    context_budget: 4000         # LLM 上下文 token 预算
+    context_format: hierarchical # 上下文格式: hierarchical (分层) 或 flat (扁平)
+    # 重排序配置（使用 LLM 对检索结果进行相关性评分）
+    reranking:
+      enabled: true              # 是否启用 LLM 重排序
+      top_n_candidates: 20       # 参与重排序的候选文档数量
+      weight_retrieval: 0.4      # 检索分数权重
+      weight_rerank: 0.6         # 重排序分数权重
+    # 多轮对话配置
+    conversation:
+      max_turns: 20              # 单个会话最大轮数
+      session_timeout_minutes: 30  # 会话超时时间（分钟）
+      history_turns_in_context: 5  # 注入上下文的最近轮数
+    # 提示词模板配置
+    templates:
+      default: general           # 默认模板: general, technical, academic, creative
+      # 自定义模板示例 (取消注释以启用):
+      # custom: |
+      #   You are a specialized assistant for {domain}.
+      #   {context}
+      #   Question: {question}
+  # 检索流水线配置
+  pipeline:
+    top_k: 10                    # 检索阶段返回的文档数量
+    rerank_top_k: 5              # 重排序后返回的文档数量
+    context_budget: 4000         # LLM 上下文 token 预算（备用）
+
 # Logging configuration (used for background web server mode)
 logging:
   log_dir: ""              # Log directory (default: ~/.localbrain/logs/)
@@ -94,3 +128,32 @@ logging:
   max_bytes: 10485760      # Max log file size in bytes (default: 10MB)
   backup_count: 5          # Number of rotated backup files to keep
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Wiki compilation settings
+wiki:
+  enabled: true                        # Enable wiki article generation during mining
+  max_source_tokens_per_topic: 8000    # Max tokens from source docs per topic
+  entity_card_threshold: 3             # Min topic appearances for entity cards
+  temperature: 0.3                     # LLM temperature for compilation
+  model: null                          # null = use default LLM model
+  max_article_words: 3000              # Target max words per article
+  max_subcategories: 5                 # Max subcategories per topic
+
+# Backup configuration
+backup:
+  # Cloud storage provider: oss (Alibaba Cloud OSS) or s3 (AWS S3)
+  cloud_provider: oss
+
+  # Alibaba Cloud OSS configuration
+  oss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    access_key_id: ${OSS_ACCESS_KEY_ID}
+    access_key_secret: ${OSS_ACCESS_KEY_SECRET}
+    bucket: localbrain-backups
+
+  # AWS S3 configuration
+  s3:
+    region: us-west-2
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+    bucket: localbrain-backups
