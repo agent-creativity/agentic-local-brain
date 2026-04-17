@@ -97,7 +97,7 @@ fetch_version_info() {
     
     if [ "$VERSION" = "latest" ]; then
         # Extract version - prefer jq if available, fallback to grep
-        if command -v jq &> /dev/null; then
+        if command -v jq > /dev/null 2>&1; then
             VERSION=$(echo "$VERSION_JSON" | jq -r '.version')
         else
             VERSION=$(echo "$VERSION_JSON" | grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | cut -d'"' -f4)
