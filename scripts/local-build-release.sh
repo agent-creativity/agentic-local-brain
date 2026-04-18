@@ -47,9 +47,13 @@ fi
 
 DIST_DIR="$PROJECT_DIR/dist"
 
-# Copy python installer
-cp -R "$DIST_DIR/python_installer/" "$PUBLISH_STATIC/python_installer/"
-echo "  Copied: python_installer/"
+# Copy python installer (preserve existing versions)
+mkdir -p "$PUBLISH_STATIC/python_installer/packages"
+cp "$DIST_DIR/python_installer/install.sh" "$PUBLISH_STATIC/python_installer/"
+cp "$DIST_DIR/python_installer/install.ps1" "$PUBLISH_STATIC/python_installer/"
+cp "$DIST_DIR/python_installer/packages/localbrain-${VERSION}-py3-none-any.whl" "$PUBLISH_STATIC/python_installer/packages/"
+cp "$DIST_DIR/python_installer/packages/localbrain-${VERSION}-py3-none-any.whl.sha256" "$PUBLISH_STATIC/python_installer/packages/"
+echo "  Copied: python_installer/ (version ${VERSION})"
 
 # Copy binary installer
 #cp -R "$DIST_DIR/binary_installer/" "$PUBLISH_STATIC/binary_installer/"
