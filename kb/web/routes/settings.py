@@ -42,6 +42,17 @@ class EmbeddingConfigRequest(BaseModel):
     base_url: Optional[str] = None
 
 
+class BackupConfigRequest(BaseModel):
+    """Request model for updating backup configuration."""
+    enabled: bool
+    schedule: str
+    retention_days: int
+    backup_dir: str
+    include_db: bool
+    include_files: bool
+    compression: bool
+
+
 def _parse_litellm_model(model_str: str) -> tuple:
     """
     Parse a litellm model string into (provider, model_name).
@@ -121,11 +132,33 @@ def _build_litellm_model(ui_provider: str, ui_model: str, is_embedding: bool = F
 
 
 def _load_raw_config() -> Dict[str, Any]:
-    """Load raw config file without expanding environment variables."""
-    if not CONFIG_FILE.exists():
-        return {}
-    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+    """Load raw config file without expanding environment variables.
+
+    Merges with DEFAULT_CONFIG to ensure all sections are preserved.
+    """
+    from kb.config import DEFAULT_CONFIG
+    import copy
+
+    # Start with a deep copy of default config
+    config = copy.deepcopy(DEFAULT_CONFIG)
+
+    # If config file exists, load and merge it
+    if CONFIG_FILE.exists():
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            file_config = yaml.safe_load(f)
+            if file_config:
+                _deep_merge_dict(config, file_config)
+
+    return config
+
+
+def _deep_merge_dict(base: Dict[str, Any], override: Dict[str, Any]) -> None:
+    """Deep merge override dict into base dict (modifies base in place)."""
+    for key, value in override.items():
+        if key in base and isinstance(base[key], dict) and isinstance(value, dict):
+            _deep_merge_dict(base[key], value)
+        else:
+            base[key] = value
 
 
 def _save_raw_config(config: Dict[str, Any]) -> None:
@@ -146,6 +179,11 @@ def _mask_api_key(key: str) -> str:
     if len(key) <= 8:
         return "*" * len(key)
     return key[:4] + "*" * (len(key) - 8) + key[-4:]
+
+
+def _is_masked_key(key: str) -> bool:
+    """Check if an api_key appears to be masked (contains asterisks)."""
+    return "*" in key
 
 
 @router.get("/settings")
@@ -259,16 +297,27 @@ async def update_llm_settings(request: LLMConfigRequest) -> Dict[str, Any]:
         # Build litellm model string from UI provider and model
         ui_provider = request.provider
         ui_model = request.model.strip()
-        
+
         # For legacy providers (dashscope, openai_compatible, litellm),
         # we still convert to the new litellm format
         litellm_model = _build_litellm_model(ui_provider, ui_model)
-        
-        llm_config: Dict[str, Any] = {
+
+        # Check if the incoming api_key is masked - if so, preserve the existing key
+        incoming_key = request.api_key.strip()
+        if _is_masked_key(incoming_key):
+            # Keep the existing api_key from config
+            existing_llm = raw.get("llm", {})
+            api_key_to_save = existing_llm.get("api_key", incoming_key)
+        else:
+            api_key_to_save = incoming_key
+
+        # Preserve existing llm config and update only the specified fields
+        llm_config = raw.get("llm", {})
+        llm_config.update({
             "provider": "litellm",
             "model": litellm_model,
-            "api_key": request.api_key.strip(),
-        }
+            "api_key": api_key_to_save,
+        })
         if request.base_url:
             llm_config["base_url"] = request.base_url.strip()
 
@@ -343,24 +392,35 @@ async def update_embedding_settings(request: EmbeddingConfigRequest) -> Dict[str
         # Build litellm model string from UI provider and model
         ui_provider = request.provider
         ui_model = request.model.strip()
-        
+
         # For legacy providers (dashscope, openai_compatible, litellm),
         # we still convert to the new litellm format
         # is_embedding=True handles DashScope's special OpenAI-compatible mode
         litellm_model = _build_litellm_model(ui_provider, ui_model, is_embedding=True)
-        
+
+        # Check if the incoming api_key is masked - if so, preserve the existing key
+        incoming_key = request.api_key.strip()
+        if _is_masked_key(incoming_key):
+            # Keep the existing api_key from config
+            existing_embedding = raw.get("embedding", {})
+            api_key_to_save = existing_embedding.get("api_key", incoming_key)
+        else:
+            api_key_to_save = incoming_key
+
         # Determine base_url
         base_url = request.base_url.strip() if request.base_url else None
-        
+
         # Auto-set base_url for DashScope embeddings (requires OpenAI-compatible endpoint)
         if ui_provider == 'dashscope' and not base_url:
             base_url = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
-        
-        embedding_config: Dict[str, Any] = {
+
+        # Preserve existing embedding config and update only the specified fields
+        embedding_config = raw.get("embedding", {})
+        embedding_config.update({
             "provider": "litellm",
             "model": litellm_model,
-            "api_key": request.api_key.strip(),
-        }
+            "api_key": api_key_to_save,
+        })
         if base_url:
             embedding_config["base_url"] = base_url
 
@@ -491,8 +551,90 @@ def _test_embedding_sync() -> Dict[str, Any]:
 async def run_doctor() -> Dict[str, Any]:
     """
     Run system diagnostics and return structured results.
-    
+
     Returns version info, check results, and any issues found.
     """
     from kb.commands.doctor import run_diagnostics
     return run_diagnostics()
+
+
+@router.get("/settings/backup")
+async def get_backup_settings() -> Dict[str, Any]:
+    """
+    Get current backup configuration.
+
+    Returns backup settings from config file.
+    """
+    try:
+        raw = _load_raw_config()
+        backup = raw.get("backup", {})
+
+        return {
+            "backup": {
+                "enabled": backup.get("enabled", False),
+                "schedule": backup.get("schedule", "0 2 * * *"),
+                "retention_days": backup.get("retention_days", 30),
+                "backup_dir": backup.get("backup_dir", "~/.knowledge-base/backups"),
+                "include_db": backup.get("include_db", True),
+                "include_files": backup.get("include_files", True),
+                "compression": backup.get("compression", True),
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load backup settings: {str(e)}")
+
+
+@router.put("/settings/backup")
+async def update_backup_settings(request: BackupConfigRequest) -> Dict[str, Any]:
+    """
+    Update backup configuration.
+
+    Args:
+        request: BackupConfigRequest with backup settings.
+
+    Returns:
+        Updated backup configuration.
+    """
+    # Validate schedule format (basic cron validation)
+    if not request.schedule.strip():
+        raise HTTPException(status_code=400, detail="schedule cannot be empty")
+
+    if request.retention_days < 1:
+        raise HTTPException(status_code=400, detail="retention_days must be at least 1")
+
+    if not request.backup_dir.strip():
+        raise HTTPException(status_code=400, detail="backup_dir cannot be empty")
+
+    try:
+        raw = _load_raw_config()
+
+        # Preserve existing backup config and update
+        backup_config = raw.get("backup", {})
+        backup_config.update({
+            "enabled": request.enabled,
+            "schedule": request.schedule.strip(),
+            "retention_days": request.retention_days,
+            "backup_dir": request.backup_dir.strip(),
+            "include_db": request.include_db,
+            "include_files": request.include_files,
+            "compression": request.compression,
+        })
+
+        raw["backup"] = backup_config
+        _save_raw_config(raw)
+
+        # Invalidate the cached config
+        try:
+            from kb.web.dependencies import get_config
+            get_config.cache_clear()
+        except Exception:
+            pass
+
+        return {
+            "backup": backup_config,
+            "message": "Backup configuration updated successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save backup settings: {str(e)}")

@@ -138,3 +138,13 @@ wiki:
   model: null                          # null = use default LLM model
   max_article_words: 3000              # Target max words per article
   max_subcategories: 5                 # Max subcategories per topic
+
+# Backup settings
+backup:
+  enabled: false                       # Enable automatic backups
+  schedule: "0 2 * * *"                # Cron schedule (default: daily at 2 AM)
+  retention_days: 30                   # Number of days to keep backups
+  backup_dir: ~/.knowledge-base/backups  # Backup directory
+  include_db: true                     # Include database in backups
+  include_files: true                  # Include collected files in backups
+  compression: true                    # Compress backup archives

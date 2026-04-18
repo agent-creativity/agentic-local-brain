@@ -6,10 +6,37 @@ Initialization and setup commands for the knowledge base.
 
 import shutil
 from pathlib import Path
+from typing import Any, Dict
 
 import click
 
 from kb.commands.utils import CONFIG_DIR, CONFIG_FILE, TEMPLATE_FILE, _ensure_config_dir, _get_sqlite_storage
+
+
+def _migrate_config(existing: Dict[str, Any], defaults: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Migrate existing config by adding missing keys from defaults.
+
+    Args:
+        existing: Existing configuration dictionary
+        defaults: Default configuration dictionary
+
+    Returns:
+        Migrated configuration with missing keys added
+    """
+    import copy
+
+    result = copy.deepcopy(existing)
+
+    for key, default_value in defaults.items():
+        if key not in result:
+            # Key is missing, add it
+            result[key] = copy.deepcopy(default_value)
+        elif isinstance(default_value, dict) and isinstance(result[key], dict):
+            # Both are dicts, recurse
+            result[key] = _migrate_config(result[key], default_value)
+
+    return result
 
 
 @click.group()
@@ -22,19 +49,20 @@ def init() -> None:
 @click.option("--no-sample", is_flag=True, help="Skip generating sample data")
 def setup(no_sample: bool) -> None:
     """Initialize knowledge base configuration and data directories."""
-    from kb.config import Config
-    
+    from kb.config import Config, DEFAULT_CONFIG
+    import yaml
+
     _ensure_config_dir()
-    
+
     # Check if already initialized — refuse if local data exists
     if CONFIG_FILE.exists():
         config = Config(CONFIG_FILE)
         data_dir = Path(config.get("data_dir", "~/.knowledge-base")).expanduser()
         db_file = data_dir / "db" / "metadata.db"
         collect_dir = data_dir / "1_collect"
-        
+
         has_data = db_file.exists() or (collect_dir.exists() and any(collect_dir.iterdir()))
-        
+
         if has_data:
             click.echo(f"⚠️  Knowledge base already initialized with existing data.")
             click.echo(f"   Config: {CONFIG_FILE}")
@@ -46,18 +74,31 @@ def setup(no_sample: bool) -> None:
             click.echo()
             click.echo("Then run 'localbrain init setup' again.")
             return
-        
+
         click.echo(f"⚠️  Configuration already exists at: {CONFIG_FILE}")
-        click.echo("   But no data found — proceeding with re-initialization...")
+        click.echo("   Checking for missing configuration keys...")
+
+        # Migrate existing config: merge with DEFAULT_CONFIG to add missing keys
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            existing_config = yaml.safe_load(f) or {}
+
+        # Deep merge: add missing keys from DEFAULT_CONFIG
+        migrated = _migrate_config(existing_config, DEFAULT_CONFIG)
+
+        # Save migrated config
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            yaml.dump(migrated, f, default_flow_style=False, allow_unicode=True)
+
+        click.echo("   ✓ Configuration updated with new keys")
         click.echo()
-    
-    # Copy template config
-    if TEMPLATE_FILE.exists():
-        shutil.copy2(TEMPLATE_FILE, CONFIG_FILE)
-        click.echo(f"✓ Created configuration file: {CONFIG_FILE}")
     else:
-        click.echo(f"✗ Template file not found: {TEMPLATE_FILE}", err=True)
-        raise SystemExit(1)
+        # Copy template config for fresh install
+        if TEMPLATE_FILE.exists():
+            shutil.copy2(TEMPLATE_FILE, CONFIG_FILE)
+            click.echo(f"✓ Created configuration file: {CONFIG_FILE}")
+        else:
+            click.echo(f"✗ Template file not found: {TEMPLATE_FILE}", err=True)
+            raise SystemExit(1)
     
     # Initialize config
     config = Config(CONFIG_FILE)

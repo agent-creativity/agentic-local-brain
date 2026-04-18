@@ -80,6 +80,15 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "max_article_words": 3000,
         "max_subcategories": 5,
     },
+    "backup": {
+        "enabled": False,
+        "schedule": "0 2 * * *",  # Daily at 2 AM
+        "retention_days": 30,
+        "backup_dir": "~/.knowledge-base/backups",
+        "include_db": True,
+        "include_files": True,
+        "compression": True,
+    },
 }
 
 
