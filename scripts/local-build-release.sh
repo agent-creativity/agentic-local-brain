@@ -17,7 +17,7 @@ set -euo pipefail
 # ── Paths ───────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-PUBLISH_STATIC="/Users/xudonglai/AliDrive/Work/localbrain-release-server/static"
+PUBLISH_STATIC="/home/admin/Work/localbrain-release-server/static"
 
 # ── Version ─────────────────────────────────────────────────────────
 if [ -n "${1:-}" ]; then
@@ -34,7 +34,7 @@ echo ""
 # ── Step 1: Build release ──────────────────────────────────────────
 echo "[1/3] Building release artifacts..."
 echo ""
-python3 "$PROJECT_DIR/scripts/build_release.py" --version "$VERSION"
+python3 "$PROJECT_DIR/scripts/build_release.py" --version "$VERSION" --wheel-only
 echo ""
 
 # ── Step 2: Copy to publish repo ───────────────────────────────────
@@ -52,8 +52,8 @@ cp -R "$DIST_DIR/python_installer/" "$PUBLISH_STATIC/python_installer/"
 echo "  Copied: python_installer/"
 
 # Copy binary installer
-cp -R "$DIST_DIR/binary_installer/" "$PUBLISH_STATIC/binary_installer/"
-echo "  Copied: binary_installer/"
+#cp -R "$DIST_DIR/binary_installer/" "$PUBLISH_STATIC/binary_installer/"
+#echo "  Copied: binary_installer/"
 
 # Copy version.json
 cp "$DIST_DIR/version.json" "$PUBLISH_STATIC/version.json"
@@ -86,10 +86,34 @@ git commit -m "release: localbrain v${VERSION}" || {
 git push
 
 echo ""
+
+# ── Step 4: Build web assets ────────────────────────────────────────
+echo "[4/5] Building web assets with npm..."
+
+cd "$PUBLISH_REPO"
+npm run build
+
+echo ""
+
+# ── Step 5: Upload to OSS ───────────────────────────────────────────
+echo "[5/5] Uploading build artifacts to OSS..."
+
+BUILD_DIR="$PUBLISH_REPO/build"
+
+if [ ! -d "$BUILD_DIR" ]; then
+    echo "  ERROR: Build directory not found: $BUILD_DIR"
+    exit 1
+fi
+
+ossutil cp -r -f "$BUILD_DIR/" oss://localbrain/
+echo "  Uploaded: build/* → oss://localbrain/"
+
+echo ""
 echo "============================================================"
 echo " Release v${VERSION} published successfully!"
 echo "============================================================"
 echo ""
 echo " Artifacts deployed to: $PUBLISH_STATIC"
 echo " Version JSON:          $PUBLISH_STATIC/version.json"
+echo " OSS deployment:        oss://localbrain/"
 echo ""
