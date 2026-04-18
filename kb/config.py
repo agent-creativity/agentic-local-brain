@@ -88,6 +88,19 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "include_db": True,
         "include_files": True,
         "compression": True,
+        "cloud_provider": "oss",
+        "oss": {
+            "endpoint": "oss-cn-hangzhou.aliyuncs.com",
+            "access_key_id": "",
+            "access_key_secret": "",
+            "bucket": "localbrain-backups",
+        },
+        "s3": {
+            "region": "us-west-2",
+            "access_key_id": "",
+            "secret_access_key": "",
+            "bucket": "localbrain-backups",
+        },
     },
 }
 

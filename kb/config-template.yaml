@@ -148,3 +148,20 @@ backup:
   include_db: true                     # Include database in backups
   include_files: true                  # Include collected files in backups
   compression: true                    # Compress backup archives
+
+  # Cloud storage provider: oss (Alibaba Cloud OSS) or s3 (AWS S3)
+  cloud_provider: oss
+
+  # Alibaba Cloud OSS configuration
+  oss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    access_key_id: ${OSS_ACCESS_KEY_ID}
+    access_key_secret: ${OSS_ACCESS_KEY_SECRET}
+    bucket: localbrain-backups
+
+  # AWS S3 configuration
+  s3:
+    region: us-west-2
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+    bucket: localbrain-backups
