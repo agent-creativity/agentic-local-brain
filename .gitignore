@@ -12,3 +12,6 @@ __pycache__/
 dist/
 build/
 .gstack/
+
+# Worktrees
+.worktrees/
