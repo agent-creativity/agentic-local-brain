@@ -44,13 +44,23 @@ class EmbeddingConfigRequest(BaseModel):
 
 class BackupConfigRequest(BaseModel):
     """Request model for updating backup configuration."""
+    # Basic config
     enabled: bool
     schedule: str
     retention_days: int
-    backup_dir: str
-    include_db: bool
-    include_files: bool
-    compression: bool
+    storage_location: str  # "local", "oss", "s3"
+
+    # OSS config
+    oss_endpoint: Optional[str] = None
+    oss_access_key_id: Optional[str] = None
+    oss_access_key_secret: Optional[str] = None
+    oss_bucket: Optional[str] = None
+
+    # S3 config
+    s3_region: Optional[str] = None
+    s3_access_key_id: Optional[str] = None
+    s3_secret_access_key: Optional[str] = None
+    s3_bucket: Optional[str] = None
 
 
 def _parse_litellm_model(model_str: str) -> tuple:
@@ -571,24 +581,30 @@ async def run_doctor() -> Dict[str, Any]:
 
 @router.get("/settings/backup")
 async def get_backup_settings() -> Dict[str, Any]:
-    """
-    Get current backup configuration.
-
-    Returns backup settings from config file.
-    """
+    """Get current backup configuration including cloud storage settings."""
     try:
         raw = _load_raw_config()
         backup = raw.get("backup", {})
 
         return {
             "backup": {
+                # Basic config
                 "enabled": backup.get("enabled", False),
                 "schedule": backup.get("schedule", "0 2 * * *"),
                 "retention_days": backup.get("retention_days", 30),
-                "backup_dir": backup.get("backup_dir", "~/.knowledge-base/backups"),
-                "include_db": backup.get("include_db", True),
-                "include_files": backup.get("include_files", True),
-                "compression": backup.get("compression", True),
+                "storage_location": backup.get("storage_location", "local"),
+
+                # OSS config
+                "oss_endpoint": backup.get("oss", {}).get("endpoint", ""),
+                "oss_access_key_id": _mask_api_key(backup.get("oss", {}).get("access_key_id", "")),
+                "oss_access_key_secret": _mask_api_key(backup.get("oss", {}).get("access_key_secret", "")),
+                "oss_bucket": backup.get("oss", {}).get("bucket", ""),
+
+                # S3 config
+                "s3_region": backup.get("s3", {}).get("region", ""),
+                "s3_access_key_id": _mask_api_key(backup.get("s3", {}).get("access_key_id", "")),
+                "s3_secret_access_key": _mask_api_key(backup.get("s3", {}).get("secret_access_key", "")),
+                "s3_bucket": backup.get("s3", {}).get("bucket", ""),
             }
         }
     except Exception as e:
