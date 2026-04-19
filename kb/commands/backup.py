@@ -180,6 +180,50 @@ def _list_s3_backups(config: Config) -> list:
         return []
 
 
+def _cleanup_old_backups(retention_days: int):
+    """Clean up backups older than retention_days."""
+    from datetime import datetime, timedelta
+    import logging
+
+    logger = logging.getLogger(__name__)
+    metadata = _load_metadata()
+    backups = metadata.get("backups", [])
+
+    cutoff_date = datetime.now() - timedelta(days=retention_days)
+
+    backups_to_remove = []
+    for backup in backups:
+        try:
+            created_at = datetime.fromisoformat(backup.get("created_at", ""))
+            if created_at < cutoff_date:
+                backups_to_remove.append(backup)
+        except Exception:
+            continue
+
+    for backup in backups_to_remove:
+        try:
+            # Delete local file
+            if backup.get("path"):
+                backup_file = Path(backup["path"])
+                if backup_file.exists():
+                    backup_file.unlink()
+                    logger.info(f"Deleted old backup file: {backup_file}")
+
+            # Remove from metadata
+            backups.remove(backup)
+            logger.info(f"Removed old backup from metadata: {backup['id']}")
+
+        except Exception as e:
+            logger.error(f"Failed to cleanup backup {backup.get('id')}: {e}")
+
+    # Save updated metadata
+    metadata["backups"] = backups
+    _save_metadata(metadata)
+
+    if backups_to_remove:
+        logger.info(f"Cleaned up {len(backups_to_remove)} old backups")
+
+
 def _create_backup_async(task_id: str, output_path: Optional[str], cloud_provider: Optional[str]):
     """Create backup in background thread"""
     metadata = _load_metadata()
@@ -249,6 +293,16 @@ def _create_backup_async(task_id: str, output_path: Optional[str], cloud_provide
         metadata["tasks"][task_id]["backup_file"] = cloud_location if cloud_location else str(backup_file)
         metadata["tasks"][task_id]["size"] = file_size
         _save_metadata(metadata)
+
+        # Cleanup old backups if this is an automatic backup
+        if metadata["tasks"][task_id].get("trigger") == "automatic":
+            try:
+                from kb.config import Config
+                config = Config(CONFIG_FILE)
+                retention_days = config.get("backup", {}).get("retention_days", 30)
+                _cleanup_old_backups(retention_days)
+            except Exception as e:
+                logger.error(f"Failed to cleanup old backups: {e}")
 
     except Exception as e:
         # Update task status to failed
