@@ -297,8 +297,6 @@ def _create_backup_async(task_id: str, output_path: Optional[str], cloud_provide
         # Cleanup old backups if this is an automatic backup
         if metadata["tasks"][task_id].get("trigger") == "automatic":
             try:
-                from kb.config import Config
-                config = Config(CONFIG_FILE)
                 retention_days = config.get("backup", {}).get("retention_days", 30)
                 _cleanup_old_backups(retention_days)
             except Exception as e:

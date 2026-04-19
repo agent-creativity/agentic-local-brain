@@ -263,9 +263,29 @@ export default {
             } finally {
                 this.runningDoctor = false;
             }
+        },
+
+        handleTabSwitch(event) {
+            const tab = event.detail?.tab;
+            if (tab && ['models', 'backup', 'diagnostics'].includes(tab)) {
+                this.settingsTab = tab;
+            }
         }
     },
     async mounted() {
         await this.fetchSettings();
+
+        // Check URL parameters for tab switching
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab && ['models', 'backup', 'diagnostics'].includes(tab)) {
+            this.settingsTab = tab;
+        }
+
+        // Listen for custom event to switch tabs
+        window.addEventListener('switch-settings-tab', this.handleTabSwitch);
+    },
+    beforeUnmount() {
+        window.removeEventListener('switch-settings-tab', this.handleTabSwitch);
     }
 };

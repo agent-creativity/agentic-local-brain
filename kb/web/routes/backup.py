@@ -122,10 +122,13 @@ async def list_backups(cloud: Optional[str] = None):
     # Sort by created_at
     all_backups.sort(key=lambda x: x.get("created_at", ""), reverse=True)
 
-    # Normalize location field for each backup
+    # Normalize location field and ensure id field for each backup
     for backup in all_backups:
         if not backup.get('location'):
             backup['location'] = backup.get('cloud_location') or backup.get('path')
+        # Ensure each backup has an id field (use existing id or filename as fallback)
+        if 'id' not in backup:
+            backup['id'] = backup.get('filename', '')
 
     return {
         "success": True,
@@ -176,10 +179,10 @@ async def delete_backup(backup_id: str):
     metadata = _load_metadata()
     backups = metadata.get("backups", [])
 
-    # Find and remove backup
+    # Find and remove backup (match by id or filename)
     backup_info = None
     for i, b in enumerate(backups):
-        if b["id"] == backup_id:
+        if b.get("id") == backup_id or b.get("filename") == backup_id:
             backup_info = backups.pop(i)
             break
 

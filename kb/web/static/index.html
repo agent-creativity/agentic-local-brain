@@ -3611,7 +3611,7 @@
                         <span class="nav-icon">🔍</span> {{ locale === 'en' ? 'Enhanced Retrieval' : '增强检索' }}
                     </div>
                     
-                    <div class="nav-item" :class="{ active: currentPage === 'backup' }" 
+                    <div class="nav-item" :class="{ active: currentPage === 'backup' }"
                          @click="navigateTo('backup')">
                         <span class="nav-icon">💾</span> {{ t('nav.backup') }}
                     </div>
@@ -4722,34 +4722,21 @@
                     <!-- Create Backup Section -->
                     <div class="card" style="margin-top: 16px;">
                         <div class="card-body">
-                            <h3 style="margin-bottom: 16px;">{{ t('backup.createNew') }}</h3>
-                            
-                            <!-- Description -->
-                            <div style="margin-bottom: 16px;">
-                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
-                                    {{ t('backup.description') }}
-                                </label>
-                                <input type="text" v-model="backupForm.description"
-                                       :placeholder="t('backup.descriptionPlaceholder')"
-                                       style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" />
+                            <h3 style="margin-bottom: 16px;">{{ locale === 'en' ? 'Backup Management' : '备份管理' }}</h3>
+
+                            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                                <button class="btn btn-primary" @click="createBackup" :disabled="backupCreating">
+                                    {{ backupCreating ? (locale === 'en' ? 'Creating...' : '创建中...') : (locale === 'en' ? 'Manual Backup' : '手工触发备份') }}
+                                </button>
+                                <button class="btn" @click="navigateToBackupSettings"
+                                        style="border: 1px solid var(--border); background: var(--bg);">
+                                    {{ locale === 'en' ? 'Auto Backup Settings' : '自动备份配置' }}
+                                </button>
                             </div>
 
-                            <!-- Cloud Provider -->
-                            <div style="margin-bottom: 20px;">
-                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
-                                    {{ t('backup.cloudProvider') }}
-                                </label>
-                                <select v-model="backupForm.cloudProvider"
-                                        style="width: 100%; max-width: 320px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;">
-                                    <option value="">{{ t('backup.localOnly') }}</option>
-                                    <option value="oss">Alibaba Cloud OSS</option>
-                                    <option value="s3">AWS S3</option>
-                                </select>
-                            </div>
-
-                            <button class="btn btn-primary" @click="createBackup" :disabled="backupCreating">
-                                {{ backupCreating ? t('backup.creating') : t('backup.create') }}
-                            </button>
+                            <p style="font-size: 13px; color: var(--text-secondary);">
+                                {{ locale === 'en' ? 'Manual backup uses the default storage location configured in settings.' : '手工备份将使用设置中配置的默认存储位置。' }}
+                            </p>
                         </div>
                     </div>
 
@@ -4767,7 +4754,7 @@
                                 <p style="color: var(--text-secondary); margin-top: 8px;">{{ t('backup.noBackupsDesc') }}</p>
                             </div>
                             <div v-else>
-                                <div v-for="backup in backups" :key="backup.id" 
+                                <div v-for="backup in paginatedBackups" :key="backup.id"
                                      style="border-bottom: 1px solid var(--border); padding: 16px 0; display: flex; justify-content: space-between; align-items: center;">
                                     <div style="flex: 1;">
                                         <div style="font-weight: 500; margin-bottom: 4px;">{{ backup.filename }}</div>
@@ -4781,6 +4768,19 @@
                                     </div>
                                     <button class="btn btn-danger" @click="deleteBackup(backup.id)" style="margin-left: 16px;">
                                         {{ t('backup.delete') }}
+                                    </button>
+                                </div>
+
+                                <!-- Pagination -->
+                                <div v-if="backupTotalPages > 1" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                                    <button class="btn btn-secondary" @click="changeBackupPage(backupPage - 1)" :disabled="backupPage === 1" style="padding: 6px 12px;">
+                                        ‹
+                                    </button>
+                                    <span style="color: var(--text-secondary); font-size: 14px;">
+                                        {{ backupPage }} / {{ backupTotalPages }}
+                                    </span>
+                                    <button class="btn btn-secondary" @click="changeBackupPage(backupPage + 1)" :disabled="backupPage === backupTotalPages" style="padding: 6px 12px;">
+                                        ›
                                     </button>
                                 </div>
                             </div>
@@ -4800,11 +4800,11 @@
                                 <div class="empty-state-title">{{ t('backup.noTasks') }}</div>
                             </div>
                             <div v-else>
-                                <div v-for="task in backupTasks.slice(0, 10)" :key="task.id" 
+                                <div v-for="task in paginatedBackupTasks" :key="task.id"
                                      style="border-bottom: 1px solid var(--border); padding: 16px 0;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                         <div style="font-weight: 500;">{{ t('backup.taskId') }}: {{ task.id }}</div>
-                                        <span :class="'backup-status-' + task.status" 
+                                        <span :class="'backup-status-' + task.status"
                                               style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;">
                                             {{ getBackupStatusLabel(task.status) }}
                                         </span>
@@ -4817,6 +4817,19 @@
                                     <div v-if="task.error" style="margin-top: 8px; padding: 8px 12px; background: rgba(220,53,69,0.08); border-radius: 6px; color: var(--danger); font-size: 13px;">
                                         <strong>{{ t('backup.error') }}:</strong> {{ task.error }}
                                     </div>
+                                </div>
+
+                                <!-- Pagination -->
+                                <div v-if="backupTaskTotalPages > 1" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                                    <button class="btn btn-secondary" @click="changeBackupTaskPage(backupTaskPage - 1)" :disabled="backupTaskPage === 1" style="padding: 6px 12px;">
+                                        ‹
+                                    </button>
+                                    <span style="color: var(--text-secondary); font-size: 14px;">
+                                        {{ backupTaskPage }} / {{ backupTaskTotalPages }}
+                                    </span>
+                                    <button class="btn btn-secondary" @click="changeBackupTaskPage(backupTaskPage + 1)" :disabled="backupTaskPage === backupTaskTotalPages" style="padding: 6px 12px;">
+                                        ›
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -6074,7 +6087,12 @@
                         cloudProvider: ''
                     },
                     backupCreating: false,
-                    backupTaskPollingTimer: null
+                    backupTaskPollingTimer: null,
+                    // Backup pagination
+                    backupPage: 1,
+                    backupPageSize: 20,
+                    backupTaskPage: 1,
+                    backupTaskPageSize: 20
                 };
             },
             computed: {
@@ -6087,6 +6105,23 @@
                 },
                 isMiningPage() {
                     return ['mining', 'graph', 'topics', 'timeline', 'recommendations'].includes(this.currentPage);
+                },
+                // Backup pagination
+                paginatedBackups() {
+                    const start = (this.backupPage - 1) * this.backupPageSize;
+                    const end = start + this.backupPageSize;
+                    return this.backups.slice(start, end);
+                },
+                backupTotalPages() {
+                    return Math.ceil(this.backups.length / this.backupPageSize);
+                },
+                paginatedBackupTasks() {
+                    const start = (this.backupTaskPage - 1) * this.backupTaskPageSize;
+                    const end = start + this.backupTaskPageSize;
+                    return this.backupTasks.slice(start, end);
+                },
+                backupTaskTotalPages() {
+                    return Math.ceil(this.backupTasks.length / this.backupTaskPageSize);
                 }
             },
             methods: {
@@ -6218,6 +6253,20 @@
                             this.backupTaskPollingTimer = setInterval(() => this.loadBackupTasks(), 5000);
                         }
                     }
+                },
+
+                navigateToBackupPage() {
+                    window.location.href = '/static/backup.html';
+                },
+
+                navigateToBackupSettings() {
+                    this.navigateTo('settings');
+                    // Wait for settings component to mount, then switch to backup tab
+                    setTimeout(() => {
+                        // Trigger tab change in settings component
+                        const event = new CustomEvent('switch-settings-tab', { detail: { tab: 'backup' } });
+                        window.dispatchEvent(event);
+                    }, 300);
                 },
 
                 async fetchStats() {
@@ -7968,6 +8017,8 @@
                         const data = await res.json();
                         if (data.success) {
                             this.backups = data.backups || [];
+                            // Reset to first page when loading
+                            this.backupPage = 1;
                         } else {
                             this.showToast(this.t('backup.loadError'), 'error');
                         }
@@ -7986,11 +8037,26 @@
                         const data = await res.json();
                         if (data.success) {
                             this.backupTasks = data.tasks || [];
+                            // Reset to first page when loading
+                            this.backupTaskPage = 1;
                         }
                     } catch (e) {
                         console.error('Failed to load backup tasks:', e);
                     } finally {
                         this.loading.backupTasks = false;
+                    }
+                },
+
+                // Backup pagination methods
+                changeBackupPage(page) {
+                    if (page >= 1 && page <= this.backupTotalPages) {
+                        this.backupPage = page;
+                    }
+                },
+
+                changeBackupTaskPage(page) {
+                    if (page >= 1 && page <= this.backupTaskTotalPages) {
+                        this.backupTaskPage = page;
                     }
                 },
 
@@ -8026,23 +8092,26 @@
                 },
 
                 async deleteBackup(backupId) {
-                    if (!confirm(this.t('backup.deleteConfirm'))) {
+                    if (!backupId) {
+                        this.showToast('备份ID无效', 'error');
                         return;
                     }
+
                     try {
                         const res = await fetch(`/api/backup/${backupId}`, {
                             method: 'DELETE'
                         });
                         const data = await res.json();
+
                         if (data.success) {
                             this.showToast(this.t('backup.deleteSuccess'), 'success');
                             this.loadBackups();
                         } else {
-                            this.showToast(data.error || this.t('backup.deleteError'), 'error');
+                            this.showToast(data.error || data.detail || this.t('backup.deleteError'), 'error');
                         }
                     } catch (e) {
                         console.error('Failed to delete backup:', e);
-                        this.showToast(this.t('backup.deleteError'), 'error');
+                        this.showToast(this.t('backup.deleteError') + ': ' + e.message, 'error');
                     }
                 },
 
@@ -8075,6 +8144,15 @@
                 this.settingsComponent = Vue.defineAsyncComponent(() =>
                     import('/static/js/pages/settings.js').then(module => module.default)
                 );
+
+                // Check URL hash for initial navigation
+                const hash = window.location.hash.slice(1); // Remove #
+                if (hash) {
+                    const page = hash.split('?')[0]; // Get page name before query params
+                    if (page) {
+                        this.navigateTo(page);
+                    }
+                }
             },
             beforeUnmount() {
                 if (this.miningPollingTimer) {
