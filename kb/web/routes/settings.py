@@ -71,31 +71,41 @@ def _parse_litellm_model(model_str: str) -> tuple:
 def _determine_ui_provider(stored_provider: str, stored_model: str, base_url: str = None, is_embedding: bool = False) -> str:
     """
     Determine the UI provider from stored config.
-    
+
     Handles:
     - New format: provider='litellm', model='dashscope/qwen-plus' -> 'dashscope'
     - Legacy format: provider='dashscope', model='qwen-plus' -> 'dashscope'
     - Legacy format: provider='openai_compatible', model='...' -> 'openai_compatible'
     - DashScope embedding via OpenAI-compatible: model='openai/text-embedding-v4', base_url contains 'dashscope.aliyuncs.com' -> 'dashscope'
+    - OpenAI with custom base_url -> 'openai_compatible'
     """
     # Special case: DashScope embeddings via OpenAI-compatible endpoint
     # Model has 'openai/' prefix but base_url points to DashScope
     if is_embedding and stored_model.startswith('openai/') and base_url and 'dashscope.aliyuncs.com' in base_url:
         return 'dashscope'
-    
+
     # If provider is litellm, extract the actual provider from model string
     if stored_provider == 'litellm':
         parsed_provider, _ = _parse_litellm_model(stored_model)
         if parsed_provider:
+            # Special case: 'openai' prefix with custom base_url means openai_compatible
+            if parsed_provider == 'openai' and base_url and not _is_official_openai_url(base_url):
+                return 'openai_compatible'
             # Map litellm provider names to UI provider names
-            # 'openai' in litellm could be actual OpenAI or openai_compatible
-            # We default to 'openai' for openai/ prefix
             return parsed_provider
         # If no prefix in model, default to dashscope
         return 'dashscope'
-    
+
     # Legacy format: provider is the actual provider name
     return stored_provider
+
+
+def _is_official_openai_url(url: str) -> bool:
+    """Check if the URL is an official OpenAI endpoint."""
+    if not url:
+        return True  # No custom URL means using default OpenAI
+    url_lower = url.lower()
+    return 'api.openai.com' in url_lower or url_lower == 'https://api.openai.com/v1'
 
 
 def _build_litellm_model(ui_provider: str, ui_model: str, is_embedding: bool = False) -> str:
@@ -210,8 +220,9 @@ async def get_settings() -> Dict[str, Any]:
         # Parse LLM config
         llm_stored_provider = llm.get("provider", "dashscope")
         llm_stored_model = llm.get("model", "qwen-plus")
-        llm_ui_provider = _determine_ui_provider(llm_stored_provider, llm_stored_model)
-        
+        llm_base_url = llm.get("base_url", "")
+        llm_ui_provider = _determine_ui_provider(llm_stored_provider, llm_stored_model, llm_base_url)
+
         # Parse model name for UI
         if llm_stored_provider == "litellm" or "/" in llm_stored_model:
             _, llm_ui_model = _parse_litellm_model(llm_stored_model)
