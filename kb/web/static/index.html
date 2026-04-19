@@ -8069,9 +8069,10 @@
                 this.fetchRecentByType();
                 this.fetchTags();
 
-                // Load settings component
-                const SettingsModule = await import('/static/js/pages/settings.js');
-                this.settingsComponent = SettingsModule.default;
+                // Load settings component using defineAsyncComponent
+                this.settingsComponent = Vue.defineAsyncComponent(() =>
+                    import('/static/js/pages/settings.js').then(module => module.default)
+                );
             },
             beforeUnmount() {
                 if (this.miningPollingTimer) {
