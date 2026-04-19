@@ -41,3 +41,7 @@ chromadb>=0.4.0
 fastapi>=0.95.0
 uvicorn>=0.20.0
 python-multipart>=0.0.5
+
+# Backup scheduler dependencies
+schedule>=1.2.0
+croniter>=1.4.0
