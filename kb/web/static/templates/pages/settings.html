@@ -1,0 +1,537 @@
+<!-- Settings Page Template with Tab Layout -->
+<div>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">{{ t('nav.settings') }}</h1>
+            <p class="page-subtitle">{{ locale === 'en' ? 'Configure your knowledge base settings' : '配置你的知识库设置' }}</p>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div style="margin-top: 20px; border-bottom: 2px solid var(--border);">
+        <div style="display: flex; gap: 8px;">
+            <button @click="settingsTab = 'models'"
+                    :style="{
+                        padding: '10px 20px',
+                        border: 'none',
+                        background: settingsTab === 'models' ? 'var(--primary)' : 'transparent',
+                        color: settingsTab === 'models' ? 'white' : 'var(--text)',
+                        borderRadius: '6px 6px 0 0',
+                        cursor: 'pointer',
+                        fontWeight: '500',
+                        fontSize: '14px',
+                        transition: 'all 0.2s'
+                    }">
+                {{ locale === 'en' ? 'Model Configuration' : '模型配置' }}
+            </button>
+            <button @click="settingsTab = 'backup'"
+                    :style="{
+                        padding: '10px 20px',
+                        border: 'none',
+                        background: settingsTab === 'backup' ? 'var(--primary)' : 'transparent',
+                        color: settingsTab === 'backup' ? 'white' : 'var(--text)',
+                        borderRadius: '6px 6px 0 0',
+                        cursor: 'pointer',
+                        fontWeight: '500',
+                        fontSize: '14px',
+                        transition: 'all 0.2s'
+                    }">
+                {{ locale === 'en' ? 'Backup Configuration' : '备份配置' }}
+            </button>
+            <button @click="settingsTab = 'diagnostics'"
+                    :style="{
+                        padding: '10px 20px',
+                        border: 'none',
+                        background: settingsTab === 'diagnostics' ? 'var(--primary)' : 'transparent',
+                        color: settingsTab === 'diagnostics' ? 'white' : 'var(--text)',
+                        borderRadius: '6px 6px 0 0',
+                        cursor: 'pointer',
+                        fontWeight: '500',
+                        fontSize: '14px',
+                        transition: 'all 0.2s'
+                    }">
+                {{ locale === 'en' ? 'System Diagnostics' : '系统诊断' }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div style="margin-top: 20px;">
+        <!-- Models Tab -->
+        <div v-if="settingsTab === 'models'">
+                    <!-- Guidance Info Box -->
+                    <div class="card" style="margin-top: 16px; background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); border: 1px solid #bae6fd;">
+                        <div class="card-body" style="padding: 16px;">
+                            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                                <div style="font-size: 20px;">💡</div>
+                                <div>
+                                    <p style="margin: 0; color: #0369a1; font-size: 14px; line-height: 1.6;">
+                                        {{ locale === 'en'
+                                            ? 'For lightweight collection and knowledge mining, you can configure local models via Ollama. For large-scale knowledge processing, we recommend using higher-performance cloud models.'
+                                            : '对于轻量的知识收集和挖掘，可以配置使用 Ollama 本地模型。对于大量的知识处理和挖掘，建议配置性能更好的云端模型。' }}
+                                    </p>
+                                    <p style="margin: 8px 0 0 0; font-size: 13px;">
+                                        <a href="/docs/configuration.html" target="_blank" style="color: #0284c7; font-weight: 500;">
+                                            {{ locale === 'en' ? 'Configuration Guide' : '配置指南' }} →
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alibaba Cloud Coding Plan Info -->
+                    <div class="card" style="margin-top: 12px; background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border: 1px solid #fcd34d;">
+                        <div class="card-body" style="padding: 14px 16px;">
+                            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                <div style="font-size: 18px;">🎁</div>
+                                <div>
+                                    <p style="margin: 0; color: #92400e; font-size: 13px; line-height: 1.5;">
+                                        <strong>{{ locale === 'en' ? 'Alibaba Cloud Coding Plan' : '阿里云 Coding Plan' }}</strong>
+                                        {{ locale === 'en'
+                                            ? '— Free access to Qwen and embedding models. Perfect for getting started!'
+                                            : '— 免费使用通义千问和 Embedding 模型，快速上手首选！' }}
+                                    </p>
+                                    <p style="margin: 6px 0 0 0; font-size: 12px;">
+                                        <a href="/docs/configuration.html#-coding-planopenai--8" target="_blank" style="color: #b45309; font-weight: 500;">
+                                            {{ locale === 'en' ? 'View Configuration Guide' : '查看配置指南' }} →
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LLM Model Service Configuration -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 4px;">{{ locale === 'en' ? 'LLM Model Service' : '大语言模型配置' }}</h3>
+                            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                                {{ locale === 'en'
+                                    ? 'Configure the LLM provider for auto-tagging and auto-summarization during collection, and for building knowledge graphs during knowledge mining.'
+                                    : '配置用于收集过程中的自动打标签和自动摘要，以及知识挖掘过程中构建知识图谱。' }}
+                            </p>
+                            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 20px; padding: 8px 12px; background: rgba(245, 158, 11, 0.1); border-radius: 6px; border-left: 3px solid var(--warning);">
+                                {{ locale === 'en'
+                                    ? 'Collection can degrade to work without LLM (using built-in tag extraction). Knowledge mining and knowledge graph construction require LLM.'
+                                    : '收集过程可以在无 LLM 时降级运行（使用内置标签提取）。知识挖掘和知识图谱构建强依赖 LLM。' }}
+                            </p>
+
+                            <!-- Provider -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    {{ locale === 'en' ? 'Provider' : '服务提供商' }}
+                                </label>
+                                <select v-model="llmSettings.provider"
+                                        style="width: 100%; max-width: 320px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;">
+                                    <option value="dashscope">DashScope {{ locale === 'en' ? '(Alibaba Cloud)' : '（阿里云百炼）' }}</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="ollama">Ollama {{ locale === 'en' ? '(Local Model)' : '（本地模型）' }}</option>
+                                    <option value="openai_compatible">OpenAI Compatible {{ locale === 'en' ? '(Other Compatible Services)' : '（其他兼容服务）' }}</option>
+                                </select>
+                            </div>
+
+                            <!-- Model -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    {{ locale === 'en' ? 'Model' : '模型' }}
+                                </label>
+                                <input type="text" v-model="llmSettings.model" :placeholder="locale === 'en' ? 'e.g. qwen-plus, gpt-4o, claude-3-5-sonnet-20241022' : '如 qwen-plus、gpt-4o、claude-3-5-sonnet-20241022'"
+                                       style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" />
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                                    {{ locale === 'en' ? 'Model name only, e.g.: qwen-plus, gpt-4o, claude-3-5-sonnet-20241022' : '仅需填写模型名称，如：qwen-plus、gpt-4o、claude-3-5-sonnet-20241022' }}
+                                </div>
+                            </div>
+
+                            <!-- API Key -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    API Key
+                                </label>
+                                <input type="text" v-model="llmSettings.api_key"
+                                       placeholder="${DASHSCOPE_API_KEY}  or  sk-..."
+                                       style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; font-family: monospace;" />
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                                    {{ locale === 'en'
+                                        ? 'Enter an environment variable name like ${DASHSCOPE_API_KEY}, or paste the raw key directly.'
+                                        : '输入环境变量名如 ${DASHSCOPE_API_KEY}，或直接粘贴原始 key 值。' }}
+                                </div>
+                            </div>
+
+                            <!-- Base URL (for ollama / openai_compatible with custom endpoint) -->
+                            <div v-if="llmSettings.provider === 'ollama' || llmSettings.provider === 'openai_compatible'"
+                                 style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    Base URL
+                                    <span v-if="llmSettings.provider === 'openai_compatible'"
+                                          style="color: var(--danger); font-size: 12px; font-weight: normal; margin-left: 4px;">*</span>
+                                    <span v-else style="color: var(--text-secondary); font-size: 12px; font-weight: normal; margin-left: 4px;">
+                                        {{ locale === 'en' ? '(optional, default: http://localhost:11434)' : '（可选，默认：http://localhost:11434）' }}
+                                    </span>
+                                </label>
+                                <input type="text" v-model="llmSettings.base_url"
+                                       :placeholder="llmSettings.provider === 'ollama' ? 'http://localhost:11434' : 'https://your-api-endpoint/v1'"
+                                       style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; font-family: monospace;" />
+                            </div>
+
+                            <!-- Error / Success feedback -->
+                            <div v-if="llmSettingsError"
+                                 style="color: var(--danger); font-size: 13px; margin-bottom: 12px; padding: 8px 12px; background: rgba(220,53,69,0.08); border-radius: 6px;">
+                                {{ llmSettingsError }}
+                            </div>
+                            <div v-if="llmSettingsSaved"
+                                 style="color: #28a745; font-size: 13px; margin-bottom: 12px; padding: 8px 12px; background: rgba(40,167,69,0.08); border-radius: 6px;">
+                                {{ locale === 'en' ? 'Configuration saved.' : '配置已保存。' }}
+                            </div>
+
+                            <button class="btn btn-primary" @click="saveLLMSettings" :disabled="llmSettingsSaving">
+                                {{ llmSettingsSaving
+                                    ? (locale === 'en' ? 'Saving...' : '保存中...')
+                                    : (locale === 'en' ? 'Save' : '保存') }}
+                            </button>
+
+                            <!-- Test LLM Button -->
+                            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                                <button class="btn" @click="testLLM" :disabled="testingLLM"
+                                        style="border: 1px solid var(--border); background: var(--bg);">
+                                    {{ testingLLM
+                                        ? (locale === 'en' ? 'Testing LLM...' : '测试 LLM 中...')
+                                        : (locale === 'en' ? 'Test LLM Connection' : '测试 LLM 连接') }}
+                                </button>
+                            </div>
+
+                            <!-- LLM Test Result -->
+                            <div v-if="llmTestResult" style="margin-top: 12px; padding: 12px; border-radius: 6px; font-size: 13px;"
+                                 :style="{ background: llmTestResult.success ? 'rgba(40,167,69,0.08)' : 'rgba(220,53,69,0.08)', color: llmTestResult.success ? '#28a745' : 'var(--danger)' }">
+                                <div v-if="llmTestResult.success">
+                                    <strong>LLM OK</strong> &mdash;
+                                    {{ locale === 'en' ? 'Model' : '模型' }}: {{ llmTestResult.model }},
+                                    {{ locale === 'en' ? 'Latency' : '延迟' }}: {{ llmTestResult.latency_ms }}ms,
+                                    {{ locale === 'en' ? 'Response' : '回复' }}: "{{ llmTestResult.response }}"
+                                </div>
+                                <div v-else>
+                                    <strong>LLM Failed</strong> &mdash; {{ llmTestResult.error }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Embedding Model Configuration -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 4px;">{{ locale === 'en' ? 'Embedding Model Service' : 'Embedding 模型配置' }}</h3>
+                            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                                {{ locale === 'en'
+                                    ? 'Used during collection to build document vector data for semantic search.'
+                                    : '配置用于收集过程中建立文档向量数据，支持语义搜索。' }}
+                            </p>
+                            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 20px; padding: 8px 12px; background: rgba(245, 158, 11, 0.1); border-radius: 6px; border-left: 3px solid var(--warning);">
+                                {{ locale === 'en'
+                                    ? 'When not configured, collection still works but semantic search and RAG will be unavailable (keyword search only).'
+                                    : '未配置时收集仍可正常工作，但语义搜索和 RAG 问答将不可用（仅支持关键词搜索）。' }}
+                            </p>
+
+                            <!-- Provider -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    {{ locale === 'en' ? 'Provider' : '服务提供商' }}
+                                </label>
+                                <select v-model="embeddingSettings.provider"
+                                        style="width: 100%; max-width: 320px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;">
+                                    <option value="dashscope">DashScope {{ locale === 'en' ? '(Alibaba Cloud)' : '（阿里云百炼）' }}</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="ollama">Ollama {{ locale === 'en' ? '(Local Model)' : '（本地模型）' }}</option>
+                                    <option value="openai_compatible">OpenAI Compatible {{ locale === 'en' ? '(Other Compatible Services)' : '（其他兼容服务）' }}</option>
+                                </select>
+                            </div>
+
+                            <!-- Model -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    {{ locale === 'en' ? 'Model' : '模型' }}
+                                </label>
+                                <input type="text" v-model="embeddingSettings.model" :placeholder="locale === 'en' ? 'e.g. text-embedding-v4, text-embedding-3-small' : '如 text-embedding-v4、text-embedding-3-small'"
+                                       style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" />
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                                    {{ locale === 'en' ? 'Model name only, e.g.: text-embedding-v4, text-embedding-3-small' : '仅需填写模型名称，如：text-embedding-v4、text-embedding-3-small' }}
+                                </div>
+                            </div>
+
+                            <!-- API Key -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    API Key
+                                </label>
+                                <input type="text" v-model="embeddingSettings.api_key"
+                                       placeholder="${DASHSCOPE_API_KEY}  or  sk-..."
+                                       style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; font-family: monospace;" />
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                                    {{ locale === 'en'
+                                        ? 'Enter an environment variable name like ${DASHSCOPE_API_KEY}, or paste the raw key directly.'
+                                        : '输入环境变量名如 ${DASHSCOPE_API_KEY}，或直接粘贴原始 key 值。' }}
+                                </div>
+                            </div>
+
+                            <!-- Base URL (for ollama / openai_compatible / dashscope-embedding with custom endpoint) -->
+                            <div v-if="embeddingSettings.provider === 'ollama' || embeddingSettings.provider === 'openai_compatible' || embeddingSettings.provider === 'dashscope'"
+                                 style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                                    Base URL
+                                    <span v-if="embeddingSettings.provider === 'openai_compatible'"
+                                          style="color: var(--danger); font-size: 12px; font-weight: normal; margin-left: 4px;">*</span>
+                                    <span v-else-if="embeddingSettings.provider === 'dashscope'"
+                                          style="color: var(--text-secondary); font-size: 12px; font-weight: normal; margin-left: 4px;">
+                                        {{ locale === 'en' ? '(auto-filled for DashScope embedding)' : '（DashScope Embedding 自动填充）' }}
+                                    </span>
+                                    <span v-else style="color: var(--text-secondary); font-size: 12px; font-weight: normal; margin-left: 4px;">
+                                        {{ locale === 'en' ? '(optional, default: http://localhost:11434)' : '（可选，默认：http://localhost:11434）' }}
+                                    </span>
+                                </label>
+                                <input type="text" v-model="embeddingSettings.base_url"
+                                       :placeholder="embeddingSettings.provider === 'ollama' ? 'http://localhost:11434' : (embeddingSettings.provider === 'dashscope' ? 'https://dashscope.aliyuncs.com/compatible-mode/v1' : 'https://your-api-endpoint/v1')"
+                                       style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; font-family: monospace;" />
+                                <div v-if="embeddingSettings.provider === 'dashscope'" style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                                    {{ locale === 'en'
+                                        ? 'DashScope embeddings use OpenAI-compatible mode. Leave empty for default endpoint.'
+                                        : 'DashScope Embedding 使用 OpenAI 兼容模式。留空使用默认端点。' }}
+                                </div>
+                            </div>
+
+                            <!-- Error / Success feedback -->
+                            <div v-if="embeddingSettingsError"
+                                 style="color: var(--danger); font-size: 13px; margin-bottom: 12px; padding: 8px 12px; background: rgba(220,53,69,0.08); border-radius: 6px;">
+                                {{ embeddingSettingsError }}
+                            </div>
+                            <div v-if="embeddingSettingsSaved"
+                                 style="color: #28a745; font-size: 13px; margin-bottom: 12px; padding: 8px 12px; background: rgba(40,167,69,0.08); border-radius: 6px;">
+                                {{ locale === 'en' ? 'Configuration saved.' : '配置已保存。' }}
+                            </div>
+
+                            <button class="btn btn-primary" @click="saveEmbeddingSettings" :disabled="embeddingSettingsSaving">
+                                {{ embeddingSettingsSaving
+                                    ? (locale === 'en' ? 'Saving...' : '保存中...')
+                                    : (locale === 'en' ? 'Save' : '保存') }}
+                            </button>
+
+                            <!-- Test Embedding Button -->
+                            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                                <button class="btn" @click="testEmbedding" :disabled="testingEmbedding"
+                                        style="border: 1px solid var(--border); background: var(--bg);">
+                                    {{ testingEmbedding
+                                        ? (locale === 'en' ? 'Testing Embedding...' : '测试 Embedding 中...')
+                                        : (locale === 'en' ? 'Test Embedding Connection' : '测试 Embedding 连接') }}
+                                </button>
+                            </div>
+
+                            <!-- Embedding Test Result -->
+                            <div v-if="embeddingTestResult" style="margin-top: 12px; padding: 12px; border-radius: 6px; font-size: 13px;"
+                                 :style="{ background: embeddingTestResult.success ? 'rgba(40,167,69,0.08)' : 'rgba(220,53,69,0.08)', color: embeddingTestResult.success ? '#28a745' : 'var(--danger)' }">
+                                <div v-if="embeddingTestResult.success">
+                                    <strong>Embedding OK</strong> &mdash;
+                                    {{ locale === 'en' ? 'Model' : '模型' }}: {{ embeddingTestResult.model }},
+                                    {{ locale === 'en' ? 'Dimensions' : '维度' }}: {{ embeddingTestResult.dimensions }},
+                                    {{ locale === 'en' ? 'Latency' : '延迟' }}: {{ embeddingTestResult.latency_ms }}ms
+                                </div>
+                                <div v-else>
+                                    <strong>Embedding Failed</strong> &mdash; {{ embeddingTestResult.error }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Installation Info -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 16px;">{{ locale === 'en' ? 'Installation Info' : '安装信息' }}</h3>
+                            <div class="detail-section">
+                                <div class="detail-label">{{ locale === 'en' ? 'Version' : '版本' }}</div>
+                                <div class="detail-value">v{{ version || '-' }}</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">{{ locale === 'en' ? 'Data Directory' : '数据目录' }}</div>
+                                <div class="detail-value" style="font-family: monospace;">{{ settingsPaths.data_dir || '-' }}</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">{{ locale === 'en' ? 'Install Directory' : '应用目录' }}</div>
+                                <div class="detail-value" style="font-family: monospace;">{{ settingsPaths.install_dir || '-' }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+        </div>
+
+        <!-- Backup Tab -->
+        <div v-if="settingsTab === 'backup'">
+            <div class="card">
+                <div class="card-body">
+                    <h3 style="margin-bottom: 4px;">{{ locale === 'en' ? 'Backup Configuration' : '备份配置' }}</h3>
+                    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px;">
+                        {{ locale === 'en'
+                            ? 'Configure automatic backup settings for your knowledge base.'
+                            : '配置知识库的自动备份设置。' }}
+                    </p>
+
+                    <!-- Enable Backup -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" v-model="backupSettings.enabled"
+                                   style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" />
+                            <span style="font-weight: 500;">{{ locale === 'en' ? 'Enable Automatic Backup' : '启用自动备份' }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Schedule -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                            {{ locale === 'en' ? 'Backup Schedule (Cron)' : '备份计划（Cron 表达式）' }}
+                        </label>
+                        <input type="text" v-model="backupSettings.schedule"
+                               :placeholder="locale === 'en' ? 'e.g. 0 2 * * * (daily at 2 AM)' : '如 0 2 * * *（每天凌晨2点）'"
+                               style="width: 100%; max-width: 400px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" />
+                    </div>
+
+                    <!-- Retention Days -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                            {{ locale === 'en' ? 'Retention Days' : '保留天数' }}
+                        </label>
+                        <input type="number" v-model.number="backupSettings.retention_days" min="1"
+                               style="width: 100%; max-width: 200px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" />
+                    </div>
+
+                    <!-- Backup Directory -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px;">
+                            {{ locale === 'en' ? 'Backup Directory' : '备份目录' }}
+                        </label>
+                        <input type="text" v-model="backupSettings.backup_dir"
+                               style="width: 100%; max-width: 500px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;" />
+                    </div>
+
+                    <!-- Include Options -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px;">
+                            {{ locale === 'en' ? 'Backup Content' : '备份内容' }}
+                        </label>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" v-model="backupSettings.include_db"
+                                       style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" />
+                                <span>{{ locale === 'en' ? 'Include Database' : '包含数据库' }}</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" v-model="backupSettings.include_files"
+                                       style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" />
+                                <span>{{ locale === 'en' ? 'Include Files' : '包含文件' }}</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" v-model="backupSettings.compression"
+                                       style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" />
+                                <span>{{ locale === 'en' ? 'Enable Compression' : '启用压缩' }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div style="margin-top: 20px;">
+                        <button @click="saveBackupSettings" :disabled="backupSettingsSaving"
+                                style="padding: 10px 24px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">
+                            {{ backupSettingsSaving ? (locale === 'en' ? 'Saving...' : '保存中...') : (locale === 'en' ? 'Save Settings' : '保存设置') }}
+                        </button>
+                        <span v-if="backupSettingsSaved" style="margin-left: 12px; color: var(--success); font-size: 14px;">
+                            ✓ {{ locale === 'en' ? 'Saved successfully' : '保存成功' }}
+                        </span>
+                        <span v-if="backupSettingsError" style="margin-left: 12px; color: var(--danger); font-size: 14px;">
+                            {{ backupSettingsError }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagnostics Tab -->
+        <div v-if="settingsTab === 'diagnostics'">
+                    <!-- System Diagnostics -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 4px;">{{ locale === 'en' ? 'System Diagnostics' : '系统诊断' }}</h3>
+                            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                                {{ locale === 'en' ? 'Run system health checks to diagnose configuration issues.' : '运行系统健康检查，诊断配置问题。' }}
+                            </p>
+                            <button class="btn" @click="runDoctor" :disabled="doctorLoading"
+                                    style="border: 1px solid var(--border); background: var(--bg);">
+                                {{ doctorLoading
+                                    ? (locale === 'en' ? 'Running...' : '运行中...')
+                                    : (locale === 'en' ? 'Run Diagnostics' : '运行诊断') }}
+                            </button>
+
+                            <!-- Doctor Results -->
+                            <div v-if="doctorResults" style="margin-top: 16px;">
+                                <!-- Overall Status -->
+                                <div v-if="doctorResults.error" style="padding: 12px; border-radius: 6px; background: rgba(220,53,69,0.08); color: var(--danger); font-size: 13px;">
+                                    <strong>{{ locale === 'en' ? 'Error' : '错误' }}</strong>: {{ doctorResults.error }}
+                                </div>
+                                <div v-else>
+                                    <!-- Summary Header -->
+                                    <div v-if="doctorResults.all_passed" style="padding: 10px 12px; border-radius: 6px; background: rgba(40,167,69,0.08); color: #28a745; font-size: 13px; margin-bottom: 12px;">
+                                        <strong>✓ {{ locale === 'en' ? 'All checks passed!' : '所有检查通过！' }}</strong>
+                                    </div>
+                                    <div v-else style="padding: 10px 12px; border-radius: 6px; background: rgba(238,102,102,0.08); color: #ee6666; font-size: 13px; margin-bottom: 12px;">
+                                        <strong>⚠ {{ locale === 'en' ? 'Issues found' : '发现问题' }} ({{ doctorResults.issues.length }})</strong>
+                                    </div>
+
+                                    <!-- Check Results -->
+                                    <div style="border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
+                                        <!-- Installation -->
+                                        <div style="padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.installation.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.installation.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'Installation' : '安装' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.installation.message }}</span>
+                                        </div>
+                                        <!-- Configuration -->
+                                        <div style="padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.config.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.config.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'Configuration' : '配置文件' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.config.message }}</span>
+                                        </div>
+                                        <!-- Data Directory -->
+                                        <div style="padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.data_dir.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.data_dir.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'Data Directory' : '数据目录' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.data_dir.message }}</span>
+                                        </div>
+                                        <!-- Embedding Service -->
+                                        <div style="padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.embedding.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.embedding.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'Embedding' : '向量服务' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.embedding.message }}</span>
+                                        </div>
+                                        <!-- LLM Service -->
+                                        <div style="padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.llm.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.llm.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'LLM Service' : 'LLM 服务' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.llm.message }}</span>
+                                        </div>
+                                        <!-- PATH Environment -->
+                                        <div style="padding: 10px 12px; display: flex; align-items: center; gap: 8px;">
+                                            <span :style="{ color: doctorResults.checks.path_env.passed ? '#28a745' : '#ee6666' }">{{ doctorResults.checks.path_env.passed ? '✓' : '✗' }}</span>
+                                            <span style="font-weight: 500; min-width: 100px;">{{ locale === 'en' ? 'PATH Env' : '环境变量' }}</span>
+                                            <span style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">{{ doctorResults.checks.path_env.message }}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Issues List -->
+                                    <div v-if="doctorResults.issues && doctorResults.issues.length > 0" style="margin-top: 12px;">
+                                        <div v-for="issue in doctorResults.issues" :key="issue" style="padding: 6px 10px; margin-bottom: 4px; border-radius: 4px; background: rgba(238,102,102,0.06); font-size: 12px; color: #ee6666;">
+                                            • {{ issue }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        </div>
+    </div>
+</div>
