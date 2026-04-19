@@ -42,10 +42,15 @@ export default {
                 enabled: false,
                 schedule: '0 2 * * *',
                 retention_days: 30,
-                backup_dir: '~/.knowledge-base/backups',
-                include_db: true,
-                include_files: true,
-                compression: true
+                storage_location: 'local',
+                oss_endpoint: '',
+                oss_access_key_id: '',
+                oss_access_key_secret: '',
+                oss_bucket: '',
+                s3_region: '',
+                s3_access_key_id: '',
+                s3_secret_access_key: '',
+                s3_bucket: ''
             },
             backupSettingsSaving: false,
             backupSettingsSaved: false,
@@ -132,15 +137,10 @@ export default {
                 const res = await fetch('/api/settings/backup');
                 if (!res.ok) throw new Error('Failed to fetch backup settings');
                 const data = await res.json();
-                this.backupSettings = {
-                    enabled: data.backup?.enabled || false,
-                    schedule: data.backup?.schedule || '0 2 * * *',
-                    retention_days: data.backup?.retention_days || 30,
-                    backup_dir: data.backup?.backup_dir || '~/.knowledge-base/backups',
-                    include_db: data.backup?.include_db !== false,
-                    include_files: data.backup?.include_files !== false,
-                    compression: data.backup?.compression !== false
-                };
+
+                if (data.backup) {
+                    this.backupSettings = { ...data.backup };
+                }
             } catch (e) {
                 console.error('Failed to load backup settings:', e);
             }
@@ -198,30 +198,26 @@ export default {
             this.backupSettingsSaving = true;
             this.backupSettingsSaved = false;
             this.backupSettingsError = '';
+
             try {
-                const body = {
-                    enabled: this.backupSettings.enabled,
-                    schedule: this.backupSettings.schedule.trim(),
-                    retention_days: this.backupSettings.retention_days,
-                    backup_dir: this.backupSettings.backup_dir.trim(),
-                    include_db: this.backupSettings.include_db,
-                    include_files: this.backupSettings.include_files,
-                    compression: this.backupSettings.compression
-                };
                 const res = await fetch('/api/settings/backup', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify(this.backupSettings)
                 });
+
                 const data = await res.json();
-                if (!res.ok) {
-                    this.backupSettingsError = data.detail || 'Failed to save settings';
-                } else {
+
+                if (res.ok) {
                     this.backupSettingsSaved = true;
-                    setTimeout(() => { this.backupSettingsSaved = false; }, 3000);
+                    setTimeout(() => {
+                        this.backupSettingsSaved = false;
+                    }, 3000);
+                } else {
+                    this.backupSettingsError = data.detail || 'Failed to save settings';
                 }
             } catch (e) {
-                this.backupSettingsError = e.message || 'Failed to save settings';
+                this.backupSettingsError = e.message;
             } finally {
                 this.backupSettingsSaving = false;
             }
