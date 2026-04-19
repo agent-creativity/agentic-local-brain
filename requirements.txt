@@ -45,3 +45,6 @@ python-multipart>=0.0.5
 # Backup scheduler dependencies
 schedule>=1.2.0
 croniter>=1.4.0
+
+# Cloud storage dependencies
+oss2>=2.18.0

@@ -38,6 +38,11 @@ dependencies = [
     "fastapi>=0.95.0",
     "uvicorn>=0.20.0",
     "python-multipart>=0.0.5",
+    # Backup scheduler
+    "schedule>=1.2.0",
+    "croniter>=1.4.0",
+    # Cloud storage
+    "oss2>=2.18.0",
 ]
 
 [project.scripts]

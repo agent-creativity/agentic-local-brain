@@ -614,8 +614,9 @@ async def get_backup_settings() -> Dict[str, Any]:
 def _validate_cron_expression(cron_expr: str) -> bool:
     """Validate cron expression format."""
     try:
+        from datetime import datetime
         from croniter import croniter
-        croniter(cron_expr)
+        croniter(cron_expr, datetime.now())
         return True
     except Exception:
         return False
