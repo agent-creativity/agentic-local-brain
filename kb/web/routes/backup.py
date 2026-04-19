@@ -34,10 +34,6 @@ from kb.config import Config
 router = APIRouter()
 
 
-class BackupCreateRequest(BaseModel):
-    cloud_provider: Optional[str] = None  # "oss" or "s3"
-
-
 class BackupConfigRequest(BaseModel):
     cloud_provider: str  # "oss" or "s3"
     endpoint: Optional[str] = None
@@ -49,9 +45,17 @@ class BackupConfigRequest(BaseModel):
 
 
 @router.post("/backup/create")
-async def create_backup(request: BackupCreateRequest):
-    """Create a new backup"""
+async def create_backup():
+    """Create a new backup using default storage location from config."""
     _ensure_backup_dir()
+
+    # Load config to get default storage location
+    config = Config(CONFIG_FILE)
+    backup_config = config.get("backup", {})
+    storage_location = backup_config.get("storage_location", "local")
+
+    # Determine cloud_provider parameter
+    cloud_provider = None if storage_location == "local" else storage_location
 
     # Generate task ID
     task_id = str(uuid.uuid4())[:8]
@@ -62,14 +66,15 @@ async def create_backup(request: BackupCreateRequest):
         "id": task_id,
         "status": "pending",
         "created_at": datetime.now().isoformat(),
-        "cloud_provider": request.cloud_provider
+        "cloud_provider": cloud_provider,
+        "trigger": "manual"
     }
     _save_metadata(metadata)
 
     # Start backup in background thread
     thread = threading.Thread(
         target=_create_backup_async,
-        args=(task_id, None, request.cloud_provider)
+        args=(task_id, None, cloud_provider)
     )
     thread.daemon = False
     thread.start()
@@ -78,7 +83,7 @@ async def create_backup(request: BackupCreateRequest):
         "success": True,
         "task_id": task_id,
         "message": "Backup task created",
-        "cloud_provider": request.cloud_provider
+        "storage_location": storage_location
     }
 
 
