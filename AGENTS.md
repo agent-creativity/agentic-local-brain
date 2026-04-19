@@ -299,6 +299,40 @@ python tests/test_model_services_integration.py
 2. Update `config-template.yaml`
 3. Document in README.md
 
+### Building and Releasing a New Version
+
+When building and releasing a new version, **always use the provided release script**:
+
+```bash
+# Build and release using version from VERSION file
+./scripts/local-build-release.sh
+
+# Build and release with specific version
+./scripts/local-build-release.sh 0.8.2
+```
+
+**What the script does**:
+1. Builds release artifacts (wheel package)
+2. Copies artifacts to publish repository
+3. Commits and pushes to publish repository
+4. Builds web assets with npm
+5. Uploads to OSS (Object Storage Service)
+
+**Before running the script**:
+1. Update `VERSION` file with new version number
+2. Create release documentation in `docs/releases/vX.Y.Z/`:
+   - `release-notes.md` - User-facing release notes
+   - `changelog.md` - Detailed changelog
+3. Update root `CHANGELOG.md` with summary
+4. Commit all changes to git
+
+**Do NOT**:
+- Run `python -m build` directly
+- Run `pip install build` and build manually
+- Use other build tools without the release script
+
+The release script ensures consistent builds and proper deployment to all distribution channels.
+
 ## Data Flow
 
 ### Collection Pipeline
