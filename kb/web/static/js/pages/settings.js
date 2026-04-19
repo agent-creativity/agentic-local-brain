@@ -53,7 +53,14 @@ export default {
 
             // Diagnostics
             runningDoctor: false,
-            doctorResults: null
+            doctorResults: null,
+
+            // Installation Info
+            version: '',
+            settingsPaths: {
+                data_dir: '',
+                install_dir: ''
+            }
         };
     },
     computed: {
@@ -91,8 +98,29 @@ export default {
                         base_url: data.embedding.base_url || ''
                     };
                 }
+
+                // Paths
+                if (data.paths) {
+                    this.settingsPaths = {
+                        data_dir: data.paths.data_dir || '',
+                        install_dir: data.paths.install_dir || ''
+                    };
+                }
             } catch (e) {
                 console.error('Failed to load settings:', e);
+            }
+
+            // Fetch version from stats API
+            try {
+                const res = await fetch('/api/stats');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.version) {
+                        this.version = data.version;
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load version:', e);
             }
 
             // Fetch backup settings

@@ -460,9 +460,9 @@
                             <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
                                 {{ locale === 'en' ? 'Run system health checks to diagnose configuration issues.' : '运行系统健康检查，诊断配置问题。' }}
                             </p>
-                            <button class="btn" @click="runDoctor" :disabled="doctorLoading"
+                            <button class="btn" @click="runDoctor" :disabled="runningDoctor"
                                     style="border: 1px solid var(--border); background: var(--bg);">
-                                {{ doctorLoading
+                                {{ runningDoctor
                                     ? (locale === 'en' ? 'Running...' : '运行中...')
                                     : (locale === 'en' ? 'Run Diagnostics' : '运行诊断') }}
                             </button>
