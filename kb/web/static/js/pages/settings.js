@@ -231,7 +231,7 @@ export default {
             this.testingLLM = true;
             this.llmTestResult = null;
             try {
-                const res = await fetch('/api/test/llm');
+                const res = await fetch('/api/settings/test-llm', { method: 'POST' });
                 const data = await res.json();
                 this.llmTestResult = data;
             } catch (e) {
@@ -245,7 +245,7 @@ export default {
             this.testingEmbedding = true;
             this.embeddingTestResult = null;
             try {
-                const res = await fetch('/api/test/embedding');
+                const res = await fetch('/api/settings/test-embedding', { method: 'POST' });
                 const data = await res.json();
                 this.embeddingTestResult = data;
             } catch (e) {
@@ -259,7 +259,7 @@ export default {
             this.runningDoctor = true;
             this.doctorResults = null;
             try {
-                const res = await fetch('/api/doctor');
+                const res = await fetch('/api/settings/doctor');
                 const data = await res.json();
                 this.doctorResults = data;
             } catch (e) {
