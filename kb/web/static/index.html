@@ -4823,11 +4823,11 @@
                                     <span v-if="llmSettings.provider === 'openai_compatible'"
                                           style="color: var(--danger); font-size: 12px; font-weight: normal; margin-left: 4px;">*</span>
                                     <span v-else style="color: var(--text-secondary); font-size: 12px; font-weight: normal; margin-left: 4px;">
-                                        {{ locale === 'en' ? '(optional, default: http://localhost:11434/v1)' : '（可选，默认：http://localhost:11434/v1）' }}
+                                        {{ locale === 'en' ? '(optional, default: http://localhost:11434)' : '（可选，默认：http://localhost:11434）' }}
                                     </span>
                                 </label>
                                 <input type="text" v-model="llmSettings.base_url"
-                                       :placeholder="llmSettings.provider === 'ollama' ? 'http://localhost:11434/v1' : 'https://your-api-endpoint/v1'"
+                                       :placeholder="llmSettings.provider === 'ollama' ? 'http://localhost:11434' : 'https://your-api-endpoint/v1'"
                                        style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; font-family: monospace;" />
                             </div>
 
@@ -4942,11 +4942,11 @@
                                         {{ locale === 'en' ? '(auto-filled for DashScope embedding)' : '（DashScope Embedding 自动填充）' }}
                                     </span>
                                     <span v-else style="color: var(--text-secondary); font-size: 12px; font-weight: normal; margin-left: 4px;">
-                                        {{ locale === 'en' ? '(optional, default: http://localhost:11434/v1)' : '（可选，默认：http://localhost:11434/v1）' }}
+                                        {{ locale === 'en' ? '(optional, default: http://localhost:11434)' : '（可选，默认：http://localhost:11434）' }}
                                     </span>
                                 </label>
                                 <input type="text" v-model="embeddingSettings.base_url"
-                                       :placeholder="embeddingSettings.provider === 'ollama' ? 'http://localhost:11434/v1' : (embeddingSettings.provider === 'dashscope' ? 'https://dashscope.aliyuncs.com/compatible-mode/v1' : 'https://your-api-endpoint/v1')"
+                                       :placeholder="embeddingSettings.provider === 'ollama' ? 'http://localhost:11434' : (embeddingSettings.provider === 'dashscope' ? 'https://dashscope.aliyuncs.com/compatible-mode/v1' : 'https://your-api-endpoint/v1')"
                                        style="width: 100%; max-width: 480px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; font-family: monospace;" />
                                 <div v-if="embeddingSettings.provider === 'dashscope'" style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
                                     {{ locale === 'en'

@@ -465,8 +465,13 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
                 if self.api_base:
                     call_kwargs["api_base"] = self.api_base
 
-                # Prevent litellm from sending encoding_format=None (rejected by some providers like DashScope)
-                if "encoding_format" not in call_kwargs or call_kwargs.get("encoding_format") is None:
+                # Handle encoding_format based on provider
+                # Ollama doesn't support encoding_format parameter
+                if self.model.startswith("ollama/"):
+                    # Remove encoding_format for ollama
+                    call_kwargs.pop("encoding_format", None)
+                elif "encoding_format" not in call_kwargs or call_kwargs.get("encoding_format") is None:
+                    # Prevent litellm from sending encoding_format=None (rejected by some providers like DashScope)
                     call_kwargs["encoding_format"] = "float"
 
                 response = litellm.embedding(**call_kwargs)
@@ -554,7 +559,10 @@ class Embedder:
             api_base = embedding_config.get("base_url", None)
             extra_kwargs = {}
             encoding_format = embedding_config.get("encoding_format")
-            if encoding_format:
+
+            # Ollama doesn't support encoding_format parameter
+            # Only add encoding_format for providers that support it
+            if encoding_format and not model.startswith("ollama/"):
                 extra_kwargs["encoding_format"] = encoding_format
 
             if not api_key:

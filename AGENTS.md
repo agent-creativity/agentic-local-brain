@@ -357,3 +357,443 @@ isort kb/
 # Type check
 mypy kb/
 ```
+
+## Documentation Standards
+
+### Documentation Structure
+
+All project documentation follows a standardized structure under the `docs/` directory:
+
+```
+docs/
+├── README.md                    # Documentation index and navigation
+├── guides/                      # User guides (installation, configuration, usage)
+├── architecture/                # Architecture design (system architecture, tech stack)
+├── features/                    # Feature documentation (feature descriptions, usage)
+├── development/                 # Development docs (setup, coding standards, testing)
+├── releases/                    # Version releases (archived by version)
+│   └── v0.8.1/
+├── design/                      # Design decisions (ADR - Architecture Decision Records)
+├── troubleshooting/             # Problem solving (common issues, troubleshooting)
+├── blog/                        # Blog articles (technical sharing, project stories)
+└── assets/                      # Resource files (images, diagrams)
+    └── images/
+```
+
+### File Naming Conventions
+
+**General Documents**:
+- Use lowercase with hyphens: `quick-start.md`, `api-reference.md`
+- ✅ Good: `user-guide.md`, `installation-guide.md`
+- ❌ Bad: `UserGuide.md`, `user_guide.md`, `USERGUIDE.md`
+
+**Design Documents (ADR)**:
+- Use date prefix: `YYYY-MM-DD-title.md`
+- ✅ Good: `2026-04-19-ollama-embedding-fix.md`
+- ❌ Bad: `ollama-fix.md`, `2026-04-19_ollama_fix.md`
+
+**Version Documents**:
+- Place in `docs/releases/vX.Y.Z/` directory
+- Use simple names: `release-notes.md`, `changelog.md`, `migration-guide.md`
+
+### Document Structure
+
+Every documentation file should follow this structure:
+
+```markdown
+# Document Title (H1 - only one per document)
+
+Brief introduction or overview (1-2 paragraphs).
+
+## Main Section (H2)
+
+Content for main section.
+
+### Subsection (H3)
+
+Content for subsection.
+
+#### Detail (H4 - use sparingly)
+
+Detailed content.
+```
+
+**Heading Guidelines**:
+- Use only one H1 (`#`) per document - the document title
+- Use H2 (`##`) for main sections
+- Use H3 (`###`) for subsections
+- Avoid H4 (`####`) unless absolutely necessary
+- Never skip heading levels (don't go from H2 to H4)
+
+### Creating New Documentation
+
+When creating new documentation, follow these steps:
+
+**1. Determine Document Type**
+
+Choose the appropriate directory based on content:
+
+| Type | Directory | Example |
+|------|-----------|---------|
+| User Guide | `docs/guides/` | Installation, configuration, quick start |
+| Architecture | `docs/architecture/` | System design, data flow, tech decisions |
+| Feature | `docs/features/` | Feature descriptions, usage instructions |
+| Development | `docs/development/` | Dev setup, coding standards, API reference |
+| Design Decision | `docs/design/` | ADR documents with date prefix |
+| Troubleshooting | `docs/troubleshooting/` | Common issues, error solutions |
+| Blog | `docs/blog/` | Technical articles, project stories |
+
+**2. Create the Document**
+
+```bash
+# Example: Creating a new feature document
+touch docs/features/knowledge-mining.md
+
+# Example: Creating a design decision
+touch docs/design/2026-04-19-feature-name.md
+```
+
+**3. Add Document Metadata (Optional)**
+
+For better organization, add frontmatter at the top:
+
+```markdown
+---
+title: Feature Name
+date: 2026-04-19
+author: AI Team
+tags: [feature, knowledge-mining]
+status: active
+---
+```
+
+**4. Update Documentation Index**
+
+Add the new document to `docs/README.md`:
+
+```markdown
+### ✨ Feature Documentation
+- [Knowledge Mining](features/knowledge-mining.md) - Automatic knowledge extraction
+- [Your New Feature](features/your-feature.md) - Brief description
+```
+
+### Version Release Documentation
+
+When releasing a new version, create a complete documentation set:
+
+**1. Create Version Directory**
+
+```bash
+mkdir -p docs/releases/v0.9.0
+```
+
+**2. Required Documents**
+
+Each version release should include:
+
+- `release-notes.md` - User-facing release notes
+- `changelog.md` - Detailed change log
+- `migration-guide.md` - Upgrade instructions (if breaking changes)
+- `test-report.md` - Testing summary (optional)
+
+**3. Update Root CHANGELOG**
+
+Update the root `CHANGELOG.md` with a summary and link to detailed notes:
+
+```markdown
+## [0.9.0] - 2026-05-01
+
+See [v0.9.0 Release Notes](docs/releases/v0.9.0/release-notes.md) for details.
+
+### Added
+- New feature X
+- New feature Y
+
+### Changed
+- Updated component Z
+
+### Fixed
+- Bug fix A
+```
+
+### Design Decision Records (ADR)
+
+When making significant architectural or design decisions, document them using ADR format:
+
+**File Name**: `docs/design/YYYY-MM-DD-decision-title.md`
+
+**Template**:
+
+```markdown
+# Decision Title
+
+**Date**: 2026-04-19
+**Status**: Accepted | Proposed | Deprecated | Superseded
+**Deciders**: Team members involved
+
+## Context
+
+What is the issue we're trying to solve? What are the constraints?
+
+## Decision
+
+What is the change we're proposing or have agreed to?
+
+## Consequences
+
+### Positive
+- Benefit 1
+- Benefit 2
+
+### Negative
+- Trade-off 1
+- Trade-off 2
+
+### Neutral
+- Other consideration 1
+
+## Alternatives Considered
+
+### Alternative 1
+- Description
+- Why not chosen
+
+### Alternative 2
+- Description
+- Why not chosen
+
+## Implementation
+
+How will this be implemented? What are the steps?
+
+## References
+
+- Link to related issues
+- Link to related PRs
+- External references
+```
+
+### Troubleshooting Documentation
+
+When documenting solutions to problems:
+
+**File Name**: `docs/troubleshooting/problem-name.md`
+
+**Template**:
+
+```markdown
+# Problem Name
+
+## Problem Description
+
+Clear description of the issue and symptoms.
+
+## Root Cause
+
+Technical analysis of why this problem occurs.
+
+## Solution
+
+Step-by-step solution with code examples.
+
+### Quick Fix
+
+```bash
+# Commands to fix the issue
+```
+
+### Detailed Steps
+
+1. Step 1
+2. Step 2
+3. Step 3
+
+## Verification
+
+How to verify the fix worked:
+
+```bash
+# Verification commands
+```
+
+## Prevention
+
+How to prevent this issue in the future.
+
+## Related Issues
+
+- Link to GitHub issues
+- Link to related documentation
+```
+
+### Link Conventions
+
+**Use Relative Links** (Preferred):
+
+```markdown
+# From docs/features/backup.md to docs/guides/configuration.md
+[Configuration Guide](../guides/configuration.md)
+
+# From docs/design/2026-04-19-feature.md to docs/features/feature.md
+[Feature Documentation](../features/feature.md)
+```
+
+**Avoid Absolute Links**:
+
+```markdown
+# ❌ Bad - breaks when repo is forked or moved
+[Configuration](/docs/guides/configuration.md)
+
+# ✅ Good - works everywhere
+[Configuration](../guides/configuration.md)
+```
+
+### Code Examples in Documentation
+
+When including code examples:
+
+**1. Use Proper Syntax Highlighting**
+
+```markdown
+```python
+def example_function():
+    return "Hello, World!"
+```
+```
+
+**2. Include Context**
+
+```markdown
+# Example: Configuring Ollama embedding
+
+```yaml
+embedding:
+  provider: litellm
+  model: ollama/nomic-embed-text
+  api_key: not-needed
+  base_url: http://localhost:11434
+```
+```
+
+**3. Show Complete Examples**
+
+Provide working examples that users can copy and run:
+
+```markdown
+# Complete example of using the embedder
+
+```python
+from kb.processors.embedder import Embedder
+
+# Initialize embedder
+embedder = Embedder.from_config()
+
+# Generate embeddings
+texts = ["Example text 1", "Example text 2"]
+embeddings = embedder.embed(texts)
+
+print(f"Generated {len(embeddings)} embeddings")
+```
+```
+
+### Documentation Maintenance
+
+**Regular Tasks**:
+
+1. **Review and Update**: Quarterly review of all documentation for accuracy
+2. **Link Checking**: Verify all internal and external links work
+3. **Version Cleanup**: Archive old version documentation after 1 year
+4. **Index Updates**: Keep `docs/README.md` current with all documents
+
+**Tools**:
+
+```bash
+# Check markdown formatting
+markdownlint docs/**/*.md
+
+# Check links
+markdown-link-check docs/**/*.md
+
+# Generate documentation site (optional)
+mkdocs serve
+```
+
+### Documentation Checklist
+
+Before committing documentation changes, verify:
+
+- [ ] File is in the correct directory
+- [ ] File name follows naming conventions
+- [ ] Document has proper heading structure (one H1, logical H2/H3)
+- [ ] Code examples are complete and tested
+- [ ] Links use relative paths
+- [ ] `docs/README.md` index is updated
+- [ ] No spelling or grammar errors
+- [ ] Markdown formatting is correct
+
+### Root Directory Files
+
+Keep the root directory clean. Only these documentation files should exist in root:
+
+- `README.md` - Project overview and quick start (English)
+- `README_zh.md` - Project overview and quick start (Chinese)
+- `CHANGELOG.md` - Unified changelog (links to detailed version docs)
+- `AGENTS.md` - This file - context for AI agents
+- `CONTRIBUTING.md` - Contribution guidelines (if exists)
+- `LICENSE` - Project license
+
+**All other documentation** should be in the `docs/` directory.
+
+### Documentation Organization Script
+
+Use the provided script to organize documentation:
+
+```bash
+# Run documentation organization script
+./scripts/organize-docs.sh
+
+# This will:
+# - Create backup of current state
+# - Move files to appropriate directories
+# - Create documentation index
+# - Clean up temporary files
+```
+
+For detailed information, see:
+- [Documentation Organization Plan](docs/documentation-organization-plan.md)
+- [Quick Start Guide](docs/QUICK_START_DOCS_ORGANIZATION.md)
+
+### Examples
+
+**Good Documentation Structure**:
+
+```
+✅ docs/guides/installation.md
+✅ docs/features/backup.md
+✅ docs/design/2026-04-19-ollama-fix.md
+✅ docs/troubleshooting/common-errors.md
+✅ docs/releases/v0.8.1/release-notes.md
+```
+
+**Bad Documentation Structure**:
+
+```
+❌ ROOT/INSTALLATION_GUIDE.md
+❌ ROOT/backup_feature_v2.md
+❌ docs/ollama-fix.md (missing date prefix for design doc)
+❌ docs/errors.md (should be in troubleshooting/)
+❌ ROOT/RELEASE_NOTES_0.8.1.md (should be in releases/)
+```
+
+### Summary
+
+Following these documentation standards ensures:
+
+- ✅ Consistent structure and naming across all documentation
+- ✅ Easy navigation and discovery of information
+- ✅ Clear separation between different types of documentation
+- ✅ Proper version control and archiving
+- ✅ Professional appearance and maintainability
+- ✅ Better collaboration between team members and AI agents
+
+When in doubt, refer to existing documentation in the `docs/` directory as examples, or consult the [Documentation Organization Plan](docs/documentation-organization-plan.md).

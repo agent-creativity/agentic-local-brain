@@ -30,9 +30,10 @@ update_server_url: http://localbrain.oss-cn-shanghai.aliyuncs.com
 # 本地服务（如 Ollama）：
 # embedding:
 #   provider: litellm
-#   model: openai/nomic-embed-text
+#   model: ollama/nomic-embed-text  # 使用 ollama/ 前缀（推荐）
 #   api_key: not-needed
-#   base_url: http://localhost:11434/v1
+#   base_url: http://localhost:11434
+#   # 注意：ollama 不支持 encoding_format 参数，请勿设置
 #
 embedding:
   provider: litellm

@@ -90,7 +90,7 @@ logging:
                         <tr><td><code>llm.provider</code></td><td>string</td><td><code>dashscope</code></td><td>Provider type. <code>litellm</code> (recommended), <code>dashscope</code>, or <code>openai_compatible</code></td></tr>
                         <tr><td><code>llm.model</code></td><td>string</td><td><code>qwen-plus</code></td><td>Model name. For litellm use <code>provider/model</code> format, e.g. <code>dashscope/qwen-plus</code>, <code>openai/gpt-4o</code>, <code>anthropic/claude-3-5-sonnet-20241022</code></td></tr>
                         <tr><td><code>llm.api_key</code></td><td>string</td><td>-</td><td>API key. Supports <code>${ENV_VAR}</code> format or raw key value</td></tr>
-                        <tr><td><code>llm.base_url</code></td><td>string</td><td>-</td><td>Custom API endpoint URL. Required for <code>openai_compatible</code>, optional for others. Use for Ollama (<code>http://localhost:11434/v1</code>), vLLM, etc.</td></tr>
+                        <tr><td><code>llm.base_url</code></td><td>string</td><td>-</td><td>Custom API endpoint URL. Required for <code>openai_compatible</code>, optional for others. Use for Ollama (<code>http://localhost:11434</code>), vLLM, etc.</td></tr>
                     </tbody>
                 </table>
 
@@ -120,7 +120,7 @@ logging:
   provider: openai_compatible
   model: qwen2.5:7b
   api_key: ollama
-  base_url: http://localhost:11434/v1</code></pre>
+  base_url: http://localhost:11434</code></pre>
 
                 <h2>Embedding Configuration</h2>
                 <p>Embedding models are used for: semantic search, document-level similarity (Knowledge Mining), and recommendation scoring.</p>
@@ -158,7 +158,7 @@ logging:
   openai:
     model: nomic-embed-text
     api_key: ollama
-    base_url: http://localhost:11434/v1</code></pre>
+    base_url: http://localhost:11434</code></pre>
 
                 <h2>Knowledge Mining Configuration</h2>
                 <p>Knowledge Mining automatically extracts entities, discovers document relationships, and clusters topics.</p>
@@ -333,7 +333,7 @@ logging:
   provider: openai_compatible
   model: qwen2.5:7b
   api_key: ollama
-  base_url: http://localhost:11434/v1</code></pre>
+  base_url: http://localhost:11434</code></pre>
 
                 <h2>Embedding 配置</h2>
                 <p>Embedding 模型用于：语义搜索、文档级相似度（知识挖掘）、推荐评分。</p>
@@ -368,7 +368,7 @@ logging:
   openai:
     model: nomic-embed-text
     api_key: ollama
-    base_url: http://localhost:11434/v1</code></pre>
+    base_url: http://localhost:11434</code></pre>
 
                 <h2>知识挖掘配置</h2>
                 <p>知识挖掘自动提取实体、发现文档关系、聚类主题。</p>

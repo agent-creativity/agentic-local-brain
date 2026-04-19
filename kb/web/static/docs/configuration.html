@@ -228,14 +228,14 @@ ollama pull nomic-embed-text  # For embeddings</code></pre>
   provider: litellm
   model: openai/qwen2.5:7b
   api_key: ollama
-  base_url: http://localhost:11434/v1</code></pre>
+  base_url: http://localhost:11434</code></pre>
 
                 <h4>Embedding Configuration</h4>
                 <pre><code class="language-yaml">embedding:
   provider: litellm
   model: openai/nomic-embed-text
   api_key: ollama
-  base_url: http://localhost:11434/v1</code></pre>
+  base_url: http://localhost:11434</code></pre>
 
                 <h3>Anthropic Claude</h3>
                 <p>Use Anthropic's Claude models for LLM tasks. Requires an Anthropic API key.</p>
@@ -296,7 +296,7 @@ embedding:
                         <tr><td><code>llm.provider</code></td><td>string</td><td><code>dashscope</code></td><td>Provider type. <code>litellm</code> (recommended), <code>dashscope</code>, or <code>openai_compatible</code></td></tr>
                         <tr><td><code>llm.model</code></td><td>string</td><td><code>qwen-plus</code></td><td>Model name. For litellm use <code>provider/model</code> format, e.g. <code>dashscope/qwen-plus</code>, <code>openai/gpt-4o</code>, <code>anthropic/claude-3-5-sonnet-20241022</code></td></tr>
                         <tr><td><code>llm.api_key</code></td><td>string</td><td>-</td><td>API key. Supports <code>${ENV_VAR}</code> format or raw key value</td></tr>
-                        <tr><td><code>llm.base_url</code></td><td>string</td><td>-</td><td>Custom API endpoint URL. Required for <code>openai_compatible</code>, optional for others. Use for Ollama (<code>http://localhost:11434/v1</code>), vLLM, etc.</td></tr>
+                        <tr><td><code>llm.base_url</code></td><td>string</td><td>-</td><td>Custom API endpoint URL. Required for <code>openai_compatible</code>, optional for others. Use for Ollama (<code>http://localhost:11434</code>), vLLM, etc.</td></tr>
                     </tbody>
                 </table>
 
@@ -703,14 +703,14 @@ ollama pull nomic-embed-text  # 用于嵌入</code></pre>
   provider: litellm
   model: openai/qwen2.5:7b
   api_key: ollama
-  base_url: http://localhost:11434/v1</code></pre>
+  base_url: http://localhost:11434</code></pre>
 
                 <h4>嵌入模型配置</h4>
                 <pre><code class="language-yaml">embedding:
   provider: litellm
   model: openai/nomic-embed-text
   api_key: ollama
-  base_url: http://localhost:11434/v1</code></pre>
+  base_url: http://localhost:11434</code></pre>
 
                 <h3>Anthropic Claude</h3>
                 <p>使用 Anthropic 的 Claude 模型处理 LLM 任务。需要 Anthropic API 密钥。</p>
