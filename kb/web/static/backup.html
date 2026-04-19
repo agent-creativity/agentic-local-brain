@@ -226,16 +226,20 @@
 
         <!-- Create Backup Section -->
         <div class="card">
-            <h2>Create New Backup</h2>
-            <div class="form-group">
-                <label for="cloud-provider">Cloud Storage (Optional)</label>
-                <select id="cloud-provider">
-                    <option value="">Local only</option>
-                    <option value="oss">Alibaba Cloud OSS</option>
-                    <option value="s3">AWS S3</option>
-                </select>
+            <h2>备份管理 / Backup Management</h2>
+            <div style="display: flex; gap: 12px; margin-top: 16px;">
+                <button id="create-backup-btn" class="btn btn-primary">
+                    手工触发备份 / Manual Backup
+                </button>
+                <button id="goto-settings-btn" class="btn"
+                        style="border: 1px solid var(--border); background: var(--bg);">
+                    自动备份配置 / Auto Backup Settings
+                </button>
             </div>
-            <button id="create-backup-btn" class="btn btn-primary">Create Backup</button>
+            <p style="margin-top: 12px; font-size: 13px; color: #666;">
+                手工备份将使用设置中配置的默认存储位置。<br>
+                Manual backup uses the default storage location configured in settings.
+            </p>
         </div>
 
         <!-- Backup List Section -->
@@ -274,7 +278,6 @@
         // Create backup
         document.getElementById('create-backup-btn').addEventListener('click', async () => {
             const btn = document.getElementById('create-backup-btn');
-            const cloudProvider = document.getElementById('cloud-provider').value;
 
             btn.disabled = true;
             btn.textContent = 'Creating...';
@@ -285,9 +288,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        cloud_provider: cloudProvider || null
-                    })
+                    body: JSON.stringify({})
                 });
 
                 const data = await response.json();
@@ -295,8 +296,6 @@
                 if (data.success) {
                     showAlert(`Backup task created: ${data.task_id}`, 'success');
                     loadTasks();
-
-                    // Refresh list after a delay
                     setTimeout(loadBackups, 3000);
                 } else {
                     showAlert('Failed to create backup', 'error');
@@ -305,8 +304,13 @@
                 showAlert(`Error: ${error.message}`, 'error');
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Create Backup';
+                btn.textContent = '手工触发备份 / Manual Backup';
             }
+        });
+
+        // Navigate to settings
+        document.getElementById('goto-settings-btn').addEventListener('click', () => {
+            window.location.href = '/#settings?tab=backup';
         });
 
         // Load backups
