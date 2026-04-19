@@ -14,8 +14,30 @@ from fastapi.responses import HTMLResponse
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup and shutdown events."""
+    # Startup: Initialize backup scheduler
+    try:
+        from kb.scheduler.backup_scheduler import init_scheduler
+        from kb.config import Config
+        config = Config()
+        init_scheduler(config)
+        import logging
+        logging.getLogger(__name__).info("Backup scheduler initialized")
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to initialize backup scheduler: {e}")
+
     yield
-    # Cleanup on shutdown
+
+    # Shutdown: Stop scheduler and cleanup
+    try:
+        from kb.scheduler.backup_scheduler import stop_scheduler
+        stop_scheduler()
+        import logging
+        logging.getLogger(__name__).info("Backup scheduler stopped")
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to stop backup scheduler: {e}")
+
     from kb.web import dependencies
     if dependencies._sqlite_storage_instance is not None:
         try:
