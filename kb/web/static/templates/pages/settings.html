@@ -341,25 +341,6 @@
                         </div>
                     </div>
 
-                    <!-- Installation Info -->
-                    <div class="card" style="margin-top: 16px;">
-                        <div class="card-body">
-                            <h3 style="margin-bottom: 16px;">{{ locale === 'en' ? 'Installation Info' : '安装信息' }}</h3>
-                            <div class="detail-section">
-                                <div class="detail-label">{{ locale === 'en' ? 'Version' : '版本' }}</div>
-                                <div class="detail-value">v{{ version || '-' }}</div>
-                            </div>
-                            <div class="detail-section">
-                                <div class="detail-label">{{ locale === 'en' ? 'Data Directory' : '数据目录' }}</div>
-                                <div class="detail-value" style="font-family: monospace;">{{ settingsPaths.data_dir || '-' }}</div>
-                            </div>
-                            <div class="detail-section">
-                                <div class="detail-label">{{ locale === 'en' ? 'Install Directory' : '应用目录' }}</div>
-                                <div class="detail-value" style="font-family: monospace;">{{ settingsPaths.install_dir || '-' }}</div>
-                            </div>
-                        </div>
-                    </div>
-
         </div>
 
         <!-- Backup Tab -->
@@ -453,6 +434,25 @@
 
         <!-- Diagnostics Tab -->
         <div v-if="settingsTab === 'diagnostics'">
+                    <!-- Installation Info -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 16px;">{{ locale === 'en' ? 'Installation Info' : '安装信息' }}</h3>
+                            <div class="detail-section">
+                                <div class="detail-label">{{ locale === 'en' ? 'Version' : '版本' }}</div>
+                                <div class="detail-value">v{{ version || '-' }}</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">{{ locale === 'en' ? 'Data Directory' : '数据目录' }}</div>
+                                <div class="detail-value" style="font-family: monospace;">{{ settingsPaths.data_dir || '-' }}</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">{{ locale === 'en' ? 'Install Directory' : '应用目录' }}</div>
+                                <div class="detail-value" style="font-family: monospace;">{{ settingsPaths.install_dir || '-' }}</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- System Diagnostics -->
                     <div class="card" style="margin-top: 16px;">
                         <div class="card-body">
