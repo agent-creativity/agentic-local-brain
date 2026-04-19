@@ -611,46 +611,99 @@ async def get_backup_settings() -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Failed to load backup settings: {str(e)}")
 
 
+def _validate_cron_expression(cron_expr: str) -> bool:
+    """Validate cron expression format."""
+    try:
+        from croniter import croniter
+        croniter(cron_expr)
+        return True
+    except Exception:
+        return False
+
+
 @router.put("/settings/backup")
 async def update_backup_settings(request: BackupConfigRequest) -> Dict[str, Any]:
-    """
-    Update backup configuration.
-
-    Args:
-        request: BackupConfigRequest with backup settings.
-
-    Returns:
-        Updated backup configuration.
-    """
-    # Validate schedule format (basic cron validation)
+    """Update backup configuration including cloud storage settings."""
+    # Validate
     if not request.schedule.strip():
         raise HTTPException(status_code=400, detail="schedule cannot be empty")
+
+    if not _validate_cron_expression(request.schedule):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid cron expression: {request.schedule}. Format: minute hour day month day_of_week"
+        )
 
     if request.retention_days < 1:
         raise HTTPException(status_code=400, detail="retention_days must be at least 1")
 
-    if not request.backup_dir.strip():
-        raise HTTPException(status_code=400, detail="backup_dir cannot be empty")
+    if request.storage_location not in ["local", "oss", "s3"]:
+        raise HTTPException(status_code=400, detail="storage_location must be local, oss, or s3")
+
+    # Validate cloud storage config if selected
+    if request.storage_location == "oss":
+        if not all([request.oss_endpoint, request.oss_access_key_id,
+                   request.oss_access_key_secret, request.oss_bucket]):
+            raise HTTPException(status_code=400, detail="OSS configuration incomplete")
+
+    if request.storage_location == "s3":
+        if not all([request.s3_region, request.s3_access_key_id,
+                   request.s3_secret_access_key, request.s3_bucket]):
+            raise HTTPException(status_code=400, detail="S3 configuration incomplete")
 
     try:
         raw = _load_raw_config()
+        existing_backup = raw.get("backup", {})
 
-        # Preserve existing backup config and update
-        backup_config = raw.get("backup", {})
-        backup_config.update({
+        # Handle masked keys
+        oss_access_key_id = request.oss_access_key_id
+        if oss_access_key_id and _is_masked_key(oss_access_key_id):
+            oss_access_key_id = existing_backup.get("oss", {}).get("access_key_id", "")
+
+        oss_access_key_secret = request.oss_access_key_secret
+        if oss_access_key_secret and _is_masked_key(oss_access_key_secret):
+            oss_access_key_secret = existing_backup.get("oss", {}).get("access_key_secret", "")
+
+        s3_access_key_id = request.s3_access_key_id
+        if s3_access_key_id and _is_masked_key(s3_access_key_id):
+            s3_access_key_id = existing_backup.get("s3", {}).get("access_key_id", "")
+
+        s3_secret_access_key = request.s3_secret_access_key
+        if s3_secret_access_key and _is_masked_key(s3_secret_access_key):
+            s3_secret_access_key = existing_backup.get("s3", {}).get("secret_access_key", "")
+
+        # Build new config
+        backup_config = {
             "enabled": request.enabled,
             "schedule": request.schedule.strip(),
             "retention_days": request.retention_days,
-            "backup_dir": request.backup_dir.strip(),
-            "include_db": request.include_db,
-            "include_files": request.include_files,
-            "compression": request.compression,
-        })
+            "storage_location": request.storage_location,
+            "oss": {
+                "endpoint": request.oss_endpoint or "",
+                "access_key_id": oss_access_key_id or "",
+                "access_key_secret": oss_access_key_secret or "",
+                "bucket": request.oss_bucket or "",
+            },
+            "s3": {
+                "region": request.s3_region or "",
+                "access_key_id": s3_access_key_id or "",
+                "secret_access_key": s3_secret_access_key or "",
+                "bucket": request.s3_bucket or "",
+            }
+        }
 
         raw["backup"] = backup_config
         _save_raw_config(raw)
 
-        # Invalidate the cached config
+        # Restart scheduler to apply new config
+        from kb.scheduler.backup_scheduler import stop_scheduler, init_scheduler
+        from kb.config import Config
+
+        stop_scheduler()
+        config = Config(CONFIG_FILE)
+        init_scheduler(config)
+
+        # Invalidate cached config
         try:
             from kb.web.dependencies import get_config
             get_config.cache_clear()
@@ -659,7 +712,7 @@ async def update_backup_settings(request: BackupConfigRequest) -> Dict[str, Any]
 
         return {
             "backup": backup_config,
-            "message": "Backup configuration updated successfully"
+            "message": "Backup configuration updated successfully. Scheduler restarted."
         }
     except HTTPException:
         raise
