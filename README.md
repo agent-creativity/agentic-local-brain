@@ -1,5 +1,7 @@
 # Agentic Local Brain
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 > Personal knowledge management system — collect, process, and query knowledge from multiple sources.
 
 ## Features
@@ -14,6 +16,7 @@
 - **Knowledge Mining** (v0.6): Automatic knowledge graph construction, cross-document relationship discovery, topic clustering and trend analysis, smart recommendations based on reading patterns
 - **Enhanced Retrieval** (v0.7): Multi-turn RAG chat with query expansion, hybrid retrieval (keyword + semantic fusion via RRF), LLM reranking, knowledge graph context enrichment, configurable prompt templates, and conversation history management
 - **LLM Wiki** (v0.7): Auto-generate wiki articles from topic clusters using LLM synthesis, with entity summary cards, wiki-link cross-references (`[[entity-slug]]`), staleness tracking, and automatic recompilation
+- **Knowledge Base Backup** (v0.8): Automated backup with multiple storage options (local, Alibaba Cloud OSS, AWS S3), scheduled backups with cron expressions, retention policies, and one-click restore
 
 ## Installation
 
@@ -182,7 +185,80 @@ All search operations are unified under the `search` group:
 | `localbrain doctor` | Run system diagnostics |
 | `localbrain self-update` | Update to latest version |
 | `localbrain self-update --check` | Check for updates |
+| `localbrain backup create` | Create manual backup |
+| `localbrain backup list` | List all backups |
+| `localbrain backup restore <filename>` | Restore from backup |
+| `localbrain backup delete <filename>` | Delete a backup |
 | `localbrain uninstall` | Remove LocalBrain (preserves data) |
+
+## Knowledge Base Backup (v0.8)
+
+Protect your knowledge base with automated backups to local storage or cloud providers:
+
+**Storage Options:**
+- **Local** — Store backups in `~/.localbrain/backups/`
+- **Alibaba Cloud OSS** — Upload to OSS bucket with automatic lifecycle management
+- **AWS S3** — Upload to S3 bucket with versioning support
+
+**Features:**
+- Scheduled automatic backups (cron expressions)
+- Configurable retention policies (auto-delete old backups)
+- One-click restore from any backup
+- Background task execution with progress tracking
+- Web UI for backup management and cloud storage configuration
+
+**CLI Commands:**
+```bash
+# Create manual backup
+localbrain backup create                    # local storage (default)
+localbrain backup create --cloud oss        # upload to OSS
+localbrain backup create --cloud s3         # upload to S3
+
+# List backups
+localbrain backup list                      # local backups
+localbrain backup list --cloud oss          # OSS backups
+localbrain backup list --cloud s3           # S3 backups
+
+# Restore from backup
+localbrain backup restore backup-20260420-120000.tar.gz
+localbrain backup restore backup-20260420-120000.tar.gz --cloud oss
+
+# Delete backup
+localbrain backup delete backup-20260420-120000.tar.gz
+localbrain backup delete backup-20260420-120000.tar.gz --cloud oss
+```
+
+**Web UI Configuration:**
+
+Configure backup settings in the web interface (Settings → Backup):
+1. Enable/disable automatic backups
+2. Set backup schedule (cron expression, e.g., `0 2 * * *` for daily at 2 AM)
+3. Configure retention policy (days to keep backups)
+4. Choose storage location (local, OSS, or S3)
+5. Configure cloud storage credentials (endpoint, access keys, bucket)
+
+**Configuration Example:**
+```yaml
+backup:
+  enabled: true
+  schedule: "0 2 * * *"        # Daily at 2 AM
+  retention_days: 30            # Keep backups for 30 days
+  storage_location: oss         # local, oss, or s3
+  
+  # Alibaba Cloud OSS
+  oss:
+    endpoint: oss-cn-shanghai.aliyuncs.com
+    access_key_id: ${OSS_ACCESS_KEY_ID}
+    access_key_secret: ${OSS_ACCESS_KEY_SECRET}
+    bucket: my-localbrain-backups
+  
+  # AWS S3
+  s3:
+    region: us-west-2
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+    bucket: my-localbrain-backups
+```
 
 ## Smart Extraction
 
