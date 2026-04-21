@@ -4,6 +4,16 @@
 
 > Personal knowledge management system — collect, process, and query knowledge from multiple sources.
 
+## Quick Start
+
+In your desktop agent (OpenClaw / Hermes / Claude / Qoder / Codex / Trae, etc.), simply send the following message to start building your local brain:
+
+```
+Please install or update this knowledge collection skill: http://localbrain.oss-cn-shanghai.aliyuncs.com/skills/localbrain-collect/SKILL.md
+```
+
+That's it — your agent will handle the rest.
+
 ## Features
 
 - **Multi-source Collection**: Files (PDF, Markdown, text), webpages, bookmarks, academic papers, emails, and notes

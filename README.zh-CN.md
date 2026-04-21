@@ -4,6 +4,16 @@
 
 > 个人知识管理系统 — 从多个来源收集、处理和查询知识。
 
+## 快速开始
+
+在你的桌面 Agent（OpenClaw / Hermes / Claude / Qoder / Codex / Trae 等）中，发出如下聊天内容即可启动你的构建本地大脑之旅：
+
+```
+帮我安装或更新这个知识收集技能：http://localbrain.oss-cn-shanghai.aliyuncs.com/skills/localbrain-collect/SKILL.md
+```
+
+就这么简单，Agent 会帮你完成一切。
+
 ## 功能特性
 
 - **多源收集**：文件（PDF、Markdown、文本）、网页、书签、学术论文、邮件和笔记
