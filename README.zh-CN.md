@@ -6,6 +6,8 @@
 
 ## 快速开始
 
+**方式一：通过桌面 Agent 安装**
+
 在你的桌面 Agent（OpenClaw / Hermes / Claude / Qoder / Codex / Trae 等）中，发出如下聊天内容即可启动你的构建本地大脑之旅：
 
 ```
@@ -13,6 +15,14 @@
 ```
 
 就这么简单，Agent 会帮你完成一切。
+
+**方式二：通过 CLI 安装**
+
+如果你使用的是 CLI 命令行 Agent，可以直接安装技能：
+
+```bash
+npx skills add agent-creativity/agentic-local-brain
+```
 
 ## 功能特性
 

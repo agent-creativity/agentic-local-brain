@@ -6,6 +6,8 @@
 
 ## Quick Start
 
+**Option 1: Install via Desktop Agent**
+
 In your desktop agent (OpenClaw / Hermes / Claude / Qoder / Codex / Trae, etc.), simply send the following message to start building your local brain:
 
 ```
@@ -13,6 +15,14 @@ Please install or update this knowledge collection skill: http://localbrain.oss-
 ```
 
 That's it — your agent will handle the rest.
+
+**Option 2: Install via CLI**
+
+If you're using a CLI-based agent, you can install the skill directly:
+
+```bash
+npx skills add agent-creativity/agentic-local-brain
+```
 
 ## Features
 
