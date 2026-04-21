@@ -1,0 +1,5 @@
+{
+  "name": "localbrain-collect"
+  "version": "0.6.1"
+  "description": "Collect knowledge from multiple sources (files, webpages, papers, emails, bookmarks, notes) into a local knowledge base powered by Agentic Local Brain. Supports auto-extraction of tags and summaries. Use when users want to save, collect, or archive content into their personal knowledge base, check knowledge base stats, or launch the web interface."
+}
