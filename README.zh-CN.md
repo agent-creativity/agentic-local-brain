@@ -38,6 +38,9 @@ npx skills add agent-creativity/agentic-local-brain
 - **LLM Wiki**（v0.7）：使用 LLM 合成从主题集群自动生成 wiki 文章，包含实体摘要卡片、wiki 链接交叉引用（`[[entity-slug]]`）、过期跟踪和自动重新编译
 - **知识库备份**（v0.8）：支持多种存储选项（本地、阿里云 OSS、AWS S3）的自动备份，使用 cron 表达式的定时备份、保留策略和一键恢复
 
+<img width="2916" height="1562" alt="image" src="https://github.com/user-attachments/assets/b9ac538d-4673-4fc0-b81a-ba15b8c357ec" />
+
+
 ## 安装
 
 ### 选项 1：Python 包安装（推荐）
