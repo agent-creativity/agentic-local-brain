@@ -431,8 +431,10 @@ API endpoints (default: http://localhost:11201):
 
 API docs available at `http://localhost:11201/docs` when server is running.
 
+Home Page：
 <img width="2914" height="1548" alt="image" src="https://github.com/user-attachments/assets/8e1fa67a-28dc-4876-9067-eefcaf0230b5" />
 
+Knowledge graph：
 <img width="2920" height="1544" alt="image" src="https://github.com/user-attachments/assets/4c4a277f-5f2f-4f19-9d04-79581b471981" />
 
 
