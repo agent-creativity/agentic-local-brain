@@ -118,7 +118,7 @@ localbrain init setup
 | `localbrain self-update --rollback` | Revert to the previous version |
 | `localbrain uninstall` | Remove LocalBrain (preserves data) |
 
-## Quick Start
+## Usage Examples
 
 ```bash
 # Initialize knowledge base
