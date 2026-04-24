@@ -38,6 +38,9 @@ npx skills add agent-creativity/agentic-local-brain
 - **LLM Wiki** (v0.7): Auto-generate wiki articles from topic clusters using LLM synthesis, with entity summary cards, wiki-link cross-references (`[[entity-slug]]`), staleness tracking, and automatic recompilation
 - **Knowledge Base Backup** (v0.8): Automated backup with multiple storage options (local, Alibaba Cloud OSS, AWS S3), scheduled backups with cron expressions, retention policies, and one-click restore
 
+<img width="3248" height="1674" alt="image" src="https://github.com/user-attachments/assets/ed6f3cb2-2acc-43ef-8791-f60aab420c7a" />
+
+
 ## Installation
 
 ### Option 1: Python Package Install (Recommended)
