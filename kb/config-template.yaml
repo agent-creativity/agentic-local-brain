@@ -130,6 +130,11 @@ logging:
   backup_count: 5          # Number of rotated backup files to keep
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
+# Extraction settings
+extraction:
+  summary_max_length: 512  # Maximum summary length in characters (default: 512)
+                           # Summaries will be comprehensive but not exceed this limit
+
 # Wiki compilation settings
 wiki:
   enabled: true                        # Enable wiki article generation during mining
