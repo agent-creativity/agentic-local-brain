@@ -119,7 +119,7 @@ class TagExtractor(BaseProcessor):
     # Tag and summary extraction prompt template
     EXTRACTION_PROMPT = """You are a content analysis assistant. Analyze the following document and extract:
 1. Tags: 3-5 relevant keywords or short phrases that describe the core topics
-2. Summary: A concise 1-2 sentence summary of the document
+2. Summary: A comprehensive summary of the document (up to {max_length} characters)
 
 Document title: {title}
 Document content (truncated): {content}
@@ -128,16 +128,18 @@ Requirements:
 - Tags should be 2-6 word keywords or short phrases
 - Tags should accurately reflect the document's core topics
 - Use the same language as the document for tags
-- Summary should capture the main point in 1-2 sentences
+- Summary should be comprehensive and detailed, capturing key points and main ideas
+- Summary should not exceed {max_length} characters, but should be as detailed as possible within this limit
 
 Return ONLY a JSON object in this exact format, no other text:
-{{"tags": ["tag1", "tag2", "tag3"], "summary": "One or two sentence summary."}}"""
+{{"tags": ["tag1", "tag2", "tag3"], "summary": "Comprehensive summary of the document."}}"""
 
     def __init__(
         self,
         provider: LLMProvider,
         min_tags: int = 3,
         max_tags: int = 5,
+        summary_max_length: int = 512,
         **kwargs: Any
     ) -> None:
         """
@@ -147,12 +149,14 @@ Return ONLY a JSON object in this exact format, no other text:
             provider: LLM 提供者实例
             min_tags: 最少提取标签数，默认为 3
             max_tags: 最多提取标签数，默认为 5
+            summary_max_length: 摘要最大长度（字符数），默认为 512
             **kwargs: 额外的配置参数
         """
         super().__init__(**kwargs)
         self.provider = provider
         self.min_tags = min_tags
         self.max_tags = max_tags
+        self.summary_max_length = summary_max_length
 
     @classmethod
     def from_config(cls, config: Optional[Config] = None) -> "TagExtractor":
@@ -203,15 +207,19 @@ Return ONLY a JSON object in this exact format, no other text:
         else:
             raise ValueError(f"Unsupported LLM provider: {provider_name}")
 
-        # 从配置中读取标签数量限制
+        # 从配置中读取标签数量限制和摘要长度限制
         tag_config = config.get("tag_extraction", {})
         min_tags = tag_config.get("min_tags", 3)
         max_tags = tag_config.get("max_tags", 5)
 
+        extraction_config = config.get("extraction", {})
+        summary_max_length = extraction_config.get("summary_max_length", 512)
+
         return cls(
             provider=provider,
             min_tags=min_tags,
-            max_tags=max_tags
+            max_tags=max_tags,
+            summary_max_length=summary_max_length
         )
 
     def process(
@@ -255,7 +263,8 @@ Return ONLY a JSON object in this exact format, no other text:
             # Build prompt
             prompt = self.EXTRACTION_PROMPT.format(
                 title=title[:500],  # Limit title length
-                content=content[:2000]  # Limit content length
+                content=content[:2000],  # Limit content length
+                max_length=self.summary_max_length
             )
 
             # Call LLM to generate tags and summary
@@ -269,6 +278,11 @@ Return ONLY a JSON object in this exact format, no other text:
             parsed_result = self._parse_response(response)
             tags = parsed_result["tags"]
             summary = parsed_result["summary"]
+
+            # Truncate summary if it exceeds max length
+            if len(summary) > self.summary_max_length:
+                summary = summary[:self.summary_max_length].rsplit(' ', 1)[0] + '...'
+                parsed_result["summary"] = summary
 
             # Validate tag count
             if len(tags) < self.min_tags:
@@ -419,7 +433,7 @@ Return ONLY a JSON object in this exact format, no other text:
                 result_tags = builtin.extract_tags(title, content)
                 logger.info("Using built-in tag extraction (LLM unavailable or failed).")
             if not result_summary:
-                result_summary = builtin.extract_summary(title, content)
+                result_summary = builtin.extract_summary(title, content, max_length=self.summary_max_length)
                 logger.info("Using built-in summary extraction (LLM unavailable or failed).")
 
         return {"tags": result_tags or [], "summary": result_summary or ""}
@@ -440,11 +454,15 @@ Return ONLY a JSON object in this exact format, no other text:
             result_tags = list(user_tags) if user_tags else None
             result_summary = user_summary if user_summary else None
 
+            # Get max_length from config
+            extraction_config = config.get("extraction", {})
+            summary_max_length = extraction_config.get("summary_max_length", 512)
+
             from kb.processors.builtin_extractor import BuiltinExtractor
             builtin = BuiltinExtractor()
             if not result_tags:
                 result_tags = builtin.extract_tags(title, content)
             if not result_summary:
-                result_summary = builtin.extract_summary(title, content)
+                result_summary = builtin.extract_summary(title, content, max_length=summary_max_length)
 
             return {"tags": result_tags or [], "summary": result_summary or ""}
