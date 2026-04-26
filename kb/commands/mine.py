@@ -133,7 +133,34 @@ def mine_run(full, skip_entities, skip_embeddings, skip_relations, skip_topics, 
             click.echo("\n[2/5] Document Embedding Generation...")
             try:
                 from kb.processors.doc_embedding import DocEmbeddingService
+                from kb.storage.chroma_storage import ChromaStorage
+
                 embedding_svc = DocEmbeddingService.from_config(config)
+
+                # Check ChromaDB dimension compatibility on full rebuild
+                if full:
+                    try:
+                        storage_config = config.get("storage", {})
+                        persist_directory = storage_config.get("persist_directory", "~/.knowledge-base/db/chroma")
+                        chroma = ChromaStorage(path=persist_directory)
+
+                        # Check if collection has data and get dimension
+                        if chroma.count() > 0:
+                            sample = chroma.peek(limit=1)
+                            if sample["embeddings"]:
+                                old_dim = len(sample["embeddings"][0])
+                                # Get new dimension from embedder
+                                test_embedding = embedding_svc.embedder.embed(["test"])
+                                new_dim = len(test_embedding[0]) if test_embedding else old_dim
+
+                                if old_dim != new_dim:
+                                    click.echo(f"  Dimension mismatch detected: {old_dim} -> {new_dim}")
+                                    click.echo(f"  Resetting ChromaDB collection...")
+                                    chroma.reset()
+                                    click.echo(f"  ChromaDB collection reset complete")
+                        chroma.close()
+                    except Exception as dim_err:
+                        click.echo(f"  Warning: Dimension check failed: {dim_err}", err=True)
 
                 if full:
                     result = embedding_svc.generate_all()
