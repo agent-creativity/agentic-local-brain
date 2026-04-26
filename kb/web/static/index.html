@@ -198,6 +198,12 @@
                     deleteAssociatedFile: 'Also delete the associated file',
                     cancel: 'Cancel',
                     delete: 'Delete',
+                    editTitle: 'Edit Title',
+                    addNotes: 'Add Notes',
+                    userNotes: 'User Notes',
+                    enterTitle: 'Enter title...',
+                    enterNotes: 'Enter your notes or annotations...',
+                    save: 'Save',
                     // Paper specific fields
                     authors: 'Authors',
                     arxivId: 'arXiv ID',
@@ -230,7 +236,11 @@
                     tagDeletedSuccessfully: 'Tag deleted successfully',
                     failedToDeleteTag: 'Failed to delete tag',
                     failedToLoadMore: 'Failed to load more items',
-                    searchFailed: 'Search failed'
+                    searchFailed: 'Search failed',
+                    titleUpdatedSuccessfully: 'Title updated successfully',
+                    failedToUpdateTitle: 'Failed to update title',
+                    notesUpdatedSuccessfully: 'Notes updated successfully',
+                    failedToUpdateNotes: 'Failed to update notes'
                 },
                 time: {
                     justNow: 'Just now',
@@ -507,6 +517,12 @@
                     deleteAssociatedFile: '同时删除关联的文件',
                     cancel: '取消',
                     delete: '删除',
+                    editTitle: '修改标题',
+                    addNotes: '添加批注',
+                    userNotes: '用户批注',
+                    enterTitle: '输入标题...',
+                    enterNotes: '输入你的想法或批注...',
+                    save: '保存',
                     // 论文特有字段
                     authors: '作者',
                     arxivId: 'arXiv ID',
@@ -537,6 +553,14 @@
                     itemDeletedSuccessfully: '条目删除成功',
                     failedToDeleteItem: '删除条目失败',
                     tagDeletedSuccessfully: '标签删除成功',
+                    failedToDeleteTag: '删除标签失败',
+                    failedToLoadMore: '加载更多失败',
+                    searchFailed: '搜索失败',
+                    titleUpdatedSuccessfully: '标题更新成功',
+                    failedToUpdateTitle: '更新标题失败',
+                    notesUpdatedSuccessfully: '批注更新成功',
+                    failedToUpdateNotes: '更新批注失败'
+                },
                     failedToDeleteTag: '删除标签失败',
                     failedToLoadMore: '加载更多条目失败',
                     searchFailed: '搜索失败'
@@ -5798,6 +5822,10 @@
                             </span>
                         </div>
                     </div>
+                    <div class="detail-section" v-if="selectedItem.user_notes">
+                        <div class="detail-label">{{ t('modal.userNotes') }}</div>
+                        <div class="detail-value" style="white-space: pre-wrap;">{{ selectedItem.user_notes }}</div>
+                    </div>
                     <div class="detail-section" v-if="selectedItem.chunks && selectedItem.chunks.length">
                         <div class="detail-label">{{ t('modal.chunks') }} ({{ selectedItem.chunks.length }})</div>
                         <div style="max-height: 200px; overflow-y: auto; background: var(--bg); 
@@ -5845,7 +5873,52 @@
                     <button class="btn btn-danger" @click="confirmDeleteItem(selectedItem)">
                         {{ t('modal.deleteItem') }}
                     </button>
-                    <button class="btn btn-secondary" @click="closeItemModal">{{ t('modal.close') }}</button>
+                    <div>
+                        <button class="btn btn-primary" @click="showEditTitleDialog" style="margin-right: 8px;">
+                            {{ t('modal.editTitle') }}
+                        </button>
+                        <button class="btn btn-primary" @click="showEditNotesDialog" style="margin-right: 8px;">
+                            {{ t('modal.addNotes') }}
+                        </button>
+                        <button class="btn btn-secondary" @click="closeItemModal">{{ t('modal.close') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Title Dialog -->
+        <div v-if="showEditTitleModal" class="modal-overlay" @click.self="closeEditTitleDialog">
+            <div class="modal" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">{{ t('modal.editTitle') }}</h3>
+                    <button class="modal-close" @click="closeEditTitleDialog">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input v-model="editTitleValue" type="text" class="form-input"
+                           :placeholder="t('modal.enterTitle')" style="width: 100%;">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @click="closeEditTitleDialog">{{ t('modal.cancel') }}</button>
+                    <button class="btn btn-primary" @click="saveTitle">{{ t('modal.save') }}</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Notes Dialog -->
+        <div v-if="showEditNotesModal" class="modal-overlay" @click.self="closeEditNotesDialog">
+            <div class="modal" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">{{ t('modal.addNotes') }}</h3>
+                    <button class="modal-close" @click="closeEditNotesDialog">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <textarea v-model="editNotesValue" class="form-input"
+                              :placeholder="t('modal.enterNotes')"
+                              style="width: 100%; min-height: 200px; resize: vertical;"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @click="closeEditNotesDialog">{{ t('modal.cancel') }}</button>
+                    <button class="btn btn-primary" @click="saveNotes">{{ t('modal.save') }}</button>
                 </div>
             </div>
         </div>
@@ -6092,7 +6165,12 @@
                     backupPage: 1,
                     backupPageSize: 20,
                     backupTaskPage: 1,
-                    backupTaskPageSize: 20
+                    backupTaskPageSize: 20,
+                    // Edit dialogs
+                    showEditTitleModal: false,
+                    showEditNotesModal: false,
+                    editTitleValue: '',
+                    editNotesValue: ''
                 };
             },
             computed: {
@@ -8131,6 +8209,63 @@
                         'pending': this.t('backup.statusPending')
                     };
                     return labels[status] || status;
+                },
+
+                showEditTitleDialog() {
+                    this.editTitleValue = this.selectedItem.title || '';
+                    this.showEditTitleModal = true;
+                },
+
+                closeEditTitleDialog() {
+                    this.showEditTitleModal = false;
+                    this.editTitleValue = '';
+                },
+
+                async saveTitle() {
+                    try {
+                        const res = await fetch(`/api/items/${this.selectedItem.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ title: this.editTitleValue })
+                        });
+                        if (!res.ok) throw new Error('Failed to update title');
+                        const updated = await res.json();
+                        this.selectedItem.title = updated.title;
+                        this.showToast(this.t('toast.titleUpdatedSuccessfully'), 'success');
+                        this.closeEditTitleDialog();
+                        if (this.isDocumentsPage) {
+                            this.fetchItems();
+                        }
+                    } catch (e) {
+                        this.showToast(this.t('toast.failedToUpdateTitle'), 'error');
+                    }
+                },
+
+                showEditNotesDialog() {
+                    this.editNotesValue = this.selectedItem.user_notes || '';
+                    this.showEditNotesModal = true;
+                },
+
+                closeEditNotesDialog() {
+                    this.showEditNotesModal = false;
+                    this.editNotesValue = '';
+                },
+
+                async saveNotes() {
+                    try {
+                        const res = await fetch(`/api/items/${this.selectedItem.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user_notes: this.editNotesValue })
+                        });
+                        if (!res.ok) throw new Error('Failed to update notes');
+                        const updated = await res.json();
+                        this.selectedItem.user_notes = updated.user_notes;
+                        this.showToast(this.t('toast.notesUpdatedSuccessfully'), 'success');
+                        this.closeEditNotesDialog();
+                    } catch (e) {
+                        this.showToast(this.t('toast.failedToUpdateNotes'), 'error');
+                    }
                 }
             },
             async mounted() {
