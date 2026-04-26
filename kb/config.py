@@ -71,6 +71,9 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "backup_count": 5,  # number of rotated log files to keep
         "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     },
+    "extraction": {
+        "summary_max_length": 512,  # Maximum summary length in characters
+    },
     "wiki": {
         "enabled": True,
         "max_source_tokens_per_topic": 8000,
