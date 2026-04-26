@@ -90,6 +90,7 @@ class ItemUpdate(BaseModel):
     title: Optional[str] = None
     summary: Optional[str] = None
     tags: Optional[List[str]] = None
+    user_notes: Optional[str] = None
 
 
 class ItemResponse(BaseModel):
@@ -103,6 +104,7 @@ class ItemResponse(BaseModel):
     word_count: Optional[int] = None
     file_path: Optional[str] = None
     tags: List[str] = []
+    user_notes: Optional[str] = None
 
 
 @router.get("/items")
@@ -252,6 +254,8 @@ async def update_item(item_id: str, update: ItemUpdate) -> Dict[str, Any]:
             update_fields["title"] = update.title
         if update.summary is not None:
             update_fields["summary"] = update.summary
+        if update.user_notes is not None:
+            update_fields["user_notes"] = update.user_notes
         
         if update_fields:
             success = storage.update_knowledge(item_id, **update_fields)

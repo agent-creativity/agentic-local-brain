@@ -90,6 +90,12 @@ class SQLiteStorage:
             self.conn.commit()
         except Exception:
             pass  # Column already exists
+
+        try:
+            cursor.execute("ALTER TABLE knowledge ADD COLUMN user_notes TEXT DEFAULT ''")
+            self.conn.commit()
+        except Exception:
+            pass  # Column already exists
         finally:
             cursor.close()
 
@@ -578,7 +584,7 @@ class SQLiteStorage:
         # 允许更新的字段
         allowed_fields = {
             'title', 'content_type', 'source', 'collected_at',
-            'summary', 'word_count', 'file_path'
+            'summary', 'word_count', 'file_path', 'user_notes'
         }
 
         # 过滤只允许的字段
