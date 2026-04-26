@@ -203,13 +203,27 @@ Return ONLY a JSON object:
                 cluster_id = cursor.lastrowid
 
                 # Save document-cluster associations
+                skipped = 0
                 for doc_id in cluster_data["doc_ids"]:
+                    # Verify document exists before inserting
+                    cursor.execute(
+                        "SELECT 1 FROM knowledge WHERE id = ?",
+                        (doc_id,)
+                    )
+                    if cursor.fetchone() is None:
+                        logger.warning(f"Skipping non-existent document {doc_id} in cluster {label}")
+                        skipped += 1
+                        continue
+
                     cursor.execute(
                         """INSERT INTO knowledge_topics (knowledge_id, cluster_id, confidence)
                            VALUES (?, ?, 1.0)""",
                         (doc_id, cluster_id),
                     )
                     classified += 1
+
+                if skipped > 0:
+                    logger.info(f"Skipped {skipped} non-existent documents in cluster {label}")
 
             conn.commit()
             return {
@@ -271,6 +285,12 @@ Return ONLY a JSON object:
                     continue
 
             if best_similarity < self.similarity_threshold:
+                return None
+
+            # Verify document exists before assigning to cluster
+            cursor.execute("SELECT 1 FROM knowledge WHERE id = ?", (knowledge_id,))
+            if cursor.fetchone() is None:
+                logger.warning(f"Cannot classify non-existent document {knowledge_id}")
                 return None
 
             # Assign document to cluster
