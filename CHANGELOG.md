@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Web UI 批注和标题编辑对话框
 - 中英文 i18n 翻译支持
 
+<img width="1194" height="1550" alt="image" src="https://github.com/user-attachments/assets/9c3a820f-a430-4aa9-9b1e-9a3c6fb7f708" />
+
+
 ### Changed
 - 更新 API 支持 user_notes 和 title 字段更新
 - 优化知识详情页面 UI 布局
