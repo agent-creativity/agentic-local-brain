@@ -160,7 +160,13 @@ Return ONLY a JSON object:
             )
             labels = clusterer.fit_predict(X)
 
-            # Clear existing clusters
+            # Clear existing mining-derived tables in reverse dependency order.
+            # wiki_articles references wiki_categories.category_id (NO ACTION)
+            # wiki_categories references topic_clusters.id (ON DELETE CASCADE)
+            # knowledge_topics references topic_clusters.id (ON DELETE CASCADE)
+            # So we must delete: wiki_articles → wiki_categories → knowledge_topics → topic_clusters
+            cursor.execute("DELETE FROM wiki_articles")
+            cursor.execute("DELETE FROM wiki_categories")
             cursor.execute("DELETE FROM knowledge_topics")
             cursor.execute("DELETE FROM topic_clusters")
             conn.commit()
