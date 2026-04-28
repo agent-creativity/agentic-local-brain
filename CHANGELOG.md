@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.6] - 2026-04-28
+
+### Fixed
+- 修复主题聚类重建时的外键约束错误（正确的表删除顺序）
+- 修复 `localbrain mine run --full` 在主题聚类阶段的 FK 约束失败问题
+
+## [0.8.5] - 2026-04-27
+
+### Added
+- 用户批注功能（user_notes 字段）
+- 知识条目标题编辑功能
+- Web UI 批注和标题编辑对话框
+- 中英文 i18n 翻译支持
+
+### Changed
+- 更新 API 支持 user_notes 和 title 字段更新
+- 优化知识详情页面 UI 布局
+
+### Fixed
+- 修复重复翻译条目导致的 JS 语法错误
+
+## [0.8.4] - 2026-04-21
+
+### Added
+- 可配置的摘要最大长度（extraction.summary_max_length）
+- 配置模板中添加摘要长度配置项
+
+### Changed
+- README 文档更新（新增功能说明和安装选项）
+- 完整翻译 README.zh-CN.md 与英文版保持一致
+- 添加首页和知识图谱截图到文档
+
+### Fixed
+- 修复全量重建时 ChromaDB embedding 维度不匹配问题（自动重置）
+- 修复主题聚类中的外键约束失败问题
+
 ## [0.8.3] - 2026-04-20
 
 ### Added
@@ -74,7 +110,10 @@ See [v0.8.2 Release Notes](docs/releases/v0.8.2/release-notes.md) for details.
 
 ---
 
-[Unreleased]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.3...HEAD
+[Unreleased]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.6...HEAD
+[0.8.6]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.5...v0.8.6
+[0.8.5]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.4...v0.8.5
+[0.8.4]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.0...v0.8.1
