@@ -1011,13 +1011,12 @@
             margin: 2px 0;
         }
         .graph-view-zoom-container {
-            overflow: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            overflow: hidden;
         }
         .graph-view-zoom-inner {
-            flex-shrink: 0;
+            transform-origin: 0 0;
+            width: 100%;
+            height: 100%;
         }
         .graph-fullscreen-card {
             position: fixed;
@@ -7077,7 +7076,7 @@
                         const data = await res.json();
                         this.graphData = data;
                         this.loading.graph = false;
-                        this.$nextTick(() => { this.renderGraph(); this.$nextTick(() => this.applyViewZoom()); });
+                        this.$nextTick(() => this.renderGraph());
                     } catch (e) {
                         console.error('Graph fetch error:', e);
                         this.loading.graph = false;
@@ -7093,7 +7092,6 @@
                         } else {
                             document.body.style.overflow = '';
                         }
-                        this.$nextTick(() => this.applyViewZoom());
                     });
                 },
 
@@ -7104,27 +7102,10 @@
 
                 viewZoom(delta) {
                     this.graphViewZoom = Math.max(0.3, Math.min(this.graphViewZoom + delta * 0.25, 3));
-                    this.applyViewZoom();
-                },
-
-                applyViewZoom() {
-                    if (this.graphViewZoom === 1) {
-                        const inner = document.getElementById('graph-view-zoom-inner');
-                        if (inner) { inner.style.width = ''; inner.style.height = ''; }
-                        if (this._graphChart) this._graphChart.resize();
-                        return;
-                    }
-                    const container = document.querySelector('.graph-view-zoom-container');
                     const inner = document.getElementById('graph-view-zoom-inner');
-                    if (!container || !inner) return;
-                    const cw = container.clientWidth;
-                    const ch = container.clientHeight;
-                    inner.style.width = (cw * this.graphViewZoom) + 'px';
-                    inner.style.height = (ch * this.graphViewZoom) + 'px';
-                    container.scrollLeft = (cw * this.graphViewZoom - cw) / 2;
-                    container.scrollTop = (ch * this.graphViewZoom - ch) / 2;
-                    if (this._graphChart) {
-                        this._graphChart.resize();
+                    if (inner) {
+                        inner.style.transform = `scale(${this.graphViewZoom})`;
+                        inner.style.transformOrigin = '0 0';
                     }
                 },
 
@@ -7203,7 +7184,7 @@
                         }
                     });
 
-                    window.addEventListener('resize', () => { chart.resize(); this.applyViewZoom(); });
+                    window.addEventListener('resize', () => chart.resize());
                     } catch (e) {
                         console.error('ECharts render error:', e);
                         container.innerHTML = '<div style="padding:60px;text-align:center;color:#999;">Graph rendering failed: ' + e.message + '</div>';
