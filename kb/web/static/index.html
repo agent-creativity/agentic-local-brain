@@ -7086,10 +7086,11 @@
                     };
                     const categories = Object.keys(typeColors).map(t => ({ name: t }));
 
+                    const nodeCount = this.graphData.nodes.length;
                     const nodes = this.graphData.nodes.map(n => ({
                         id: String(n.id),
                         name: n.display_name || n.name,
-                        symbolSize: Math.min(10 + (n.mention_count || 1) * 3, 50),
+                        symbolSize: Math.min(10 + Math.log2(Math.max(n.mention_count || 1, 1)) * 5, 36),
                         category: Object.keys(typeColors).indexOf(n.type),
                         value: n.mention_count || 1,
                         itemStyle: { color: typeColors[n.type] || '#999' },
@@ -7103,7 +7104,7 @@
                             source: String(e.source_entity_id),
                             target: String(e.target_entity_id),
                             value: e.weight || 1,
-                            lineStyle: { width: Math.min(1 + (e.weight || 1), 5), opacity: 0.6 }
+                            lineStyle: { width: Math.min(1 + Math.log2(Math.max(e.weight || 1, 1)) * 1.5, 4), opacity: 0.6 }
                         }));
 
                     chart.setOption({
@@ -7113,7 +7114,7 @@
                         series: [{
                             type: 'graph', layout: 'force', data: nodes, links: edges, categories: categories,
                             roam: true, draggable: true, label: { show: true, position: 'right', fontSize: 11 },
-                            force: { repulsion: 200, gravity: 0.1, edgeLength: [50, 200], layoutAnimation: true },
+                            force: { repulsion: Math.min(200 + nodeCount * 2, 500), gravity: 0.1, edgeLength: [50, 200], layoutAnimation: true },
                             emphasis: { focus: 'adjacency', lineStyle: { width: 4 } }
                         }]
                     });
@@ -7278,10 +7279,11 @@
                             project: '#ee6666', organization: '#73c0de'
                         };
 
+                        const nodeCount2 = this.documentEntities.nodes.length;
                         const nodes = this.documentEntities.nodes.map(n => ({
                             id: String(n.id),
                             name: n.display_name || n.name,
-                            symbolSize: Math.min(8 + (n.mention_count || 1) * 2, 35),
+                            symbolSize: Math.min(8 + Math.log2(Math.max(n.mention_count || 1, 1)) * 4, 28),
                             itemStyle: { color: typeColors[n.type] || '#999' },
                             _entityId: n.id
                         }));
@@ -7292,7 +7294,7 @@
                             .map(e => ({
                                 source: String(e.source_entity_id),
                                 target: String(e.target_entity_id),
-                                lineStyle: { width: Math.min(1 + (e.weight || 1), 3), opacity: 0.5 }
+                                lineStyle: { width: Math.min(1 + Math.log2(Math.max(e.weight || 1, 1)) * 1, 2.5), opacity: 0.5 }
                             }));
 
                         chart.setOption({
@@ -7302,7 +7304,7 @@
                                 type: 'graph', layout: 'force', data: nodes, links: edges,
                                 roam: true, draggable: true,
                                 label: { show: true, position: 'right', fontSize: 10 },
-                                force: { repulsion: 80, gravity: 0.15, edgeLength: [30, 100], layoutAnimation: true },
+                                force: { repulsion: Math.min(80 + nodeCount2 * 3, 250), gravity: 0.15, edgeLength: [30, 100], layoutAnimation: true },
                                 emphasis: { focus: 'adjacency', lineStyle: { width: 3 } }
                             }]
                         });
