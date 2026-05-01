@@ -976,48 +976,92 @@
             gap: 12px;
             margin-bottom: 24px;
         }
-        .graph-fullscreen-btn {
+        .graph-rbtn-col {
             position: absolute;
             top: 8px;
             right: 8px;
             z-index: 10;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
             display: flex;
+            flex-direction: column;
+            gap: 4px;
             align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
         }
-        .graph-fullscreen-btn:hover {
-            background: rgba(0,0,0,0.7);
-        }
-        .graph-zoom-btn {
-            position: absolute;
-            top: 52px;
-            right: 12px;
+        .graph-rbtn {
+            position: relative;
             width: 32px;
             height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: none;
-            border-radius: 4px;
-            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 5px;
+            background: rgba(0,0,0,0.45);
             color: #fff;
             cursor: pointer;
-            font-size: 18px;
-            z-index: 10;
+            font-size: 14px;
             transition: background 0.2s;
             line-height: 1;
         }
-        .graph-zoom-btn:hover {
+        .graph-rbtn:hover {
             background: rgba(0,0,0,0.7);
+        }
+        .graph-rbtn::after {
+            content: attr(title);
+            position: absolute;
+            right: 40px;
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        .graph-rbtn:hover::after {
+            opacity: 1;
+        }
+        .graph-rbtn-sep {
+            width: 20px;
+            height: 1px;
+            background: rgba(255,255,255,0.2);
+            margin: 2px 0;
+        }
+        .graph-html-legend {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: rgba(255,255,255,0.85);
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .graph-html-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 3px;
+            user-select: none;
+            transition: opacity 0.2s;
+        }
+        .graph-html-legend-item:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .graph-html-legend-item.dimmed {
+            opacity: 0.35;
+        }
+        .graph-html-legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
         }
         .graph-fullscreen-card {
             position: fixed;
@@ -5385,15 +5429,40 @@
                     <!-- Force-directed Graph -->
                     <div class="card" style="margin-top: 16px;" :class="{ 'graph-fullscreen-card': graphFullscreen }">
                         <div class="card-body" style="padding: 0; position: relative;">
-                            <button class="graph-fullscreen-btn" @click="toggleGraphFullscreen" :title="graphFullscreen ? (locale === 'en' ? 'Exit Fullscreen' : '退出全屏') : (locale === 'en' ? 'Fullscreen' : '全屏')">
-                                {{ graphFullscreen ? '⛶' : '⛶' }}
-                            </button>
-                            <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-zoom-btn" @click="zoomGraph(1)"
-                                    :title="locale === 'en' ? 'Zoom In' : '放大'"
-                                    :style="{ top: graphFullscreen ? '52px' : '52px' }">+</button>
-                            <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-zoom-btn" @click="zoomGraph(-1)"
-                                    :title="locale === 'en' ? 'Zoom Out' : '缩小'"
-                                    :style="{ top: graphFullscreen ? '88px' : '88px' }">&minus;</button>
+                            <div class="graph-rbtn-col">
+                                <button class="graph-rbtn" @click="toggleGraphFullscreen"
+                                        :title="graphFullscreen ? (locale === 'en' ? 'Exit Fullscreen' : '退出全屏') : (locale === 'en' ? 'Fullscreen' : '全屏')">⛶</button>
+                                <span class="graph-rbtn-sep"></span>
+                                <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-rbtn" @click="zoomGraph(1)"
+                                        :title="locale === 'en' ? 'Increase Size' : '增大尺寸'">+</button>
+                                <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-rbtn" @click="zoomGraph(-1)"
+                                        :title="locale === 'en' ? 'Decrease Size' : '减小尺寸'">&minus;</button>
+                                <span class="graph-rbtn-sep"></span>
+                                <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-rbtn" @click="viewZoom(1)"
+                                        :title="locale === 'en' ? 'Zoom View In' : '放大视图'">🔍+</button>
+                                <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-rbtn" @click="viewZoom(-1)"
+                                        :title="locale === 'en' ? 'Zoom View Out' : '缩小视图'">🔍&minus;</button>
+                                <span v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-rbtn-sep"></span>
+                                <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-rbtn" @click="resetAllZoom"
+                                        :title="locale === 'en' ? 'Reset Zoom' : '重置缩放'">↺</button>
+                            </div>
+                            <div v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-html-legend">
+                                <div class="graph-html-legend-item" :class="{ dimmed: !legendSelected.person }" @click="toggleLegend('person')">
+                                    <span class="graph-html-legend-dot" style="background: #5470c6;"></span> {{ locale === 'en' ? 'person' : '人物' }}
+                                </div>
+                                <div class="graph-html-legend-item" :class="{ dimmed: !legendSelected.concept }" @click="toggleLegend('concept')">
+                                    <span class="graph-html-legend-dot" style="background: #91cc75;"></span> {{ locale === 'en' ? 'concept' : '概念' }}
+                                </div>
+                                <div class="graph-html-legend-item" :class="{ dimmed: !legendSelected.tool }" @click="toggleLegend('tool')">
+                                    <span class="graph-html-legend-dot" style="background: #fac858;"></span> {{ locale === 'en' ? 'tool' : '工具' }}
+                                </div>
+                                <div class="graph-html-legend-item" :class="{ dimmed: !legendSelected.project }" @click="toggleLegend('project')">
+                                    <span class="graph-html-legend-dot" style="background: #ee6666;"></span> {{ locale === 'en' ? 'project' : '项目' }}
+                                </div>
+                                <div class="graph-html-legend-item" :class="{ dimmed: !legendSelected.organization }" @click="toggleLegend('organization')">
+                                    <span class="graph-html-legend-dot" style="background: #73c0de;"></span> {{ locale === 'en' ? 'organization' : '组织' }}
+                                </div>
+                            </div>
                             <div v-if="loading.graph" class="loading" style="padding: 60px;">
                                 <div class="spinner"></div>
                             </div>
@@ -6193,6 +6262,8 @@
                     graphGuideCardsVisible: true,
                     graphFullscreen: false,
                     graphZoom: 1,
+                    graphViewZoom: 1,
+                    legendSelected: { person: true, concept: true, tool: true, project: true, organization: true },
                     documentEntities: { nodes: [], edges: [] },
                     topicsList: [],
                     topicStats: {},
@@ -7089,6 +7160,31 @@
                     this.renderGraph();
                 },
 
+                viewZoom(delta) {
+                    this.graphViewZoom = Math.max(0.01, Math.min(this.graphViewZoom + delta * 0.3, 3));
+                    this.applyViewZoom();
+                },
+
+                applyViewZoom() {
+                    if (!this._graphChart) return;
+                    this._graphChart.setOption({
+                        series: [{ zoom: this.graphViewZoom }]
+                    });
+                },
+
+                resetAllZoom() {
+                    this.graphZoom = 1;
+                    this.graphViewZoom = 1;
+                    this.legendSelected = { person: true, concept: true, tool: true, project: true, organization: true };
+                    this.applyViewZoom();
+                    this.renderGraph();
+                },
+
+                toggleLegend(type) {
+                    this.legendSelected[type] = !this.legendSelected[type];
+                    this.renderGraph();
+                },
+
                 async fetchGraphStats() {
                     try {
                         const res = await fetch('/api/graph/stats');
@@ -7121,9 +7217,12 @@
                     const categories = Object.keys(typeColors).map(t => ({ name: t }));
 
                     const zoom = this.graphZoom || 1;
+                    const sel = this.legendSelected;
                     const nodeCount = this.graphData.nodes.length;
-                    const nodes = this.graphData.nodes.map(n => ({
-                        id: String(n.id),
+                    const nodes = this.graphData.nodes
+                        .filter(n => sel[n.type] !== false)
+                        .map(n => ({
+                            id: String(n.id),
                         name: n.display_name || n.name,
                         symbolSize: Math.min(10 + Math.log2(Math.max(n.mention_count || 1, 1)) * 5, 36) * zoom,
                         category: Object.keys(typeColors).indexOf(n.type),
@@ -7144,11 +7243,12 @@
 
                     chart.setOption({
                         tooltip: { trigger: 'item', formatter: p => p.data.name ? `${p.data.name} (${categories[p.data.category]?.name || ''})` : '' },
-                        legend: [{ data: categories.map(c => c.name), orient: 'vertical', left: 10, top: 10, textStyle: { fontSize: 12 } }],
+                        legend: { show: false },
                         animationDurationUpdate: 500,
                         series: [{
                             type: 'graph', layout: 'force', data: nodes, links: edges, categories: categories,
-                            roam: true, draggable: true, label: { show: true, position: 'right', fontSize: Math.round(11 * zoom) },
+                            roam: true, draggable: true, zoom: this.graphViewZoom,
+                            label: { show: true, position: 'right', fontSize: Math.round(11 * zoom) },
                             force: { repulsion: Math.min(200 + nodeCount * 2, 500) * zoom, gravity: 0.1, edgeLength: [50, 200], layoutAnimation: true },
                             emphasis: { focus: 'adjacency', lineStyle: { width: 4 } }
                         }]
