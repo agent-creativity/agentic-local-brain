@@ -997,6 +997,28 @@
         .graph-fullscreen-btn:hover {
             background: rgba(0,0,0,0.7);
         }
+        .graph-zoom-btn {
+            position: absolute;
+            top: 52px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.55);
+            color: #fff;
+            cursor: pointer;
+            font-size: 18px;
+            z-index: 10;
+            transition: background 0.2s;
+            line-height: 1;
+        }
+        .graph-zoom-btn:hover {
+            background: rgba(0,0,0,0.7);
+        }
         .graph-fullscreen-card {
             position: fixed;
             top: 0;
@@ -5366,6 +5388,12 @@
                             <button class="graph-fullscreen-btn" @click="toggleGraphFullscreen" :title="graphFullscreen ? (locale === 'en' ? 'Exit Fullscreen' : '退出全屏') : (locale === 'en' ? 'Fullscreen' : '全屏')">
                                 {{ graphFullscreen ? '⛶' : '⛶' }}
                             </button>
+                            <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-zoom-btn" @click="zoomGraph(1)"
+                                    :title="locale === 'en' ? 'Zoom In' : '放大'"
+                                    :style="{ top: graphFullscreen ? '52px' : '52px' }">+</button>
+                            <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-zoom-btn" @click="zoomGraph(-1)"
+                                    :title="locale === 'en' ? 'Zoom Out' : '缩小'"
+                                    :style="{ top: graphFullscreen ? '88px' : '88px' }">&minus;</button>
                             <div v-if="loading.graph" class="loading" style="padding: 60px;">
                                 <div class="spinner"></div>
                             </div>
@@ -6164,6 +6192,7 @@
                     graphSearchFocusedEntityId: null,
                     graphGuideCardsVisible: true,
                     graphFullscreen: false,
+                    graphZoom: 1,
                     documentEntities: { nodes: [], edges: [] },
                     topicsList: [],
                     topicStats: {},
@@ -7055,6 +7084,11 @@
                     });
                 },
 
+                zoomGraph(delta) {
+                    this.graphZoom = Math.max(0.2, Math.min(this.graphZoom + delta * 0.3, 5));
+                    this.renderGraph();
+                },
+
                 async fetchGraphStats() {
                     try {
                         const res = await fetch('/api/graph/stats');
@@ -7086,11 +7120,12 @@
                     };
                     const categories = Object.keys(typeColors).map(t => ({ name: t }));
 
+                    const zoom = this.graphZoom || 1;
                     const nodeCount = this.graphData.nodes.length;
                     const nodes = this.graphData.nodes.map(n => ({
                         id: String(n.id),
                         name: n.display_name || n.name,
-                        symbolSize: Math.min(10 + Math.log2(Math.max(n.mention_count || 1, 1)) * 5, 36),
+                        symbolSize: Math.min(10 + Math.log2(Math.max(n.mention_count || 1, 1)) * 5, 36) * zoom,
                         category: Object.keys(typeColors).indexOf(n.type),
                         value: n.mention_count || 1,
                         itemStyle: { color: typeColors[n.type] || '#999' },
@@ -7104,7 +7139,7 @@
                             source: String(e.source_entity_id),
                             target: String(e.target_entity_id),
                             value: e.weight || 1,
-                            lineStyle: { width: Math.min(1 + Math.log2(Math.max(e.weight || 1, 1)) * 1.5, 4), opacity: 0.6 }
+                            lineStyle: { width: Math.min(1 + Math.log2(Math.max(e.weight || 1, 1)) * 1.5, 4) * zoom, opacity: 0.6 }
                         }));
 
                     chart.setOption({
@@ -7113,8 +7148,8 @@
                         animationDurationUpdate: 500,
                         series: [{
                             type: 'graph', layout: 'force', data: nodes, links: edges, categories: categories,
-                            roam: true, draggable: true, label: { show: true, position: 'right', fontSize: 11 },
-                            force: { repulsion: Math.min(200 + nodeCount * 2, 500), gravity: 0.1, edgeLength: [50, 200], layoutAnimation: true },
+                            roam: true, draggable: true, label: { show: true, position: 'right', fontSize: Math.round(11 * zoom) },
+                            force: { repulsion: Math.min(200 + nodeCount * 2, 500) * zoom, gravity: 0.1, edgeLength: [50, 200], layoutAnimation: true },
                             emphasis: { focus: 'adjacency', lineStyle: { width: 4 } }
                         }]
                     });
