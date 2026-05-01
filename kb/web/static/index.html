@@ -976,48 +976,47 @@
             gap: 12px;
             margin-bottom: 24px;
         }
-        .graph-fullscreen-btn {
+        .graph-rbtn-col {
             position: absolute;
             top: 8px;
             right: 8px;
             z-index: 10;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+        }
+        .graph-rbtn {
             width: 32px;
             height: 32px;
-            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 5px;
+            background: rgba(0,0,0,0.45);
+            color: #fff;
             cursor: pointer;
             font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-        .graph-fullscreen-btn:hover {
-            background: rgba(0,0,0,0.7);
-        }
-        .graph-zoom-btn {
-            position: absolute;
-            top: 52px;
-            right: 12px;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            border-radius: 4px;
-            background: rgba(0,0,0,0.55);
-            color: #fff;
-            cursor: pointer;
-            font-size: 18px;
-            z-index: 10;
             transition: background 0.2s;
             line-height: 1;
         }
-        .graph-zoom-btn:hover {
+        .graph-rbtn:hover {
             background: rgba(0,0,0,0.7);
+        }
+        .graph-rbtn-sep {
+            width: 20px;
+            height: 1px;
+            background: rgba(255,255,255,0.25);
+            margin: 2px 0;
+        }
+        .graph-view-zoom-container {
+            overflow: hidden;
+        }
+        .graph-view-zoom-inner {
+            transform-origin: 0 0;
+            width: 100%;
+            height: 100%;
         }
         .graph-fullscreen-card {
             position: fixed;
@@ -5385,22 +5384,33 @@
                     <!-- Force-directed Graph -->
                     <div class="card" style="margin-top: 16px;" :class="{ 'graph-fullscreen-card': graphFullscreen }">
                         <div class="card-body" style="padding: 0; position: relative;">
-                            <button class="graph-fullscreen-btn" @click="toggleGraphFullscreen" :title="graphFullscreen ? (locale === 'en' ? 'Exit Fullscreen' : '退出全屏') : (locale === 'en' ? 'Fullscreen' : '全屏')">
-                                {{ graphFullscreen ? '⛶' : '⛶' }}
-                            </button>
-                            <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-zoom-btn" @click="zoomGraph(1)"
-                                    :title="locale === 'en' ? 'Zoom In' : '放大'"
-                                    :style="{ top: graphFullscreen ? '52px' : '52px' }">+</button>
-                            <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-zoom-btn" @click="zoomGraph(-1)"
-                                    :title="locale === 'en' ? 'Zoom Out' : '缩小'"
-                                    :style="{ top: graphFullscreen ? '88px' : '88px' }">&minus;</button>
+                            <div class="graph-rbtn-col">
+                                <button class="graph-rbtn" @click="toggleGraphFullscreen"
+                                        :title="graphFullscreen ? (locale === 'en' ? 'Exit Fullscreen' : '退出全屏') : (locale === 'en' ? 'Fullscreen' : '全屏')">
+                                    {{ graphFullscreen ? '⛶' : '⛶' }}
+                                </button>
+                                <span class="graph-rbtn-sep"></span>
+                                <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-rbtn" @click="zoomGraph(1)"
+                                        :title="locale === 'en' ? 'Increase Size' : '增大尺寸'">+</button>
+                                <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-rbtn" @click="zoomGraph(-1)"
+                                        :title="locale === 'en' ? 'Decrease Size' : '减小尺寸'">&minus;</button>
+                                <span class="graph-rbtn-sep"></span>
+                                <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-rbtn" @click="viewZoom(1)"
+                                        :title="locale === 'en' ? 'Zoom View In' : '放大视图'">🔍+</button>
+                                <button v-if="!loading.graph && graphData.nodes && graphData.nodes.length" class="graph-rbtn" @click="viewZoom(-1)"
+                                        :title="locale === 'en' ? 'Zoom View Out' : '缩小视图'">🔍−</button>
+                            </div>
                             <div v-if="loading.graph" class="loading" style="padding: 60px;">
                                 <div class="spinner"></div>
                             </div>
                             <div v-else-if="graphData.nodes && graphData.nodes.length === 0" style="padding: 60px; text-align: center; color: var(--text-secondary);">
                                 {{ locale === 'en' ? 'No graph data yet. Run entity extraction first.' : '暂无图谱数据。请先运行实体抽取。' }}
                             </div>
-                            <div v-else id="graph-chart" :style="{ width: '100%', height: graphFullscreen ? 'calc(100vh - 120px)' : '600px' }"></div>
+                            <div v-else class="graph-view-zoom-container" :style="{ height: graphFullscreen ? 'calc(100vh - 120px)' : '600px' }">
+                                <div id="graph-view-zoom-inner" style="width: 100%; height: 100%;">
+                                    <div id="graph-chart" style="width: 100%; height: 100%;"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -6193,6 +6203,7 @@
                     graphGuideCardsVisible: true,
                     graphFullscreen: false,
                     graphZoom: 1,
+                    graphViewZoom: 1,
                     documentEntities: { nodes: [], edges: [] },
                     topicsList: [],
                     topicStats: {},
@@ -7087,6 +7098,15 @@
                 zoomGraph(delta) {
                     this.graphZoom = Math.max(0.2, Math.min(this.graphZoom + delta * 0.3, 5));
                     this.renderGraph();
+                },
+
+                viewZoom(delta) {
+                    this.graphViewZoom = Math.max(0.3, Math.min(this.graphViewZoom + delta * 0.25, 3));
+                    const inner = document.getElementById('graph-view-zoom-inner');
+                    if (inner) {
+                        inner.style.transform = `scale(${this.graphViewZoom})`;
+                        inner.style.transformOrigin = '0 0';
+                    }
                 },
 
                 async fetchGraphStats() {
