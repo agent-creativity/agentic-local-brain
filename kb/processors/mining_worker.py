@@ -111,5 +111,12 @@ def _mine_document(
 
             logger.info(f"[mine] Async mining complete for {knowledge_id[:8]}")
 
+            # Invalidate graph cache since entities/relations may have changed
+            try:
+                from kb.query.graph_query import invalidate_graph_cache
+                invalidate_graph_cache()
+            except Exception:
+                pass
+
         except Exception as e:
             logger.error(f"[mine] Unexpected error mining {knowledge_id[:8]}: {e}")

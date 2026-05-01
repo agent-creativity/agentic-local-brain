@@ -5,11 +5,26 @@ Provides graph traversal, entity queries, and document relation queries
 using SQLite recursive CTEs for N-hop relationship discovery.
 """
 import logging
+import time
 from typing import Any, Dict, List, Optional
 
 from kb.storage.sqlite_storage import SQLiteStorage
 
 logger = logging.getLogger(__name__)
+
+# Module-level TTL cache for expensive graph queries.
+# Data only changes when mining runs, so even short TTLs eliminate redundant work.
+_cache: Dict[str, tuple] = {}
+DEFAULT_CACHE_TTL = 60
+
+
+def invalidate_graph_cache() -> None:
+    """Invalidate all cached graph query results.
+
+    Called after mining pipeline completes or when graph data changes.
+    """
+    _cache.clear()
+    logger.debug("Graph query cache invalidated")
 
 
 class GraphQuery:
@@ -17,6 +32,22 @@ class GraphQuery:
 
     def __init__(self, storage: SQLiteStorage):
         self.storage = storage
+
+    @staticmethod
+    def _cache_get(key: str, ttl: int = DEFAULT_CACHE_TTL):
+        """Get cached result if not expired. Returns None on miss."""
+        entry = _cache.get(key)
+        if entry is None:
+            return None
+        value, expires_at = entry
+        if time.monotonic() < expires_at:
+            return value
+        del _cache[key]
+        return None
+
+    @staticmethod
+    def _cache_set(key: str, value, ttl: int = DEFAULT_CACHE_TTL):
+        _cache[key] = (value, time.monotonic() + ttl)
 
     def get_graph(
         self,
@@ -43,6 +74,26 @@ class GraphQuery:
                 return self._get_subgraph(cursor, entity_id, depth, limit)
             else:
                 return self._get_full_graph(cursor, entity_type, limit)
+        finally:
+            cursor.close()
+
+    def _get_entity_counts(self) -> Dict[str, int]:
+        """Get cached total_entities / total_relations counts."""
+        cached = self._cache_get("counts", ttl=30)
+        if cached is not None:
+            return cached
+        cursor = self.storage.conn.cursor()
+        try:
+            cursor.execute("SELECT COUNT(*) FROM entities")
+            total_entities = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM entity_relations")
+            total_relations = cursor.fetchone()[0]
+            result = {
+                "total_entities": total_entities,
+                "total_relations": total_relations,
+            }
+            self._cache_set("counts", result, ttl=30)
+            return result
         finally:
             cursor.close()
 
@@ -82,18 +133,14 @@ class GraphQuery:
         else:
             edges = []
 
-        # Stats
-        cursor.execute("SELECT COUNT(*) FROM entities")
-        total_entities = cursor.fetchone()[0]
-        cursor.execute("SELECT COUNT(*) FROM entity_relations")
-        total_relations = cursor.fetchone()[0]
+        counts = self._get_entity_counts()
 
         return {
             "nodes": nodes,
             "edges": edges,
             "stats": {
-                "total_entities": total_entities,
-                "total_relations": total_relations,
+                "total_entities": counts["total_entities"],
+                "total_relations": counts["total_relations"],
                 "displayed_nodes": len(nodes),
                 "displayed_edges": len(edges),
             },
@@ -150,17 +197,14 @@ class GraphQuery:
         )
         edges = [dict(row) for row in cursor.fetchall()]
 
-        cursor.execute("SELECT COUNT(*) FROM entities")
-        total_entities = cursor.fetchone()[0]
-        cursor.execute("SELECT COUNT(*) FROM entity_relations")
-        total_relations = cursor.fetchone()[0]
+        counts = self._get_entity_counts()
 
         return {
             "nodes": nodes,
             "edges": edges,
             "stats": {
-                "total_entities": total_entities,
-                "total_relations": total_relations,
+                "total_entities": counts["total_entities"],
+                "total_relations": counts["total_relations"],
                 "displayed_nodes": len(nodes),
                 "displayed_edges": len(edges),
             },
@@ -334,7 +378,11 @@ class GraphQuery:
             cursor.close()
 
     def get_graph_stats(self) -> Dict[str, Any]:
-        """Get overall graph statistics."""
+        """Get overall graph statistics. Cached for 60s."""
+        cached = self._cache_get("stats")
+        if cached is not None:
+            return cached
+
         cursor = self.storage.conn.cursor()
         try:
             cursor.execute("SELECT COUNT(*) FROM entities")
@@ -368,7 +416,7 @@ class GraphQuery:
             )
             top_entities = [dict(row) for row in cursor.fetchall()]
 
-            return {
+            result = {
                 "total_entities": total_entities,
                 "total_relations": total_relations,
                 "total_doc_relations": total_doc_relations,
@@ -377,6 +425,8 @@ class GraphQuery:
                 "relation_distribution": relation_distribution,
                 "top_entities": top_entities,
             }
+            self._cache_set("stats", result)
+            return result
         finally:
             cursor.close()
 

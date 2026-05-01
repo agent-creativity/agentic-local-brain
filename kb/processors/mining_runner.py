@@ -299,6 +299,13 @@ def run_mining(
 
     _append_history(history_record)
 
+    # Invalidate graph query cache since data has changed
+    try:
+        from kb.query.graph_query import invalidate_graph_cache
+        invalidate_graph_cache()
+    except Exception:
+        pass
+
     with _run_lock:
         _run_state["running"] = False
         _run_state["current_step"] = None

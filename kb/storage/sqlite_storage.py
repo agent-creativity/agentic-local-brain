@@ -242,6 +242,7 @@ class SQLiteStorage:
                 )
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_mentions_knowledge ON entity_mentions(knowledge_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_mentions_entity ON entity_mentions(entity_id)")
 
             # 实体关系表
             cursor.execute("""
@@ -257,6 +258,9 @@ class SQLiteStorage:
                     UNIQUE(source_entity_id, target_entity_id, relation_type)
                 )
             """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_relations_source ON entity_relations(source_entity_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_relations_target ON entity_relations(target_entity_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_relations_composite ON entity_relations(source_entity_id, target_entity_id)")
 
             # 关系来源表
             cursor.execute("""

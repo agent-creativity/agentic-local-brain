@@ -78,6 +78,17 @@ CREATE TABLE IF NOT EXISTS entity_relation_sources (
     context TEXT,
     PRIMARY KEY (relation_id, knowledge_id)
 );
+
+CREATE TABLE IF NOT EXISTS document_relations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source_knowledge_id TEXT NOT NULL,
+    target_knowledge_id TEXT NOT NULL,
+    relation_type TEXT NOT NULL DEFAULT 'embedding_similarity',
+    score REAL DEFAULT 0.0,
+    shared_entities TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(source_knowledge_id, target_knowledge_id, relation_type)
+);
 """
 
 
@@ -920,3 +931,464 @@ class TestGraphQueryDocumentEntities:
 
         assert len(result["nodes"]) == 1
         assert result["edges"] == []
+
+
+# ─────────────────────────────────────────────
+# Section 9: GraphQuery.get_entity() 测试
+# ─────────────────────────────────────────────
+
+class TestGraphQueryGetEntity:
+    """get_entity() 实体详情查询测试"""
+
+    def _make_gq(self, db):
+        from kb.query.graph_query import GraphQuery
+        mock_storage = MagicMock()
+        mock_storage.conn = db
+        return GraphQuery(storage=mock_storage)
+
+    def test_returns_entity_with_all_fields(self, db_with_knowledge):
+        """返回实体所有字段：id, name, display_name, type, description, mention_count"""
+        db = db_with_knowledge
+        eid = _insert_entity(db, "PyTorch", "tool", display_name="PyTorch", mention_count=5)
+        gq = self._make_gq(db)
+
+        entity = gq.get_entity(eid)
+        assert entity is not None
+        assert entity["name"] == "pytorch"
+        assert entity["display_name"] == "PyTorch"
+        assert entity["type"] == "tool"
+        assert entity["mention_count"] == 5
+
+    def test_returns_none_for_missing_entity(self, db_with_knowledge):
+        """不存在的实体返回 None"""
+        gq = self._make_gq(db_with_knowledge)
+        entity = gq.get_entity(99999)
+        assert entity is None
+
+    def test_includes_mentions(self, db_with_knowledge):
+        """包含实体在文档中的提及记录"""
+        db = db_with_knowledge
+        eid = _insert_entity(db, "CUDA", "tool")
+        db.execute(
+            "INSERT INTO entity_mentions (entity_id, knowledge_id, context) VALUES (?, ?, ?)",
+            (eid, 1, "CUDA 是并行计算平台"),
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        entity = gq.get_entity(eid)
+        assert "mentions" in entity
+        assert len(entity["mentions"]) == 1
+        assert entity["mentions"][0]["context"] == "CUDA 是并行计算平台"
+
+    def test_includes_relations_both_directions(self, db_with_knowledge):
+        """包含双向关系：source→target 和 target→source"""
+        db = db_with_knowledge
+        pytorch_id = _insert_entity(db, "PyTorch", "tool")
+        cuda_id = _insert_entity(db, "CUDA", "tool")
+        _insert_relation(db, pytorch_id, cuda_id, "uses")
+
+        gq = self._make_gq(db)
+
+        # 从 source 方向查
+        entity = gq.get_entity(pytorch_id)
+        assert len(entity["relations"]) == 1
+        assert entity["relations"][0]["related_name"] == "cuda"
+
+        # 从 target 方向查
+        entity2 = gq.get_entity(cuda_id)
+        assert len(entity2["relations"]) == 1
+        assert entity2["relations"][0]["related_name"] == "pytorch"
+
+
+# ─────────────────────────────────────────────
+# Section 10: GraphQuery.get_graph_stats() 测试
+# ─────────────────────────────────────────────
+
+class TestGraphQueryGetGraphStats:
+    """get_graph_stats() 图谱统计测试"""
+
+    def setup_method(self):
+        from kb.query.graph_query import invalidate_graph_cache
+        invalidate_graph_cache()
+
+    def _make_gq(self, db):
+        from kb.query.graph_query import GraphQuery
+        mock_storage = MagicMock()
+        mock_storage.conn = db
+        return GraphQuery(storage=mock_storage)
+
+    def test_returns_all_stat_keys(self, db_with_knowledge):
+        """返回所有统计字段"""
+        gq = self._make_gq(db_with_knowledge)
+        stats = gq.get_graph_stats()
+
+        expected_keys = {
+            "total_entities", "total_relations", "total_doc_relations",
+            "total_mentions", "type_distribution", "relation_distribution",
+            "top_entities",
+        }
+        for key in expected_keys:
+            assert key in stats, f"Missing key: {key}"
+
+    def test_total_entities_matches_count(self, db_with_knowledge):
+        """total_entities 与实际插入的实体数一致"""
+        db = db_with_knowledge
+        _insert_entity(db, "PyTorch", "tool")
+        _insert_entity(db, "CUDA", "tool")
+        _insert_entity(db, "NVIDIA", "organization")
+
+        gq = self._make_gq(db)
+        stats = gq.get_graph_stats()
+        assert stats["total_entities"] == 3
+
+    def test_total_relations_matches_count(self, db_with_knowledge):
+        """total_relations 与实际插入的关系数一致"""
+        db = db_with_knowledge
+        pytorch_id = _insert_entity(db, "PyTorch", "tool")
+        cuda_id = _insert_entity(db, "CUDA", "tool")
+        nvidia_id = _insert_entity(db, "NVIDIA", "organization")
+        _insert_relation(db, pytorch_id, cuda_id, "uses")
+        _insert_relation(db, cuda_id, nvidia_id, "created_by")
+
+        gq = self._make_gq(db)
+        stats = gq.get_graph_stats()
+        assert stats["total_relations"] == 2
+
+    def test_type_distribution_groups_correctly(self, db_with_knowledge):
+        """type_distribution 按类型正确分组计数"""
+        db = db_with_knowledge
+        _insert_entity(db, "PyTorch", "tool")
+        _insert_entity(db, "CUDA", "tool")
+        _insert_entity(db, "NVIDIA", "organization")
+
+        gq = self._make_gq(db)
+        stats = gq.get_graph_stats()
+
+        type_counts = {d["type"]: d["count"] for d in stats["type_distribution"]}
+        assert type_counts["tool"] == 2
+        assert type_counts["organization"] == 1
+
+    def test_relation_distribution_groups_correctly(self, db_with_knowledge):
+        """relation_distribution 按关系类型正确分组"""
+        db = db_with_knowledge
+        pytorch_id = _insert_entity(db, "PyTorch", "tool")
+        cuda_id = _insert_entity(db, "CUDA", "tool")
+        nvidia_id = _insert_entity(db, "NVIDIA", "organization")
+        _insert_relation(db, pytorch_id, cuda_id, "uses")
+        _insert_relation(db, cuda_id, nvidia_id, "created_by")
+        _insert_relation(db, pytorch_id, nvidia_id, "uses")
+
+        gq = self._make_gq(db)
+        stats = gq.get_graph_stats()
+
+        rel_counts = {d["relation_type"]: d["count"] for d in stats["relation_distribution"]}
+        assert rel_counts["uses"] == 2
+        assert rel_counts["created_by"] == 1
+
+    def test_top_entities_ordered_by_mention_count(self, db_with_knowledge):
+        """top_entities 按 mention_count 降序排列"""
+        db = db_with_knowledge
+        _insert_entity(db, "Low", "concept", mention_count=1)
+        _insert_entity(db, "High", "concept", mention_count=10)
+        _insert_entity(db, "Mid", "concept", mention_count=5)
+
+        gq = self._make_gq(db)
+        stats = gq.get_graph_stats()
+
+        top_entities = stats["top_entities"]
+        assert len(top_entities) == 3
+        assert top_entities[0]["mention_count"] >= top_entities[1]["mention_count"]
+        assert top_entities[1]["mention_count"] >= top_entities[2]["mention_count"]
+
+    def test_empty_graph_returns_zeros(self, db):
+        """空图谱返回 0 值统计"""
+        gq = self._make_gq(db)
+        stats = gq.get_graph_stats()
+
+        assert stats["total_entities"] == 0
+        assert stats["total_relations"] == 0
+        assert stats["total_doc_relations"] == 0
+        assert stats["total_mentions"] == 0
+        assert stats["type_distribution"] == []
+        assert stats["relation_distribution"] == []
+        assert stats["top_entities"] == []
+
+
+# ─────────────────────────────────────────────
+# Section 11: GraphQuery.get_entities_for_context() 测试
+# ─────────────────────────────────────────────
+
+class TestGraphQueryEntitiesForContext:
+    """get_entities_for_context() RAG 实体上下文测试"""
+
+    def _make_gq(self, db):
+        from kb.query.graph_query import GraphQuery
+        mock_storage = MagicMock()
+        mock_storage.conn = db
+        return GraphQuery(storage=mock_storage)
+
+    def test_returns_entities_for_documents(self, db_with_knowledge):
+        """返回指定文档关联的实体"""
+        db = db_with_knowledge
+        eid = _insert_entity(db, "PyTorch", "tool")
+        db.execute(
+            "INSERT INTO entity_mentions (entity_id, knowledge_id, context) VALUES (?, ?, ?)",
+            (eid, 1, "PyTorch 深度学习框架"),
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        result = gq.get_entities_for_context(["1"])
+        assert len(result) == 1
+        assert result[0]["name"] == "pytorch"
+        assert result[0]["display_name"] == "PyTorch"
+
+    def test_deduplicates_by_entity_id(self, db_with_knowledge):
+        """同一实体出现在多个文档中时去重"""
+        db = db_with_knowledge
+        eid = _insert_entity(db, "CUDA", "tool")
+        db.execute(
+            "INSERT INTO entity_mentions (entity_id, knowledge_id, context) VALUES (?, ?, ?)",
+            (eid, 1, "ctx1"),
+        )
+        db.execute(
+            "INSERT INTO entity_mentions (entity_id, knowledge_id, context) VALUES (?, ?, ?)",
+            (eid, 2, "ctx2"),
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        result = gq.get_entities_for_context(["1", "2"])
+        assert len(result) == 1
+
+    def test_sorts_by_frequency_across_documents(self, db_with_knowledge):
+        """按跨文档出现频率降序排列"""
+        db = db_with_knowledge
+        common_id = _insert_entity(db, "Common", "concept")
+        rare_id = _insert_entity(db, "Rare", "concept")
+
+        # Common 出现在两个文档，Rare 只出现在一个
+        for kid in [1, 2]:
+            db.execute(
+                "INSERT INTO entity_mentions (entity_id, knowledge_id, context) VALUES (?, ?, ?)",
+                (common_id, kid, "ctx"),
+            )
+        db.execute(
+            "INSERT INTO entity_mentions (entity_id, knowledge_id, context) VALUES (?, ?, ?)",
+            (rare_id, 1, "ctx"),
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        result = gq.get_entities_for_context(["1", "2"])
+        assert result[0]["name"] == "common"
+        assert result[0]["frequency"] == 2
+        assert result[1]["name"] == "rare"
+        assert result[1]["frequency"] == 1
+
+    def test_respects_max_entities_limit(self, db_with_knowledge):
+        """遵守 max_entities 参数限制"""
+        db = db_with_knowledge
+        for i in range(10):
+            eid = _insert_entity(db, f"Entity{i}", "concept")
+            db.execute(
+                "INSERT INTO entity_mentions (entity_id, knowledge_id, context) VALUES (?, ?, ?)",
+                (eid, 1, "ctx"),
+            )
+        db.commit()
+        gq = self._make_gq(db)
+
+        result = gq.get_entities_for_context(["1"], max_entities=5)
+        assert len(result) == 5
+
+    def test_empty_document_ids_returns_empty(self, db_with_knowledge):
+        """空文档列表返回空结果"""
+        gq = self._make_gq(db_with_knowledge)
+        result = gq.get_entities_for_context([])
+        assert result == []
+
+    def test_includes_1hop_relations(self, db_with_knowledge):
+        """包含实体的一跳关系"""
+        db = db_with_knowledge
+        pytorch_id = _insert_entity(db, "PyTorch", "tool")
+        cuda_id = _insert_entity(db, "CUDA", "tool")
+        _insert_relation(db, pytorch_id, cuda_id, "uses")
+        db.execute(
+            "INSERT INTO entity_mentions (entity_id, knowledge_id, context) VALUES (?, ?, ?)",
+            (pytorch_id, 1, "uses CUDA"),
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        result = gq.get_entities_for_context(["1"])
+        assert "relations" in result[0]
+        rels = result[0]["relations"]
+        assert len(rels) == 1
+        assert rels[0]["relation_type"] == "uses"
+        assert rels[0]["related_entity"]["name"] == "cuda"
+
+    def test_collects_mentions_from_all_docs(self, db_with_knowledge):
+        """收集来自所有文档的 mention context"""
+        db = db_with_knowledge
+        eid = _insert_entity(db, "PyTorch", "tool")
+        db.execute(
+            "INSERT INTO entity_mentions (entity_id, knowledge_id, context) VALUES (?, ?, ?)",
+            (eid, 1, "mention from doc1"),
+        )
+        db.execute(
+            "INSERT INTO entity_mentions (entity_id, knowledge_id, context) VALUES (?, ?, ?)",
+            (eid, 2, "mention from doc2"),
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        result = gq.get_entities_for_context(["1", "2"])
+        assert len(result[0]["mentions"]) == 2
+        assert "mention from doc1" in result[0]["mentions"]
+        assert "mention from doc2" in result[0]["mentions"]
+
+
+# ─────────────────────────────────────────────
+# Section 12: GraphQuery.get_related_documents() 测试
+# ─────────────────────────────────────────────
+
+class TestGraphQueryRelatedDocuments:
+    """get_related_documents() 文档关联查询测试"""
+
+    def _make_gq(self, db):
+        from kb.query.graph_query import GraphQuery
+        mock_storage = MagicMock()
+        mock_storage.conn = db
+        return GraphQuery(storage=mock_storage)
+
+    def test_returns_related_documents(self, db_with_knowledge):
+        """返回与指定文档相关的其他文档"""
+        db = db_with_knowledge
+        db.execute(
+            "INSERT INTO document_relations (source_knowledge_id, target_knowledge_id, relation_type, score) "
+            "VALUES (?, ?, ?, ?)",
+            ("1", "2", "embedding_similarity", 0.95),
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        results = gq.get_related_documents("1")
+        assert len(results) == 1
+        assert results[0]["knowledge_id"] == "2"
+
+    def test_includes_reverse_direction(self, db_with_knowledge):
+        """也查找反向关系（target→source）"""
+        db = db_with_knowledge
+        db.execute(
+            "INSERT INTO document_relations (source_knowledge_id, target_knowledge_id, relation_type, score) "
+            "VALUES (?, ?, ?, ?)",
+            ("2", "1", "shared_entity", 0.80),
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        results = gq.get_related_documents("1")
+        assert len(results) == 1
+        assert results[0]["knowledge_id"] == "2"
+
+    def test_filters_by_relation_type(self, db_with_knowledge):
+        """按 relation_type 过滤"""
+        db = db_with_knowledge
+        db.execute(
+            "INSERT INTO document_relations (source_knowledge_id, target_knowledge_id, relation_type, score) "
+            "VALUES (?, ?, ?, ?)",
+            ("1", "2", "embedding_similarity", 0.95),
+        )
+        db.execute(
+            "INSERT INTO document_relations (source_knowledge_id, target_knowledge_id, relation_type, score) "
+            "VALUES (?, ?, ?, ?)",
+            ("1", "3", "shared_entity", 0.70),
+        )
+        # 也插入 doc3
+        db.execute(
+            "INSERT INTO knowledge (id, title, content) VALUES (3, 'Doc Three', 'content')"
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        results = gq.get_related_documents("1", relation_type="shared_entity")
+        assert len(results) == 1
+        assert results[0]["relation_type"] == "shared_entity"
+
+    def test_adds_human_readable_reason(self, db_with_knowledge):
+        """为每种 relation_type 添加中文 reason"""
+        db = db_with_knowledge
+        db.execute(
+            "INSERT INTO document_relations (source_knowledge_id, target_knowledge_id, relation_type, score) "
+            "VALUES (?, ?, ?, ?)",
+            ("1", "2", "embedding_similarity", 0.95),
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        results = gq.get_related_documents("1")
+        assert results[0]["reason"] == "内容高度相似"
+
+    def test_shared_entity_reason(self, db_with_knowledge):
+        """shared_entity 类型返回 '共享相关实体' reason"""
+        db = db_with_knowledge
+        db.execute(
+            "INSERT INTO document_relations (source_knowledge_id, target_knowledge_id, relation_type, score) "
+            "VALUES (?, ?, ?, ?)",
+            ("1", "2", "shared_entity", 0.80),
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        results = gq.get_related_documents("1")
+        assert results[0]["reason"] == "共享相关实体"
+
+    def test_respects_limit(self, db_with_knowledge):
+        """遵守 limit 参数"""
+        db = db_with_knowledge
+        for i in range(5):
+            kid = str(i + 3)
+            db.execute(
+                "INSERT INTO knowledge (id, title, content) VALUES (?, ?, ?)",
+                (kid, f"Doc {kid}", "content"),
+            )
+            db.execute(
+                "INSERT INTO document_relations (source_knowledge_id, target_knowledge_id, relation_type, score) "
+                "VALUES (?, ?, ?, ?)",
+                ("1", kid, "embedding_similarity", 0.5 + i * 0.1),
+            )
+        db.commit()
+        gq = self._make_gq(db)
+
+        results = gq.get_related_documents("1", limit=3)
+        assert len(results) == 3
+
+    def test_no_related_docs_returns_empty(self, db_with_knowledge):
+        """无关联文档时返回空列表"""
+        gq = self._make_gq(db_with_knowledge)
+        results = gq.get_related_documents("1")
+        assert results == []
+
+    def test_orders_by_score_desc(self, db_with_knowledge):
+        """按 score 降序排列"""
+        db = db_with_knowledge
+        db.execute(
+            "INSERT INTO knowledge (id, title, content) VALUES (3, 'Doc3', 'c')"
+        )
+        db.execute(
+            "INSERT INTO document_relations (source_knowledge_id, target_knowledge_id, relation_type, score) "
+            "VALUES (?, ?, ?, ?)",
+            ("1", "2", "embedding_similarity", 0.60),
+        )
+        db.execute(
+            "INSERT INTO document_relations (source_knowledge_id, target_knowledge_id, relation_type, score) "
+            "VALUES (?, ?, ?, ?)",
+            ("1", "3", "embedding_similarity", 0.90),
+        )
+        db.commit()
+        gq = self._make_gq(db)
+
+        results = gq.get_related_documents("1")
+        assert len(results) == 2
+        assert results[0]["score"] >= results[1]["score"]
