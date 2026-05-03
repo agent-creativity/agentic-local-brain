@@ -77,7 +77,12 @@ class RAGQuery:
 
         self.top_k = rag_config.get("top_k", 5)
         self.temperature = rag_config.get("temperature", 0.3)
-        self.max_tokens = rag_config.get("max_tokens", 1000)
+        raw_max_tokens = rag_config.get("max_tokens", 1000)
+        self.max_tokens = min(raw_max_tokens, 8192)
+        if raw_max_tokens > 8192:
+            logger.warning(
+                f"[配置] max_tokens={raw_max_tokens} 超过上限，已截断为 {self.max_tokens}"
+            )
         self.system_prompt = rag_config.get(
             "system_prompt", DEFAULT_SYSTEM_PROMPT
         )
@@ -252,7 +257,7 @@ class RAGQuery:
         except ValueError:
             raise
         except Exception as e:
-            logger.error(f"RAG query failed: {e}")
+            logger.warning(f"RAG query failed: {e}")
             raise Exception(f"RAG query failed: {e}")
 
     def _build_context(self, results: List[SearchResult]) -> str:
@@ -397,7 +402,14 @@ class RAGQuery:
             try:
                 return self.query(question, tags, top_k)
             except Exception as e:
-                logger.warning(f"RAG query failed: {e}. Trying semantic search fallback.")
+                logger.warning(
+                    f"[降级] RAG LLM 生成失败: {e}，降级到纯语义搜索模式（无 AI 总结）"
+                )
+        else:
+            logger.warning(
+                f"[降级] LLM 不可用 (llm_available=False)，跳过 AI 总结，"
+                f"将返回文档列表: question='{question[:80]}'"
+            )
 
         # Level 2: Semantic search only (no LLM answer generation)
         if self.semantic_search is not None:
@@ -405,6 +417,10 @@ class RAGQuery:
                 search_results = self.semantic_search.search(question, tags, effective_top_k)
                 had_any_search = True
                 if search_results:
+                    logger.warning(
+                        f"[降级] LLM 不可用，返回文档列表而非 AI 总结: "
+                        f"question='{question[:80]}', sources={len(search_results)}"
+                    )
                     context = self._build_context(search_results)
                     return RAGResult(
                         answer=f"[LLM unavailable] Found {len(search_results)} relevant documents. "
@@ -415,7 +431,9 @@ class RAGQuery:
                     )
             except Exception as e:
                 semantic_error = e
-                logger.warning(f"Semantic search fallback failed: {e}. Trying keyword search.")
+                logger.warning(
+                    f"[降级] 语义搜索失败: {e}，尝试关键词搜索降级"
+                )
 
         # Level 3: Keyword search only
         try:
@@ -424,6 +442,10 @@ class RAGQuery:
             search_results = kw_search.search(keywords=question, limit=effective_top_k)
             had_any_search = True
             if search_results:
+                logger.warning(
+                    f"[降级] 语义搜索+LLM 均失败，返回关键词搜索结果而非 AI 总结: "
+                    f"question='{question[:80]}', sources={len(search_results)}"
+                )
                 return RAGResult(
                     answer=f"[LLM and semantic search unavailable] Found {len(search_results)} "
                            f"documents via keyword search.",
@@ -433,7 +455,7 @@ class RAGQuery:
                 )
         except Exception as e:
             keyword_error = e
-            logger.warning(f"Keyword search fallback failed: {e}")
+            logger.warning(f"[降级] 关键词搜索也失败: {e}")
 
         # Searches ran but found nothing
         if had_any_search and semantic_error is None and keyword_error is None:
@@ -471,7 +493,7 @@ class RAGQuery:
                 "search_stats": search_stats,
             }
         except Exception as e:
-            logger.error(f"Failed to get stats: {e}")
+            logger.warning(f"Failed to get stats: {e}")
             return {
                 "llm_provider": self.llm_provider,
                 "model": self.model,

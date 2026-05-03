@@ -146,7 +146,12 @@ class RetrievalPipeline:
         # Get RAG config for LLM generation
         rag_config = config.get("query", {}).get("rag", {})
         self.temperature = rag_config.get("temperature", 0.3)
-        self.max_tokens = rag_config.get("max_tokens", 1000)
+        raw_max_tokens = rag_config.get("max_tokens", 1000)
+        self.max_tokens = min(raw_max_tokens, 8192)
+        if raw_max_tokens > 8192:
+            logger.warning(
+                f"[配置] max_tokens={raw_max_tokens} 超过上限，已截断为 {self.max_tokens}"
+            )
         self.system_prompt = rag_config.get("system_prompt", DEFAULT_SYSTEM_PROMPT)
         
         # LLM configuration
@@ -937,12 +942,15 @@ class RetrievalPipeline:
 
         # If LLM is not available, return a fallback response
         if not self.llm_available or litellm is None:
-            logger.warning("LLM not available, returning fallback response")
+            logger.warning(
+                f"[降级] LLM 不可用，返回文档列表而非 AI 总结: "
+                f"question='{question[:80]}', chunks={len(context.chunks)}"
+            )
             source_titles = []
             for chunk in context.chunks[:5]:
                 title = chunk.metadata.get("title", chunk.source) if chunk.metadata else chunk.source
                 source_titles.append(title)
-            
+
             fallback = "Based on the retrieved sources, here are the relevant documents:\n\n"
             for i, title in enumerate(source_titles, 1):
                 fallback += f"{i}. {title}\n"
@@ -1031,7 +1039,10 @@ Please answer the question based on the above context."""
             return answer, confidence
 
         except Exception as e:
-            logger.error(f"LLM generation failed: {e}")
+            logger.error(
+                f"[降级] LLM 生成回答失败: {e}，返回文档列表而非 AI 总结: "
+                f"question='{question[:80]}', chunks={len(context.chunks)}"
+            )
 
             # Graceful degradation: return source list
             source_titles = []
