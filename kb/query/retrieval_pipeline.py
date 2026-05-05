@@ -337,6 +337,7 @@ class RetrievalPipeline:
             stages_fired.append("context_building")
 
             # Stage 6: Answer Generation (with conversation history)
+            options["stages_fired"] = stages_fired
             answer, confidence = self._generate_answer(
                 question=question,
                 context=retrieval_context,
