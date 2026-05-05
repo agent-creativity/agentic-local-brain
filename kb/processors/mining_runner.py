@@ -306,6 +306,13 @@ def run_mining(
     except Exception:
         pass
 
+    # Invalidate pipeline result cache since underlying data has changed
+    try:
+        from kb.query.retrieval_pipeline import invalidate_pipeline_cache
+        invalidate_pipeline_cache()
+    except Exception:
+        pass
+
     with _run_lock:
         _run_state["running"] = False
         _run_state["current_step"] = None

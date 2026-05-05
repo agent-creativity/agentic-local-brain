@@ -118,5 +118,12 @@ def _mine_document(
             except Exception:
                 pass
 
+            # Invalidate pipeline result cache since underlying data has changed
+            try:
+                from kb.query.retrieval_pipeline import invalidate_pipeline_cache
+                invalidate_pipeline_cache()
+            except Exception:
+                pass
+
         except Exception as e:
             logger.error(f"[mine] Unexpected error mining {knowledge_id[:8]}: {e}")

@@ -46,6 +46,20 @@ Please follow these principles:
 4. Synthesize information from multiple sources
 5. Cite sources at the end of your answer"""
 
+# Module-level TTL cache for pipeline results.
+# Avoids redundant LLM calls for identical queries within a short window.
+_pipeline_cache: Dict[str, tuple] = {}
+_PIPELINE_CACHE_TTL = 60
+
+
+def invalidate_pipeline_cache() -> None:
+    """Invalidate all cached pipeline results.
+
+    Called when underlying knowledge base data changes.
+    """
+    _pipeline_cache.clear()
+    logger.debug("Pipeline result cache invalidated")
+
 
 class RetrievalPipeline:
     """
@@ -243,6 +257,21 @@ class RetrievalPipeline:
 
         effective_top_k = top_k or self.default_top_k
         options = options or {}
+
+        # --- Cache lookup (skip for multi-turn conversations) ---
+        use_cache = not session_id and not conversation_context
+        cache_key = ""
+        if use_cache:
+            tags_key = tuple(sorted(tags)) if tags else ()
+            cache_key = f"pipeline:{question}:{tags_key}:{effective_top_k}"
+            entry = _pipeline_cache.get(cache_key)
+            if entry is not None:
+                cached_result, expires_at = entry
+                if time.monotonic() < expires_at:
+                    logger.info(f"Pipeline cache hit for: {question[:50]}...")
+                    return cached_result
+                del _pipeline_cache[cache_key]
+
         pipeline_start = time.time()
 
         logger.info(f"Starting retrieval pipeline for: {question[:50]}...")
@@ -307,6 +336,8 @@ class RetrievalPipeline:
             if not chunks:
                 result = self._empty_result(question, effective_session_id)
                 result.turn_number = history_turns // 2 + 1 if is_new_session else None
+                if use_cache and cache_key:
+                    _pipeline_cache[cache_key] = (result, time.monotonic() + _PIPELINE_CACHE_TTL)
                 return result
 
             # Stage 3: Reranking
@@ -396,6 +427,11 @@ class RetrievalPipeline:
 
             elapsed = time.time() - pipeline_start
             logger.info(f"Pipeline completed in {elapsed*1000:.1f}ms with stages: {stages_fired}")
+
+            # --- Cache store ---
+            if use_cache and cache_key:
+                _pipeline_cache[cache_key] = (result, time.monotonic() + _PIPELINE_CACHE_TTL)
+
             return result
 
         except Exception as e:
