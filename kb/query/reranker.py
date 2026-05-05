@@ -101,7 +101,7 @@ class LLMReranker(BaseReranker):
 
     # LLM parameters for consistent scoring
     LLM_TEMPERATURE = 0.1
-    LLM_MAX_TOKENS = 200
+    LLM_MAX_TOKENS = 512
 
     def __init__(self, config: Dict[str, Any]):
         """
