@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.9] - 2026-05-06
+
+### Added
+- RetrievalPipeline TTL 结果缓存
+- 知识图谱视图缩放功能（统一按钮列、HTML 图例类型筛选）
+- RetrievalPipeline 集成测试
+
+### Fixed
+- LLMReranker max_tokens 从 200 提升至 512
+- max_tokens 上限钳制及降级警告日志
+- 修复 stages_fired 未传递导致置信度计算错误
+- 知识图谱节点/边尺寸使用对数缩放提升可读性
+
+## [0.8.8] - 2026-05-06
+
+### Added
+- `entity_relations` 表索引及图谱查询 TTL 缓存
+- 知识图谱页面布局优化及全屏查看切换按钮
+
+### Changed
+- 文档结构重组（精简 AGENTS.md 并新增 CLAUDE.md）
+- API 更新及知识详情页面布局优化
+
+## [0.8.7] - 2026-05-06
+
+### Fixed
+- 知识图谱节点/边尺寸使用对数缩放提升可读性
+- CSS transform 视图缩放改为真实容器尺寸缩放
+
+### Added
+- 知识图谱放大/缩小按钮
+- 知识图谱视图缩放、统一按钮列、HTML 图例类型筛选
+
 ## [0.8.6] - 2026-04-28
 
 ### Fixed
@@ -113,7 +146,10 @@ See [v0.8.2 Release Notes](docs/releases/v0.8.2/release-notes.md) for details.
 
 ---
 
-[Unreleased]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.6...HEAD
+[Unreleased]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.9...HEAD
+[0.8.9]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.8...v0.8.9
+[0.8.8]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.7...v0.8.8
+[0.8.7]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.6...v0.8.7
 [0.8.6]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.5...v0.8.6
 [0.8.5]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.4...v0.8.5
 [0.8.4]: https://github.com/agent-creativity/agentic-local-brain/compare/v0.8.3...v0.8.4
