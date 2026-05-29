@@ -1,11 +1,11 @@
 """
-文档级 embedding 生成模块
+Document-level embedding generation module
 
-为每篇文档生成一个基于 title + 摘要的文档级 embedding，
-用于跨文档关系发现和主题聚类。
+Generates a document-level embedding based on title + summary for each document, 
+used for cross-document relation discovery and topic clustering.
 
-设计决策：使用 title + 前 500 字内容（而非 chunk embedding 均值），
-语义更集中，且只需一次 embedding 调用。
+Design decision: uses title + first 500 characters (instead of mean of chunk embeddings), 
+which is more semantically focused and requires only one embedding call.
 """
 
 import json
@@ -22,10 +22,10 @@ logger = logging.getLogger(__name__)
 
 class DocEmbeddingService:
     """
-    文档级 embedding 生成服务。
+    Document-level embedding generation service.
 
-    为每篇文档生成基于 title + 摘要的 embedding，存储在 document_embeddings 表。
-    支持增量计算（跳过已有 embedding 的文档）和批量重算。
+    Generates an embedding based on title + summary for each document, stored in the document_embeddings table.
+    Supports incremental computation (skipping documents with existing embeddings) and batch recomputation.
     """
 
     def __init__(
@@ -58,16 +58,16 @@ class DocEmbeddingService:
         conn: Optional[sqlite3.Connection] = None,
     ) -> Optional[List[float]]:
         """
-        为单篇文档生成并存储 embedding。
+        Generate and store embedding for a single document.
 
         Args:
-            knowledge_id: 文档 ID
-            title: 文档标题
-            content: 文档内容
-            conn: SQLite 连接（可选，用于测试）
+            knowledge_id: Document ID.
+            title: Document title.
+            content: Document content.
+            conn: SQLite connection (optional, for testing).
 
         Returns:
-            生成的 embedding 向量，失败返回 None
+            Generated embedding vector, or None on failure.
         """
         text = self._build_embedding_text(title, content)
         if not text.strip():
@@ -92,7 +92,7 @@ class DocEmbeddingService:
         batch_size: int = 10,
     ) -> Dict[str, int]:
         """
-        增量生成：为所有缺少 document embedding 的文档生成 embedding。
+        Incremental generation: generates embeddings for all documents missing document embeddings.
 
         Returns:
             {"processed": int, "skipped": int, "failed": int}
@@ -159,7 +159,7 @@ class DocEmbeddingService:
         batch_size: int = 10,
     ) -> Dict[str, int]:
         """
-        全量重算：为所有文档重新生成 embedding。
+        Full recomputation: regenerates embeddings for all documents.
 
         Returns:
             {"processed": int, "failed": int}

@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 """
-书签收集器模块
+Bookmark collector module
 
-从浏览器书签或 HTML 导出文件中收集书签，
-转换为 Markdown 格式并保存到知识库。
+Collects bookmarks from browser bookmark files or HTML exports,
+converts them to Markdown format and saves to the knowledge base.
 
-支持功能：
-- 解析 Chrome/Edge/Safari/Firefox 浏览器书签
-- 解析 HTML 导出文件（Netscape 格式）
-- 保留书签文件夹结构
-- 并发处理（默认 5 个并发）
-- 增量更新（跳过已收集的书签）
-- 失败重试机制
+Features:
+- Parse Chrome/Edge/Safari/Firefox browser bookmarks
+- Parse HTML export files (Netscape format)
+- Preserve bookmark folder structure
+- Concurrent processing (default 5 workers)
+- Incremental updates (skip already collected bookmarks)
+- Failure retry mechanism
 """
 
 import asyncio
@@ -35,39 +35,39 @@ logger = logging.getLogger(__name__)
 
 class BookmarkCollector(BaseCollector):
     """
-    书签收集器
+    Bookmark collector.
 
-    从浏览器书签或 HTML 导出文件中收集书签，
-    提取 URL 和标题，保留文件夹结构，
-    转换为 Markdown 格式并保存到知识库。
+    Collects bookmarks from browser bookmark files or HTML exports,
+    extracts URLs and titles, preserves folder structure,
+    converts them to Markdown format and saves to the knowledge base.
 
-    处理流程：
-    1. 解析书签源（浏览器或 HTML 文件）
-    2. 提取所有书签项（标题、URL、文件夹路径）
-    3. 生成元数据（包含文件夹层级信息）
-    4. 保存到 ~/.knowledge-base/1_collect/bookmarks/ 目录
+    Processing flow:
+    1. Parse bookmark source (browser or HTML file)
+    2. Extract all bookmark items (title, URL, folder path)
+    3. Generate metadata (including folder hierarchy info)
+    4. Save to ~/.knowledge-base/1_collect/bookmarks/ directory
 
-    支持的书签源：
-    - Chrome: JSON 格式书签文件
-    - Edge: JSON 格式书签文件（与 Chrome 相同）
-    - Firefox: HTML 导出文件
-    - Safari: plist 格式书签文件
-    - 通用: HTML 导出文件（Netscape 格式）
+    Supported bookmark sources:
+    - Chrome: JSON format bookmark file
+    - Edge: JSON format bookmark file (same as Chrome)
+    - Firefox: HTML export file
+    - Safari: plist format bookmark file
+    - Generic: HTML export file (Netscape format)
 
-    示例：
+    Examples:
         >>> collector = BookmarkCollector()
-        >>> # 从 Chrome 收集
+        >>> # Collect from Chrome
         >>> results = collector.collect_from_browser("chrome")
-        >>> # 从 HTML 文件导入
+        >>> # Import from HTML file
         >>> results = collector.collect_from_file("bookmarks.html")
     """
 
-    # 默认配置
-    DEFAULT_MAX_CONCURRENT = 5  # 默认最大并发数
-    DEFAULT_MAX_RETRIES = 3  # 默认最大重试次数
-    DEFAULT_RETRY_DELAY = 1.0  # 默认重试延迟（秒）
+    # Default configuration
+    DEFAULT_MAX_CONCURRENT = 5  # Default max concurrency
+    DEFAULT_MAX_RETRIES = 3  # Default max retries
+    DEFAULT_RETRY_DELAY = 1.0  # Default retry delay (seconds)
 
-    # 支持的浏览器类型
+    # Supported browser types
     SUPPORTED_BROWSERS = {"chrome", "edge", "firefox", "safari"}
 
     def __init__(
@@ -78,13 +78,13 @@ class BookmarkCollector(BaseCollector):
         retry_delay: Optional[float] = None,
     ) -> None:
         """
-        初始化书签收集器
+        Initialize bookmark collector.
 
         Args:
-            output_dir: 输出目录，默认为 ~/.knowledge-base/1_collect/
-            max_concurrent: 最大并发数，默认 5
-            max_retries: 最大重试次数，默认 3
-            retry_delay: 重试延迟（秒），默认 1.0
+            output_dir: Output directory. Defaults to ~/.knowledge-base/1_collect/.
+            max_concurrent: Max concurrency. Defaults to 5.
+            max_retries: Max retries. Defaults to 3.
+            retry_delay: Retry delay in seconds. Defaults to 1.0.
         """
         super().__init__(output_dir)
         self._sub_dir = "bookmarks"
@@ -92,7 +92,7 @@ class BookmarkCollector(BaseCollector):
         self._max_retries = max_retries or self.DEFAULT_MAX_RETRIES
         self._retry_delay = retry_delay or self.DEFAULT_RETRY_DELAY
 
-        # 已收集的 URL 集合（用于增量更新）
+        # Set of collected URLs (for incremental updates)
         self._collected_urls: Set[str] = set()
 
     def collect(
@@ -105,18 +105,18 @@ class BookmarkCollector(BaseCollector):
         **kwargs: Any,
     ) -> CollectResult:
         """
-        收集单个书签（兼容 BaseCollector 接口）
+        Collect a single bookmark (BaseCollector interface).
 
         Args:
-            source: 书签 URL
-            tags: 用户提供的标签列表（可选）
-            title: 自定义标题（可选）
-            skip_existing: 是否跳过已存在的内容（默认 False）
-            storage: SQLiteStorage 实例，用于重复检测（可选）
-            **kwargs: 额外的参数，支持 folder_path 等
+            source: Bookmark URL.
+            tags: User-provided tag list (optional).
+            title: Custom title (optional).
+            skip_existing: Whether to skip existing content (default False).
+            storage: SQLiteStorage instance for duplicate detection (optional).
+            **kwargs: Additional parameters, e.g. folder_path.
 
         Returns:
-            CollectResult: 收集结果
+            CollectResult: Collection result.
         """
         url = str(source).strip()
 
@@ -129,24 +129,24 @@ class BookmarkCollector(BaseCollector):
                     error=f"Duplicate: already collected as '{existing['title']}' (id: {existing['id']})"
                 )
 
-        # 获取文件夹路径
+        # Get folder path
         folder_path = kwargs.get("folder_path", [])
         if isinstance(folder_path, str):
             folder_path = [folder_path]
 
-        # 生成标题
+        # Generate title
         if not title:
             title = self._extract_title_from_url(url)
 
         try:
-            # 生成内容（书签摘要）
+            # Generate content (bookmark summary)
             content = self._generate_bookmark_content(
                 title=title,
                 url=url,
                 folder_path=folder_path,
             )
 
-            # 生成元数据
+            # Generate metadata
             metadata = self._generate_metadata(
                 title=title,
                 content=content,
@@ -156,10 +156,10 @@ class BookmarkCollector(BaseCollector):
                 **{k: v for k, v in kwargs.items() if k != 'folder_path'},
             )
 
-            # 生成安全的文件名
+            # Generate safe filename
             filename = self._generate_safe_filename("bookmark", title)
 
-            # 保存到文件
+            # Save to file
             saved_path = self._save_to_file(
                 content=content,
                 metadata=metadata,
@@ -167,10 +167,10 @@ class BookmarkCollector(BaseCollector):
                 sub_dir=self._sub_dir,
             )
 
-            # 统计字数
+            # Count words
             word_count = self._count_words(content)
 
-            # 生成内容哈希
+            # Generate content hash
             content_hash = self._generate_content_hash(content)
 
             return CollectResult(
@@ -197,22 +197,22 @@ class BookmarkCollector(BaseCollector):
         storage=None,
     ) -> List[CollectResult]:
         """
-        从浏览器收集书签
+        Collect bookmarks from browser.
 
-        自动定位浏览器书签文件并解析。
+        Automatically locates and parses browser bookmark files.
 
         Args:
-            browser: 浏览器类型（chrome/edge/firefox/safari）
-            max_concurrent: 最大并发数，默认使用初始化时的设置
-            skip_existing: 是否跳过已收集的书签，默认 True
-            storage: SQLiteStorage 实例，用于重复检测（可选）
+            browser: Browser type (chrome/edge/firefox/safari).
+            max_concurrent: Max concurrency. Defaults to the value set during initialization.
+            skip_existing: Whether to skip already collected bookmarks. Defaults to True.
+            storage: SQLiteStorage instance for duplicate detection (optional).
 
         Returns:
-            List[CollectResult]: 收集结果列表
+            List[CollectResult]: List of collection results.
 
         Raises:
-            ValueError: 不支持的浏览器类型
-            FileNotFoundError: 未找到浏览器书签文件
+            ValueError: Unsupported browser type.
+            FileNotFoundError: Browser bookmark file not found.
         """
         browser = browser.lower().strip()
 
@@ -222,7 +222,7 @@ class BookmarkCollector(BaseCollector):
                 f"支持的类型: {', '.join(self.SUPPORTED_BROWSERS)}"
             )
 
-        # 定位书签文件
+        # Locate bookmark file
         bookmark_file = self._locate_browser_bookmark(browser)
 
         if not bookmark_file or not bookmark_file.exists():
@@ -231,7 +231,7 @@ class BookmarkCollector(BaseCollector):
                 f"请确保已安装 {browser} 并导出过书签。"
             )
 
-        # 解析书签
+        # Parse bookmarks
         bookmarks = self._parse_browser_bookmarks(browser, bookmark_file)
 
         if not bookmarks:
@@ -242,7 +242,7 @@ class BookmarkCollector(BaseCollector):
                 )
             ]
 
-        # 并发收集书签
+        # Concurrently collect bookmarks
         concurrency = max_concurrent or self._max_concurrent
         return self._collect_bookmarks(
             bookmarks=bookmarks,
@@ -259,27 +259,27 @@ class BookmarkCollector(BaseCollector):
         storage=None,
     ) -> List[CollectResult]:
         """
-        从 HTML 导出文件导入书签
+        Import bookmarks from HTML export file.
 
         Args:
-            html_file: HTML 书签文件路径
-            max_concurrent: 最大并发数，默认使用初始化时的设置
-            skip_existing: 是否跳过已收集的书签，默认 True
-            storage: SQLiteStorage 实例，用于重复检测（可选）
+            html_file: HTML Bookmark file path.
+            max_concurrent: Max concurrency. Defaults to the value set during initialization.
+            skip_existing: Whether to skip already collected bookmarks. Defaults to True.
+            storage: SQLiteStorage instance for duplicate detection (optional).
 
         Returns:
-            List[CollectResult]: 收集结果列表
+            List[CollectResult]: List of collection results.
 
         Raises:
-            FileNotFoundError: 文件不存在
-            ValueError: 文件格式不正确
+            FileNotFoundError: File does not exist.
+            ValueError: Invalid file format.
         """
         html_file = Path(html_file).resolve()
 
         if not html_file.exists():
             raise FileNotFoundError(f"HTML 文件不存在: {html_file}")
 
-        # 解析 HTML 书签
+        # Parse HTML bookmarks
         parser = HTMLBookmarkParser()
         try:
             bookmarks = parser.parse_file(html_file)
@@ -299,7 +299,7 @@ class BookmarkCollector(BaseCollector):
                 )
             ]
 
-        # 并发收集书签
+        # Concurrently collect bookmarks
         concurrency = max_concurrent or self._max_concurrent
         return self._collect_bookmarks(
             bookmarks=bookmarks,
@@ -316,23 +316,23 @@ class BookmarkCollector(BaseCollector):
         storage=None,
     ) -> List[CollectResult]:
         """
-        从 Chrome/Edge JSON 书签文件收集
+        Collect from Chrome/Edge JSON bookmark file.
 
         Args:
-            json_file: Chrome JSON 书签文件路径
-            max_concurrent: 最大并发数
-            skip_existing: 是否跳过已收集的书签
-            storage: SQLiteStorage 实例，用于重复检测（可选）
+            json_file: Chrome JSON Bookmark file path.
+            max_concurrent: Max concurrency.
+            skip_existing: Whether to skip already collected bookmarks.
+            storage: SQLiteStorage instance for duplicate detection (optional).
 
         Returns:
-            List[CollectResult]: 收集结果列表
+            List[CollectResult]: List of collection results.
         """
         json_file = Path(json_file).resolve()
 
         if not json_file.exists():
             raise FileNotFoundError(f"JSON 文件不存在: {json_file}")
 
-        # 解析 Chrome 书签
+        # Parse Chrome bookmarks
         parser = ChromeBookmarkParser()
         bookmarks = parser.parse_file(json_file)
 
@@ -344,7 +344,7 @@ class BookmarkCollector(BaseCollector):
                 )
             ]
 
-        # 并发收集书签
+        # Concurrently collect bookmarks
         concurrency = max_concurrent or self._max_concurrent
         return self._collect_bookmarks(
             bookmarks=bookmarks,
@@ -361,23 +361,23 @@ class BookmarkCollector(BaseCollector):
         storage=None,
     ) -> List[CollectResult]:
         """
-        从 Safari plist 书签文件收集
+        Collect from Safari plist bookmark file.
 
         Args:
-            plist_file: Safari plist 书签文件路径
-            max_concurrent: 最大并发数
-            skip_existing: 是否跳过已收集的书签
-            storage: SQLiteStorage 实例，用于重复检测（可选）
+            plist_file: Safari plist Bookmark file path.
+            max_concurrent: Max concurrency.
+            skip_existing: Whether to skip already collected bookmarks.
+            storage: SQLiteStorage instance for duplicate detection (optional).
 
         Returns:
-            List[CollectResult]: 收集结果列表
+            List[CollectResult]: List of collection results.
         """
         plist_file = Path(plist_file).resolve()
 
         if not plist_file.exists():
             raise FileNotFoundError(f"plist 文件不存在: {plist_file}")
 
-        # 解析 Safari 书签
+        # Parse Safari bookmarks
         parser = SafariBookmarkParser()
         bookmarks = parser.parse_file(plist_file)
 
@@ -389,7 +389,7 @@ class BookmarkCollector(BaseCollector):
                 )
             ]
 
-        # 并发收集书签
+        # Concurrently collect bookmarks
         concurrency = max_concurrent or self._max_concurrent
         return self._collect_bookmarks(
             bookmarks=bookmarks,
@@ -406,18 +406,18 @@ class BookmarkCollector(BaseCollector):
         storage=None,
     ) -> List[CollectResult]:
         """
-        并发收集书签列表
+        Collect bookmark list concurrently.
 
         Args:
-            bookmarks: 书签列表
-            max_concurrent: 最大并发数
-            skip_existing: 是否跳过已收集的书签
-            storage: SQLiteStorage 实例，用于重复检测（可选）
+            bookmarks: Bookmark list.
+            max_concurrent: Max concurrency.
+            skip_existing: Whether to skip already collected bookmarks.
+            storage: SQLiteStorage instance for duplicate detection (optional).
 
         Returns:
-            List[CollectResult]: 收集结果列表
+            List[CollectResult]: List of collection results.
         """
-        # 过滤已收集的书签
+        # Filter already collected bookmarks
         if skip_existing:
             if storage:
                 # Use DB-backed dedup when storage is available
@@ -447,7 +447,7 @@ class BookmarkCollector(BaseCollector):
 
         print(f"开始收集 {len(new_bookmarks)} 个书签（并发数: {max_concurrent}）")
 
-        # 使用异步并发处理
+        # Use async concurrent processing
         loop = asyncio.new_event_loop()
         try:
             results = loop.run_until_complete(
@@ -456,7 +456,7 @@ class BookmarkCollector(BaseCollector):
         finally:
             loop.close()
 
-        # 统计结果
+        # Tally results
         success_count = sum(1 for r in results if r.success)
         failed_count = len(results) - success_count
         print(f"收集完成: 成功 {success_count} 个，失败 {failed_count} 个")
@@ -470,15 +470,15 @@ class BookmarkCollector(BaseCollector):
         storage=None,
     ) -> List[CollectResult]:
         """
-        异步并发收集书签
+        Collect bookmarks asynchronously with concurrency.
 
         Args:
-            bookmarks: 书签列表
-            max_concurrent: 最大并发数
-            storage: SQLiteStorage 实例，用于重复检测（可选）
+            bookmarks: Bookmark list.
+            max_concurrent: Max concurrency.
+            storage: SQLiteStorage instance for duplicate detection (optional).
 
         Returns:
-            List[CollectResult]: 收集结果列表
+            List[CollectResult]: List of collection results.
         """
         semaphore = asyncio.Semaphore(max_concurrent)
         tasks = []
@@ -493,7 +493,7 @@ class BookmarkCollector(BaseCollector):
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        # 处理异常结果
+        # Handle exception results
         final_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
@@ -506,7 +506,7 @@ class BookmarkCollector(BaseCollector):
                 )
             else:
                 final_results.append(result)
-                # 记录已收集的 URL（仅当没有 storage 时使用内存集合）
+                # Record collected URLs (use in-memory set only when no storage)
                 if result.success and bookmarks[i].url and not storage:
                     self._collected_urls.add(bookmarks[i].url)
 
@@ -518,14 +518,14 @@ class BookmarkCollector(BaseCollector):
         storage=None,
     ) -> CollectResult:
         """
-        收集单个书签（带重试机制）
+        Collect a single bookmark with retry mechanism.
 
         Args:
-            bookmark: 书签项
-            storage: SQLiteStorage 实例，用于重复检测（可选）
+            bookmark: Bookmark item.
+            storage: SQLiteStorage instance for duplicate detection (optional).
 
         Returns:
-            CollectResult: 收集结果
+            CollectResult: Collection result.
         """
         last_error = None
 
@@ -547,9 +547,9 @@ class BookmarkCollector(BaseCollector):
             except Exception as e:
                 last_error = str(e)
 
-            # 如果不是最后一次尝试，等待后重试
+            # If not the last attempt, wait and retry
             if attempt < self._max_retries - 1:
-                delay = self._retry_delay * (2 ** attempt)  # 指数退避
+                delay = self._retry_delay * (2 ** attempt)  # Exponential backoff
                 await asyncio.sleep(delay)
 
         return CollectResult(
@@ -565,33 +565,33 @@ class BookmarkCollector(BaseCollector):
         folder_path: List[str],
     ) -> str:
         """
-        生成书签的 Markdown 内容
+        Generate Markdown content for a bookmark.
 
         Args:
-            title: 书签标题
-            url: 书签 URL
-            folder_path: 文件夹路径
+            title: Bookmark title.
+            url: Bookmark URL.
+            folder_path: Folder path.
 
         Returns:
-            str: Markdown 格式的内容
+            str: Content in Markdown format.
         """
         lines = []
 
-        # 标题
+        # Title.
         lines.append(f"# {title}")
         lines.append("")
 
-        # 原始链接
+        # Original link
         lines.append(f"**原始链接:** {url}")
         lines.append("")
 
-        # 文件夹路径
+        # Folder path.
         if folder_path:
             folder_str = " / ".join(folder_path)
             lines.append(f"**分类路径:** {folder_str}")
             lines.append("")
 
-        # 收集说明
+        # Collection note
         lines.append("---")
         lines.append("")
         lines.append("> 此书签由 BookmarkCollector 自动收集")
@@ -609,24 +609,24 @@ class BookmarkCollector(BaseCollector):
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """
-        生成书签元数据
+        Generate bookmark metadata.
 
         Args:
-            title: 文档标题
-            content: 文档内容
-            source: 原始 URL
-            tags: 标签列表
-            folder_path: 文件夹路径
-            **kwargs: 额外的元数据字段
+            title: Document title.
+            content: Document content.
+            source: Original URL.
+            tags: Tag list.
+            folder_path: Folder path.
+            **kwargs: Additional metadata fields.
 
         Returns:
-            Dict[str, Any]: 元数据字典
+            Dict[str, Any]: Metadata dictionary.
         """
-        # 生成唯一 ID
+        # Generate unique ID
         timestamp = datetime.now()
         bookmark_id = f"bookmark_{timestamp.strftime('%Y%m%d_%H%M%S')}"
 
-        # 基础元数据
+        # Base metadata
         metadata = {
             "id": bookmark_id,
             "title": title,
@@ -638,15 +638,15 @@ class BookmarkCollector(BaseCollector):
             "status": "processed",
         }
 
-        # 添加文件夹路径
+        # Add folder path
         if folder_path:
             metadata["folder_path"] = folder_path
 
-        # 添加添加日期
+        # Add added date
         if "added_date" in kwargs and kwargs["added_date"]:
             metadata["added_date"] = kwargs["added_date"]
 
-        # 合并额外的元数据（排除已经处理的字段）
+        # Merge additional metadata (exclude already processed fields)
         extra_kwargs = {k: v for k, v in kwargs.items() if k != "added_date"}
         metadata.update(extra_kwargs)
 
@@ -655,28 +655,28 @@ class BookmarkCollector(BaseCollector):
     @staticmethod
     def _extract_title_from_url(url: str) -> str:
         """
-        从 URL 推断标题
+        Infer title from URL.
 
         Args:
-            url: 网页 URL
+            url: Web page URL.
 
         Returns:
-            str: 推断的标题
+            str: Inferred title.
         """
         from urllib.parse import urlparse
 
         try:
             parsed = urlparse(url)
 
-            # 获取路径最后一段
+            # Get last path segment
             path = parsed.path.rstrip("/")
             if path:
                 last_part = path.split("/")[-1]
-                # 移除文件扩展名
+                # Remove file extension
                 title = last_part.split(".")[0]
-                # 将连字符和下划线替换为空格
+                # Replace hyphens and underscores with spaces
                 title = title.replace("-", " ").replace("_", " ")
-                # 首字母大写
+                # Capitalize first letter
                 return title.title() if title else parsed.netloc
 
             return parsed.netloc
@@ -686,13 +686,13 @@ class BookmarkCollector(BaseCollector):
 
     def _locate_browser_bookmark(self, browser: str) -> Optional[Path]:
         """
-        定位浏览器书签文件
+        Locate browser bookmark file.
 
         Args:
-            browser: 浏览器类型
+            browser: Browser type.
 
         Returns:
-            Optional[Path]: 书签文件路径，未找到返回 None
+            Optional[Path]: Bookmark file path, or None if not found.
         """
         import platform
         from pathlib import Path
@@ -718,8 +718,8 @@ class BookmarkCollector(BaseCollector):
                     return home / ".config" / "microsoft-edge" / "Default" / "Bookmarks"
 
         elif browser == "firefox":
-            # Firefox 使用 HTML 导出，需要用户手动导出
-            # 这里返回 None，提示用户手动指定文件
+            # Firefox uses HTML export, requires user to manually export
+            # Return None here, prompt user to specify file manually
             return None
 
         elif browser == "safari":
@@ -734,14 +734,14 @@ class BookmarkCollector(BaseCollector):
         bookmark_file: Path,
     ) -> List[BookmarkItem]:
         """
-        解析浏览器书签文件
+        Parse browser bookmark file.
 
         Args:
-            browser: 浏览器类型
-            bookmark_file: 书签文件路径
+            browser: Browser type.
+            bookmark_file: Bookmark file path.
 
         Returns:
-            List[BookmarkItem]: 书签列表
+            List[BookmarkItem]: Bookmark list.
         """
         if browser in ("chrome", "edge"):
             parser = ChromeBookmarkParser()
@@ -756,10 +756,10 @@ class BookmarkCollector(BaseCollector):
 
     def _load_collected_urls(self) -> None:
         """
-        加载已收集的书签 URL（用于增量更新）
+        Load collected bookmark URLs (for incremental updates).
 
-        从 output_dir/bookmarks/ 目录扫描已有的书签文件，
-        提取其中的 source URL 并记录。
+        Scans existing bookmark files in the output_dir/bookmarks/ directory,
+        extracts their source URLs and records them.
         """
         self._collected_urls.clear()
 
@@ -767,22 +767,22 @@ class BookmarkCollector(BaseCollector):
         if not bookmark_dir.exists():
             return
 
-        # 扫描所有 .md 文件
+        # Scan all .md files
         for md_file in bookmark_dir.glob("*.md"):
             try:
                 content = md_file.read_text(encoding="utf-8")
-                # 提取 source 字段
+                # Extract source field
                 import re
 
                 match = re.search(r"^source: (.+)$", content, re.MULTILINE)
                 if match:
                     url = match.group(1).strip()
-                    # 移除可能的引号
+                    # Remove possible quotes
                     url = url.strip('"').strip("'")
                     if url:
                         self._collected_urls.add(url)
             except Exception:
-                # 忽略读取失败的文件
+                # Ignore files that fail to read
                 continue
 
         if self._collected_urls:
@@ -790,13 +790,13 @@ class BookmarkCollector(BaseCollector):
 
     def _extract_content(self, source: Any) -> str:
         """
-        从数据源提取纯文本内容（实现 BaseCollector 抽象方法）
+        Extract plain text content (BaseCollector abstract method).
 
         Args:
-            source: 数据源（书签 URL）
+            source: Data source. (Bookmark URL.)
 
         Returns:
-            str: 提取的纯文本内容
+            str: Extracted plain text content.
         """
         url = str(source)
         title = self._extract_title_from_url(url)
@@ -804,10 +804,10 @@ class BookmarkCollector(BaseCollector):
 
     def get_supported_browsers(self) -> List[str]:
         """
-        获取支持的浏览器列表
+        Get list of supported browsers.
 
         Returns:
-            List[str]: 支持的浏览器名称列表
+            List[str]: List of supported browser names.
         """
         return list(self.SUPPORTED_BROWSERS)
 

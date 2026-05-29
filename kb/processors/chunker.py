@@ -1,8 +1,8 @@
 """
-文本分块处理器模块
+Text chunking processor module
 
-将长文本分割为更小的块以便于向量嵌入和检索。
-支持可配置的分块大小、重叠和分隔符。
+Splits long text into smaller chunks for vector embedding and retrieval.
+Supports configurable chunk size, overlap, and separators.
 """
 
 import re
@@ -13,26 +13,26 @@ from kb.processors.base import BaseProcessor, ProcessResult
 
 class Chunker(BaseProcessor):
     """
-    文本分块处理器
+    Text chunking processor.
 
-    将输入文本分割为固定大小的块，支持块之间的重叠。
-    分块策略：
-    1. 首先尝试按段落分隔符分割
-    2. 如果段落仍然过大，按句子分割
-    3. 如果句子仍然过大，按字符数分割
-    4. 合并小段直到达到块大小
-    5. 在连续块之间应用重叠
+    Splits input text into fixed-size chunks with support for overlap between chunks.
+    Chunking strategy.:
+    1. First try splitting by paragraph separator
+    2. If paragraphs are still too large, split by sentence
+    3. If sentences are still too large, split by character count
+    4. Merge small segments until reaching chunk size
+    5. Apply overlap between consecutive chunks
 
-    使用示例：
+    Usage examples:
         >>> from kb.processors.chunker import Chunker
         >>> chunker = Chunker(chunk_size=500, chunk_overlap=50)
-        >>> result = chunker.process("长文本内容...")
+        >>> result = chunker.process("Long text content....")
         >>> if result.success:
         ...     for chunk in result.data:
         ...         print(chunk["content"])
     """
 
-    # 默认句子分隔符（支持中英文）
+    # Default sentence separators (supports Chinese and English)
     SENTENCE_SEPARATORS = [". ", "。", "!\n", "？\n", "!\n", "?\n", "\n"]
 
     def __init__(
@@ -43,13 +43,13 @@ class Chunker(BaseProcessor):
         **kwargs: Any
     ) -> None:
         """
-        初始化文本分块处理器
+        Initialize text chunking processor.
 
         Args:
-            chunk_size: 每个块的最大字符数，默认为 1000
-            chunk_overlap: 连续块之间的重叠字符数，默认为 100
-            separator: 首选的分割分隔符，默认为段落分隔符 "\\n\\n"
-            **kwargs: 额外的配置参数
+            chunk_size: Maximum characters per chunk, defaults to 1000.
+            chunk_overlap: Overlapping characters between consecutive chunks, defaults to 100.
+            separator: Preferred split separator, defaults to paragraph separator "\\n\\n"
+            **kwargs: Additional configuration parameters.
         """
         super().__init__(**kwargs)
         self.chunk_size = chunk_size
@@ -59,13 +59,13 @@ class Chunker(BaseProcessor):
     @classmethod
     def from_config(cls, config: Optional["Config"] = None) -> "Chunker":
         """
-        从配置创建分块处理器实例
+        Create chunker processor instance from configuration.
 
         Args:
-            config: 配置对象，如果为 None 则使用默认配置
+            config: Configuration object; uses default configuration if None.
 
         Returns:
-            Chunker: 分块处理器实例
+            Chunker: Chunker processor instance.
         """
         if config is None:
             from kb.config import Config
@@ -84,29 +84,29 @@ class Chunker(BaseProcessor):
 
     def process(self, data: str, **kwargs: Any) -> ProcessResult:
         """
-        处理文本并分割为块
+        Process text and split into chunks.
 
         Args:
-            data: 待分块的文本内容（字符串）
-            **kwargs: 额外的处理参数
-                - chunk_size: 覆盖默认的块大小
-                - chunk_overlap: 覆盖默认的重叠大小
-                - separator: 覆盖默认的分隔符
+            data: Text content to be chunked (string).
+            **kwargs: Additional processing parameters.
+                - chunk_size: Override default chunk size
+                - chunk_overlap: Override default overlap size
+                - separator: Override default separator
 
         Returns:
-            ProcessResult: 处理结果
-                - success: True 表示处理成功
-                - data: 块列表，每个块包含 content, chunk_index, start_char, end_char
-                - metadata: 包含 total_chunks, chunk_size, chunk_overlap
-                - error: 错误信息（如果失败）
+            ProcessResult: Processing result.
+                - success: True indicates processing succeeded
+                - data: List of chunks, each containing content, chunk_index, start_char, end_char
+                - metadata: Contains total_chunks, chunk_size, chunk_overlap
+                - error: Error message (if failed).
         """
         try:
-            # 允许通过 kwargs 覆盖参数
+            # Allow overriding parameters via kwargs
             chunk_size = kwargs.get("chunk_size", self.chunk_size)
             chunk_overlap = kwargs.get("chunk_overlap", self.chunk_overlap)
             separator = kwargs.get("separator", self.separator)
 
-            # 处理空输入
+            # Handle empty input
             if not data or not data.strip():
                 return ProcessResult(
                     success=True,
@@ -118,7 +118,7 @@ class Chunker(BaseProcessor):
                     }
                 )
 
-            # 执行分块
+            # Execute chunking
             chunks = self._split_text(
                 data,
                 chunk_size=chunk_size,
@@ -151,18 +151,18 @@ class Chunker(BaseProcessor):
         separator: str
     ) -> List[Dict[str, Any]]:
         """
-        核心分块逻辑
+        Core chunking logic.
 
         Args:
-            text: 待分块的文本
-            chunk_size: 块大小
-            chunk_overlap: 重叠大小
-            separator: 分隔符
+            text: Text to be chunked.
+            chunk_size: Chunk size.
+            chunk_overlap: Overlap size.
+            separator: Separator.
 
         Returns:
-            List[Dict]: 块列表
+            List[Dict]: List of chunks.
         """
-        # 如果文本小于等于块大小，直接返回单个块
+        # If text is less than or equal to chunk size, return as single chunk
         if len(text) <= chunk_size:
             return [{
                 "content": text,
@@ -171,71 +171,71 @@ class Chunker(BaseProcessor):
                 "end_char": len(text)
             }]
 
-        # 第一步：按分隔符分割为段落
+        # Step 1: Split into paragraphs by separator
         paragraphs = self._split_by_separator(text, separator)
 
-        # 第二步：处理过大的段落
+        # Step 2: Handle oversized paragraphs
         segments = []
         for para in paragraphs:
             if len(para) <= chunk_size:
                 segments.append(para)
             else:
-                # 段落过大，按句子分割
+                # Paragraph too large, split by sentence
                 sentences = self._split_by_sentences(para)
                 for sent in sentences:
                     if len(sent) <= chunk_size:
                         segments.append(sent)
                     else:
-                        # 句子仍然过大，按字符分割
+                        # Sentence still too large, split by character
                         char_chunks = self._split_by_chars(sent, chunk_size)
                         segments.extend(char_chunks)
 
-        # 第三步：合并小段为块
+        # Step 3: Merge small segments into chunks
         chunks = self._merge_segments(segments, chunk_size, chunk_overlap, text)
 
         return chunks
 
     def _split_by_separator(self, text: str, separator: str) -> List[str]:
         """
-        按分隔符分割文本
+        Split text by separator.
 
         Args:
-            text: 文本内容
-            separator: 分隔符
+            text: Text content.
+            separator: Separator.
 
         Returns:
-            List[str]: 分割后的段落列表
+            List[str]: List of paragraphs after splitting.
         """
         parts = text.split(separator)
-        # 过滤空段落并保留非空部分
+        # Filter empty paragraphs and keep non-empty parts
         return [p for p in parts if p.strip()]
 
     def _split_by_sentences(self, text: str) -> List[str]:
         """
-        按句子分割文本（支持中英文）
+        Split text by sentence (supports Chinese and English).
 
         Args:
-            text: 文本内容
+            text: Text content.
 
         Returns:
-            List[str]: 句子列表
+            List[str]: List of sentences.
         """
-        # 使用正则表达式按句子分隔符分割
-        # 匹配句号、问号、感叹号等后面跟空格或换行
+        # Split by sentence separator using regex
+        # Match period, question mark, exclamation mark, etc. followed by space or newline
         pattern = r'(?<=[.。!！?？])\s*(?=\S)'
         sentences = re.split(pattern, text)
         return [s.strip() for s in sentences if s.strip()]
 
     def _split_by_chars(self, text: str, chunk_size: int) -> List[str]:
         """
-        按字符数分割文本
+        Split text by character count.
 
         Args:
-            text: 文本内容
-            chunk_size: 块大小
+            text: Text content.
+            chunk_size: Chunk size.
 
         Returns:
-            List[str]: 分割后的文本块
+            List[str]: List of text blocks after splitting.
         """
         chunks = []
         for i in range(0, len(text), chunk_size):
@@ -250,16 +250,16 @@ class Chunker(BaseProcessor):
         original_text: str
     ) -> List[Dict[str, Any]]:
         """
-        合并小段为块，并应用重叠
+        Merge small segments into chunks and apply overlap.
 
         Args:
-            segments: 段落/句子列表
-            chunk_size: 块大小
-            chunk_overlap: 重叠大小
-            original_text: 原始文本（用于计算位置）
+            segments: List of paragraphs/sentences.
+            chunk_size: Chunk size.
+            chunk_overlap: Overlap size.
+            original_text: Original text (for position calculation).
 
         Returns:
-            List[Dict]: 块列表，包含位置信息
+            List[Dict]: List of chunks with position information.
         """
         if not segments:
             return []
@@ -269,22 +269,22 @@ class Chunker(BaseProcessor):
         current_start = 0
 
         for segment in segments:
-            # 检查添加此段是否会超出块大小
+            # Check if adding this segment exceeds chunk size
             if current_chunk:
                 potential = current_chunk + self.separator + segment
             else:
                 potential = segment
 
             if len(potential) <= chunk_size:
-                # 可以添加到当前块
+                # Can add to current chunk
                 current_chunk = potential
             else:
-                # 当前块已满，保存并开始新块
+                # Current chunk is full, save and start new chunk
                 if current_chunk:
-                    # 计算在原文中的位置
+                    # Calculate position in original text
                     start_pos = original_text.find(current_chunk, current_start)
                     if start_pos == -1:
-                        # 如果精确匹配失败，使用近似位置
+                        # If exact match fails, use approximate position
                         start_pos = current_start
                     end_pos = start_pos + len(current_chunk)
 
@@ -295,7 +295,7 @@ class Chunker(BaseProcessor):
                         "end_char": end_pos
                     })
 
-                    # 应用重叠：从当前块末尾取 overlap 字符
+                    # Apply overlap: take overlap chars from current chunk end
                     if chunk_overlap > 0 and len(current_chunk) > chunk_overlap:
                         overlap_text = current_chunk[-chunk_overlap:]
                         current_chunk = overlap_text + self.separator + segment
@@ -306,7 +306,7 @@ class Chunker(BaseProcessor):
                 else:
                     current_chunk = segment
 
-        # 处理最后一个块
+        # Process the last chunk
         if current_chunk:
             start_pos = original_text.find(current_chunk, current_start)
             if start_pos == -1:
@@ -324,19 +324,19 @@ class Chunker(BaseProcessor):
 
     def _count_tokens(self, text: str) -> int:
         """
-        估算文本的 token 数量
+        Estimate the token count of text.
 
-        使用简单的近似方法：字符数除以 4
-        对于中文文本，每个字符约等于 1-2 个 token
-        对于英文文本，每 4 个字符约等于 1 个 token
+        Uses a simple approximation: character count divided by 4.
+        For Chinese text, each character is approximately 1-2 tokens.
+        For English text, approximately every 4 characters equal 1 token.
 
         Args:
-            text: 文本内容
+            text: Text content.
 
         Returns:
-            int: 估算的 token 数量
+            int: Estimated token count.
         """
-        # 简单近似：字符数除以 4
+        # Simple approximation: character count divided by 4
         return len(text) // 4
 
     def process_with_pages(
@@ -345,17 +345,17 @@ class Chunker(BaseProcessor):
         **kwargs: Any
     ) -> ProcessResult:
         """
-        按页分块处理 PDF 文本，保留 page_number 元数据
+        Chunk PDF text by page, preserving page_number metadata.
 
-        对每一页的文本独立分块，每个 chunk 的 metadata 中带有 page_number。
-        当一页文本小于 chunk_size 时，不跨页合并，保持页边界。
+        Chunks each page's text independently, with page_number in each chunk's metadata.
+        When a page's text is smaller than chunk_size, does not merge across pages, preserving page boundaries.
 
         Args:
-            pages: 页列表，每项包含 page_number (int) 和 text (str)
-            **kwargs: 额外的处理参数（chunk_size, chunk_overlap, separator）
+            pages: List of pages, each containing page_number (int) and text (str).
+            **kwargs: Additional processing parameters (chunk_size, chunk_overlap, separator).
 
         Returns:
-            ProcessResult: 处理结果，data 中每个 chunk 包含 page_number 字段
+            ProcessResult: Processing result, each chunk in data contains a page_number field.
         """
         try:
             chunk_size = kwargs.get("chunk_size", self.chunk_size)

@@ -1,14 +1,14 @@
 """
-智能推荐模块
+Intelligent recommendation module
 
-基于阅读历史和文档 embedding 的内容推荐。
-v0.6 简单版：时间衰减加权 embedding 相似推荐。
+Content recommendation based on reading history and document embeddings.
+v0.6 simple version: time-decay weighted embedding similarity recommendation.
 
-算法：
-1. 取最近 N 次阅读的文档 embedding
-2. 计算时间衰减加权均值（越近权重越高）
-3. 在 document embedding 中找最相似的、未访问过的文档
-4. 同主题 cluster 文档额外加分
+Algorithm:
+1. Get document embeddings of the last N reads
+2. Compute time-decay weighted average (more recent = higher weight)
+3. Find the most similar unvisited documents among document embeddings
+4. Bonus for documents in the same topic cluster
 """
 
 import json
@@ -27,9 +27,9 @@ logger = logging.getLogger(__name__)
 
 class RecommendationEngine:
     """
-    智能推荐引擎。
+    Intelligent recommendation engine.
 
-    基于用户最近的阅读历史，推荐相似但未读的文档。
+    Recommends similar but unread documents based on user's recent reading history.
     """
 
     def __init__(
@@ -72,7 +72,7 @@ class RecommendationEngine:
         conn: Optional[sqlite3.Connection] = None,
     ) -> List[Dict[str, Any]]:
         """
-        生成推荐列表。
+        Generate recommendation list.
 
         Returns:
             [{"knowledge_id": str, "title": str, "reason": str, "score": float}]

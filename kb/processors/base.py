@@ -1,7 +1,7 @@
 """
-处理器基类模块
+Base processor module
 
-定义所有处理器的抽象基类，提供统一的接口和数据模型。
+Defines the abstract base class for all processors, providing a unified interface and data models.
 """
 
 from abc import ABC, abstractmethod
@@ -12,13 +12,13 @@ from typing import Any, Dict, List, Optional
 @dataclass
 class ProcessResult:
     """
-    处理结果数据类
+    Processing result data class.
 
     Attributes:
-        success: 是否处理成功
-        data: 处理后的数据
-        metadata: 额外的元数据信息
-        error: 错误信息（如果失败）
+        success: Whether processing was successful.
+        data: Processed data.
+        metadata: Additional metadata.
+        error: Error message (if failed).
     """
 
     success: bool
@@ -34,34 +34,34 @@ class ProcessResult:
 
 class BaseProcessor(ABC):
     """
-    处理器抽象基类
+    Abstract base class for processors.
 
-    所有具体的处理器（标签提取、文本分块、嵌入向量生成等）都应继承此类，
-    实现统一的处理接口。
+    All concrete processors (tag extraction, text chunking, embedding vector generation, etc.) should inherit this class 
+    and implement the unified processing interface.
 
-    子类需要实现的方法：
-        - process: 执行处理操作
+    Methods that subclasses must implement:
+        - process: Execute processing operation.
     """
 
     def __init__(self, **kwargs: Any) -> None:
         """
-        初始化处理器
+        Initialize processor.
 
         Args:
-            **kwargs: 处理器配置参数
+            **kwargs: Processor configuration parameters.
         """
         self.config = kwargs
 
     @abstractmethod
     def process(self, data: Any, **kwargs: Any) -> ProcessResult:
         """
-        执行处理操作
+        Execute processing operation.
 
         Args:
-            data: 待处理的数据
-            **kwargs: 额外的处理参数
+            data: Data to be processed.
+            **kwargs: Additional processing parameters.
 
         Returns:
-            ProcessResult: 处理结果
+            ProcessResult: Processing result.
         """
         pass

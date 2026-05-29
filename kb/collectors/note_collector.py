@@ -1,11 +1,11 @@
 """
-笔记收集器模块
+Note collector module
 
-提供快速笔记收集功能，支持：
-- 快速记录想法和灵感
-- 自动生成标题和唯一 ID
-- 添加标签分类
-- 保存为带 YAML Front Matter 的 Markdown 文件
+Provides quick note collection, supporting:
+- Quickly recording ideas and inspirations
+- Automatically generating title and unique ID
+- Adding tag classification
+- Saving as Markdown files with YAML Front Matter
 """
 
 import random
@@ -19,18 +19,18 @@ from kb.collectors.base import BaseCollector, CollectResult
 
 class NoteCollector(BaseCollector):
     """
-    笔记收集器
+    Note collector.
 
-    用于快速收集用户的笔记、想法和灵感。笔记会被保存为 Markdown 文件，
-    包含 YAML Front Matter 元数据。
+    Used for quickly collecting user notes, ideas, and inspirations. Notes are saved as Markdown files 
+    with YAML Front Matter metadata.
 
-    特性：
-    - 自动生成标题（基于内容前 20 个字符）
-    - 生成唯一的笔记 ID（格式：note_YYYYMMDD_HHMMSS_XXX）
-    - 支持自定义标签
-    - 保存到 1_collect/notes/ 目录
+    Features:
+    - Auto-generate title (based on first 20 characters of content)
+    - Generate unique note ID (format: note_YYYYMMDD_HHMMSS_XXX)
+    - Support custom tags
+    - Save to 1_collect/notes/ directory
 
-    使用示例：
+    Usage examples:
         >>> collector = NoteCollector()
         >>> result = collector.collect(
         ...     text="考虑使用混合检索(向量 + BM25)来提高召回率",
@@ -43,14 +43,14 @@ class NoteCollector(BaseCollector):
 
     def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
         """
-        初始化笔记收集器
+        Initialize note collector.
 
         Args:
-            config: 配置字典，可选。支持以下配置项：
-                - output_dir: 输出目录路径，默认为 ~/.knowledge-base/1_collect/
-                - auto_title_length: 自动生成标题时使用的字符数（默认 20）
+            config: Configuration dictionary, optional. Supports the following config items:
+                - output_dir: Output directory path, defaults to ~/.knowledge-base/1_collect/
+                - auto_title_length: Number of characters used for auto-generated title (default 20)
         """
-        # 从配置中获取输出目录
+        # Get output directory from configuration
         output_dir = None
         if config and "output_dir" in config:
             output_dir = Path(config["output_dir"])
@@ -71,23 +71,23 @@ class NoteCollector(BaseCollector):
         **kwargs: Any
     ) -> CollectResult:
         """
-        收集笔记
+        Collect note.
 
         Args:
-            text: 笔记内容
-            title: 笔记标题（可选，如果未提供则自动生成）
-            tags: 标签列表（可选）
-            skip_existing: 是否跳过已存在的内容（默认 False）
-            storage: SQLiteStorage 实例，用于重复检测（可选）
-            **kwargs: 额外的参数
+            text: Note content.
+            title: Note title (optional, auto-generated if not provided).
+            tags: Tag list (optional).
+            skip_existing: Whether to skip existing content (default False).
+            storage: SQLiteStorage instance for duplicate detection (optional).
+            **kwargs: Additional parameters.
 
         Returns:
-            CollectResult: 收集结果
+            CollectResult: Collection result.
 
         Raises:
-            ValueError: 当笔记内容为空时
+            ValueError: When note content is empty.
         """
-        # 验证内容
+        # Validate content
         if not text or not text.strip():
             return CollectResult(
                 success=False,
@@ -108,14 +108,14 @@ class NoteCollector(BaseCollector):
                 )
 
         try:
-            # 如果没有提供标题，自动生成
+            # If no title provided, auto-generate
             if not title:
                 title = self._generate_title(content)
 
-            # 生成唯一 ID
+            # Generate unique ID
             note_id = self._generate_note_id()
 
-            # 生成元数据
+            # Generate metadata
             metadata = self._generate_metadata(
                 title=title,
                 content=content,
@@ -125,10 +125,10 @@ class NoteCollector(BaseCollector):
                 **kwargs
             )
 
-            # 生成文件名
+            # Generate filename
             filename = self._generate_filename(note_id, title)
 
-            # 保存到文件
+            # Save to file
             saved_path = self._save_to_file(
                 content=content,
                 metadata=metadata,
@@ -136,10 +136,10 @@ class NoteCollector(BaseCollector):
                 sub_dir=self._sub_dir
             )
 
-            # 统计字数
+            # Count words
             word_count = self._count_words(content)
 
-            # 生成内容哈希
+            # Generate content hash
             content_hash = self._generate_content_hash(content)
 
             return CollectResult(
@@ -160,15 +160,15 @@ class NoteCollector(BaseCollector):
 
     def _extract_content(self, source: Any) -> str:
         """
-        从数据源提取纯文本内容
+        Extract plain text content from the data source.
 
-        对于笔记收集器，source 就是文本内容本身。
+        For note collector, source is the text content itself.
 
         Args:
-            source: 文本内容
+            source: Text content.
 
         Returns:
-            str: 提取的纯文本内容
+            str: Extracted plain text content.
         """
         if isinstance(source, str):
             return source.strip()
@@ -184,18 +184,18 @@ class NoteCollector(BaseCollector):
         **kwargs: Any
     ) -> Dict[str, Any]:
         """
-        生成笔记元数据
+        Generate note metadata.
 
         Args:
-            title: 笔记标题
-            content: 笔记内容
-            source: 来源标识
-            note_id: 笔记唯一 ID
-            tags: 标签列表
-            **kwargs: 额外的元数据字段
+            title: Note title.
+            content: Note content.
+            source: Source identifier.
+            note_id: Note unique ID.
+            tags: Tag list.
+            **kwargs: Additional metadata fields.
 
         Returns:
-            Dict[str, Any]: 元数据字典
+            Dict[str, Any]: Metadata dictionary.
         """
         timestamp = datetime.now()
 
@@ -209,32 +209,32 @@ class NoteCollector(BaseCollector):
             "status": "processed",
         }
 
-        # 合并额外的元数据
+        # Merge additional metadata
         metadata.update(kwargs)
 
         return metadata
 
     def _generate_title(self, content: str) -> str:
         """
-        根据内容自动生成标题
+        Auto-generate title based on content.
 
-        使用内容的前 N 个字符作为标题（N 由 auto_title_length 配置）。
-        如果内容不足 N 个字符，则使用全部内容。
+        Uses the first N characters of content as title (N configured by auto_title_length).
+        If content has fewer than N characters, uses all content.
 
         Args:
-            content: 笔记内容
+            content: Note content.
 
         Returns:
-            str: 生成的标题
+            str: Generated title.
         """
-        # 获取前 N 个字符
+        # Get first N characters
         title = content[:self._auto_title_length].strip()
 
-        # 如果标题以标点符号结尾，移除它
+        # If title ends with punctuation, remove it
         while title and title[-1] in "，。！？,.!?;；：":
             title = title[:-1]
 
-        # 如果内容为空（理论上不应该发生），返回默认标题
+        # If content is empty (should not happen), return default title
         if not title:
             title = "未命名笔记"
 
@@ -242,41 +242,41 @@ class NoteCollector(BaseCollector):
 
     def _generate_note_id(self) -> str:
         """
-        生成唯一的笔记 ID
+        Generate unique note ID.
 
-        格式：note_YYYYMMDD_HHMMSS_XXX
-        其中 XXX 是 3 位随机数字，用于避免同一秒内生成多个笔记时的冲突。
+        Format: note_YYYYMMDD_HHMMSS_XXX
+        where XXX is a 3-digit random number to avoid conflicts when generating multiple notes within the same second.
 
         Returns:
-            str: 唯一的笔记 ID
+            str: Unique note ID.
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        # 生成 3 位随机数字
+        # Generate 3-digit random number
         suffix = "".join(random.choices(string.digits, k=3))
         return f"note_{timestamp}_{suffix}"
 
     def _generate_filename(self, note_id: str, title: str) -> str:
         """
-        生成笔记文件名
+        Generate note filename.
 
-        使用笔记 ID 和标题的 slug 组合作为文件名。
+        Uses combination of note ID and title slug as filename.
 
         Args:
-            note_id: 笔记唯一 ID
-            title: 笔记标题
+            note_id: Note unique ID.
+            title: Note title.
 
         Returns:
-            str: 文件名（.md 后缀）
+            str: Filename (.md extension).
         """
         import re
         import unicodedata
 
-        # 将标题转换为 slug
+        # Convert title to slug
         slug = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode("ascii")
         slug = slug.lower()
         slug = re.sub(r"[^a-z0-9]+", "-", slug)
         slug = slug.strip("-")
-        slug = slug[:50]  # 限制长度
+        slug = slug[:50]  # Limit length
 
         if slug:
             return f"{note_id}_{slug}.md"

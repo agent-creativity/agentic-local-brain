@@ -1,8 +1,8 @@
 """
-配置管理模块
+Configuration management module
 
-负责读取、解析和管理知识库配置文件。
-支持环境变量替换和默认配置。
+Reads, parses, and manages knowledge base configuration files.
+Supports environment variable substitution and default configuration.
 """
 
 import logging
@@ -16,7 +16,7 @@ import yaml
 logger = logging.getLogger(__name__)
 
 
-# 默认配置
+# Default configuration
 DEFAULT_CONFIG: Dict[str, Any] = {
     "data_dir": "~/.knowledge-base",
     "update_server_url": "http://localbrain.oss-cn-shanghai.aliyuncs.com",
@@ -110,13 +110,13 @@ DEFAULT_CONFIG: Dict[str, Any] = {
 
 def _expand_env_vars(value: str) -> str:
     """
-    替换字符串中的环境变量引用 ${VAR_NAME}。
+    Replace environment variable references ${VAR_NAME} in a string.
 
     Args:
-        value: 包含环境变量引用的字符串
+        value: String containing environment variable references.
 
     Returns:
-        替换后的字符串
+        String with substitutions applied.
     """
     pattern = r"\$\{(\w+)\}"
 
@@ -129,13 +129,13 @@ def _expand_env_vars(value: str) -> str:
 
 def _expand_env_vars_in_config(config: Any) -> Any:
     """
-    递归替换配置中的所有环境变量引用。
+    Recursively replace all environment variable references in config.
 
     Args:
-        config: 配置对象（字典、列表或基本类型）
+        config: Config object (dict, list, or primitive type).
 
     Returns:
-        替换后的配置对象
+        Config object with substitutions applied.
     """
     if isinstance(config, dict):
         return {k: _expand_env_vars_in_config(v) for k, v in config.items()}
@@ -148,13 +148,13 @@ def _expand_env_vars_in_config(config: Any) -> Any:
 
 def expand_path(path_str: str) -> Path:
     """
-    展开路径字符串，支持 ~ 和环境变量。
+    Expand a path string, supporting ~ and environment variables.
 
     Args:
-        path_str: 路径字符串
+        path_str: Path string.
 
     Returns:
-        展开后的 Path 对象
+        Expanded Path object.
     """
     expanded = os.path.expanduser(path_str)
     expanded = _expand_env_vars(expanded)
@@ -162,14 +162,14 @@ def expand_path(path_str: str) -> Path:
 
 
 class Config:
-    """配置管理器"""
+    """Configuration manager."""
 
     def __init__(self, config_path: Optional[Path] = None):
         """
-        初始化配置管理器。
+        Initialize the configuration manager.
 
         Args:
-            config_path: 配置文件路径，默认为 ~/.knowledge-base/config.yaml
+            config_path: Config file path. Defaults to ~/.knowledge-base/config.yaml.
         """
         if config_path is None:
             config_path = Path.home() / ".localbrain" / "config.yaml"
@@ -178,27 +178,27 @@ class Config:
         self.load()
 
     def load(self) -> None:
-        """从配置文件加载配置"""
-        # 从默认配置开始
+        """Load configuration from file."""
+        # Start from default configuration
         self._config = DEFAULT_CONFIG.copy()
 
-        # 如果配置文件存在，读取并合并
+        # If config file exists, read and merge
         if self._config_path.exists():
             with open(self._config_path, "r", encoding="utf-8") as f:
                 file_config = yaml.safe_load(f)
                 if file_config:
                     self._deep_merge(self._config, file_config)
 
-        # 展开环境变量
+        # Expand environment variables
         self._config = _expand_env_vars_in_config(self._config)
 
     def _deep_merge(self, base: Dict[str, Any], override: Dict[str, Any]) -> None:
         """
-        深度合并两个字典。
+        Deep-merge two dictionaries.
 
         Args:
-            base: 基础字典（会被修改）
-            override: 覆盖字典
+            base: Base dictionary (will be modified in place).
+            override: Override dictionary.
         """
         for key, value in override.items():
             if key in base and isinstance(base[key], dict) and isinstance(value, dict):
@@ -208,14 +208,14 @@ class Config:
 
     def get(self, key: str, default: Any = None) -> Any:
         """
-        获取配置值，支持点号分隔的嵌套键。
+        Get a config value, supporting dot-separated nested keys.
 
         Args:
-            key: 配置键，如 "embedding.model"
-            default: 默认值
+            key: Config key, e.g. "embedding.model".
+            default: Default value.
 
         Returns:
-            配置值
+            Config value.
         """
         keys = key.split(".")
         value = self._config
@@ -228,16 +228,16 @@ class Config:
 
     @property
     def data_dir(self) -> Path:
-        """获取数据目录路径"""
+        """Get the data directory path."""
         return expand_path(self.get("data_dir", DEFAULT_CONFIG["data_dir"]))
 
     @property
     def config_path(self) -> Path:
-        """获取配置文件路径"""
+        """Get the config file path."""
         return self._config_path
 
     def to_dict(self) -> Dict[str, Any]:
-        """返回配置的字典表示"""
+        """Return a dictionary representation of the config."""
         return self._config.copy()
 
     @property
@@ -257,13 +257,13 @@ class Config:
 
     def get_log_dir(self) -> Path:
         """
-        获取日志目录路径。
+        Get the log directory path.
 
-        如果配置中未设置 log_dir，则默认使用 ~/.localbrain/logs/
-        如果目录不存在，会自动创建。
+        If log_dir is not set in config, defaults to ~/.localbrain/logs/
+        Creates the directory if it does not exist.
 
         Returns:
-            日志目录的 Path 对象
+            Path object for the log directory.
         """
         log_dir_str = self.get("logging.log_dir", "")
         if not log_dir_str:
@@ -275,15 +275,15 @@ class Config:
 
     def get_log_config(self) -> Dict[str, Any]:
         """
-        获取完整的日志配置字典。
+        Get the full logging configuration dictionary.
 
         Returns:
-            包含日志配置的字典，包括:
-            - log_dir: 日志目录路径（已展开并创建）
-            - level: 日志级别
-            - max_bytes: 单个日志文件最大字节数
-            - backup_count: 保留的备份文件数量
-            - format: 日志格式字符串
+            Dictionary containing log config, including:
+            - log_dir: Log directory path (expanded and created).
+            - level: Log level.
+            - max_bytes: Max bytes per log file.
+            - backup_count: Number of backup files to retain.
+            - format: Log format string.
         """
         return {
             "log_dir": self.get_log_dir(),
@@ -298,10 +298,10 @@ class Config:
 
     def save(self, path: Optional[Path] = None) -> None:
         """
-        保存配置到文件。
+        Save configuration to file.
 
         Args:
-            path: 保存路径，默认使用初始化时的路径
+            path: Save path. Defaults to the path used during initialization.
         """
         save_path = path or self._config_path
         save_path.parent.mkdir(parents=True, exist_ok=True)

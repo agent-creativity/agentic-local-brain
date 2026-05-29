@@ -182,30 +182,30 @@ def _generate_sample_file(output_dir: Path, storage) -> None:
     title = "Knowledge Management Basics"
     content = """# 知识管理基础
 
-知识管理（Knowledge Management, KM）是组织或个人系统化地收集、组织、存储和使用知识的过程。
+知识管理 (Knowledge Management, KM)是组织或个人系统化地收集, 组织, 存储和使用知识的过程.
 
 ## 核心概念
 
 ### 1. 显性知识 vs 隐性知识
 
-- **显性知识**：可以用语言、文字、数字、图表等明确表达的知识
-- **隐性知识**：难以用语言明确表达,通常需要通过实践和经验获得
+- **显性知识**:可以用语言, 文字, 数字, 图表等明确表达的知识
+- **隐性知识**:难以用语言明确表达,通常需要通过实践和经验获得
 
 ### 2. 知识生命周期
 
-1. **获取**：从各种来源收集知识
-2. **组织**：对知识进行分类、标引和结构化
-3. **存储**：将知识保存在适当的媒介中
-4. **分享**：促进知识的传播和交流
-5. **应用**：将知识用于解决问题和决策
-6. **更新**：持续维护和更新知识
+1. **获取**:从各种来源收集知识
+2. **组织**:对知识进行分类, 标引和结构化
+3. **存储**:将知识保存在适当的媒介中
+4. **分享**:促进知识的传播和交流
+5. **应用**:将知识用于解决问题和决策
+6. **更新**:持续维护和更新知识
 
 ### 3. 个人知识管理工具
 
-- **笔记应用**：Obsidian、Notion、Evernote
-- **书签管理**：Raindrop.io、Pocket
-- **文献管理**：Zotero、Mendeley
-- **代码仓库**：GitHub、GitLab
+- **Notes应用**:Obsidian, Notion, Evernote
+- **Bookmarks管理**:Raindrop.io, Pocket
+- **文献管理**:Zotero, Mendeley
+- **代码仓库**:GitHub, GitLab
 
 ## 最佳实践
 
@@ -268,7 +268,7 @@ def _generate_sample_webpage(output_dir: Path, storage) -> None:
     title = "AI Development Overview"
     content = """# 人工智能发展概述
 
-人工智能（Artificial Intelligence, AI）是计算机科学的一个分支，致力于创建能够执行通常需要人类智能才能完成的任务的系统。
+人工智能 (Artificial Intelligence, AI)是计算机科学的一个分支, 致力于创建能够执行通常需要人类智能才能完成的任务的系统.
 
 ## 发展历程
 
@@ -281,26 +281,26 @@ def _generate_sample_webpage(output_dir: Path, storage) -> None:
 - 知识工程兴起
 
 ### 2010s - 深度学习革命
-- 卷积神经网络（CNN）
-- 循环神经网络（RNN）
-- 生成对抗网络（GAN）
+- 卷积神经网络 (CNN)
+- 循环神经网络 (RNN)
+- 生成对抗网络 (GAN)
 
 ### 2020s - 大语言模型时代
 - GPT 系列模型
 - 多模态学习
-- 通用人工智能（AGI）探索
+- 通用人工智能 (AGI)探索
 
 ## 主要应用领域
 
-1. **自然语言处理**：机器翻译、文本生成、情感分析
-2. **计算机视觉**：图像识别、目标检测、视频分析
-3. **语音技术**：语音识别、语音合成
-4. **推荐系统**：个性化推荐、内容分发
-5. **自动驾驶**：感知、决策、控制
+1. **自然语言处理**:机器翻译, 文本生成, 情感分析
+2. **计算机视觉**:图像识别, 目标检测, 视频分析
+3. **语音技术**:语音识别, 语音合成
+4. **推荐系统**:个性化推荐, 内容分发
+5. **自动驾驶**:感知, 决策, 控制
 
 ## 未来趋势
 
-- 可解释 AI（XAI）
+- 可解释 AI (XAI)
 - 联邦学习
 - 边缘 AI
 - AI 伦理与治理
@@ -352,14 +352,14 @@ def _generate_sample_bookmark(output_dir: Path, storage) -> None:
     title = "Python Official Documentation"
     content = """# Python 官方文档
 
-Python 是一种广泛使用的高级编程语言，以其简洁易读的语法而闻名。
+Python 是一种广泛使用的高级编程语言, 以其简洁易读的语法而闻名.
 
 ## 主要特性
 
-- **简洁优雅**：代码可读性强
-- **跨平台**：支持 Windows、macOS、Linux
-- **丰富的库**：标准库和第三方库
-- **广泛应用**：Web 开发、数据科学、人工智能、自动化等
+- **简洁优雅**:代码可读性强
+- **跨平台**:支持 Windows, macOS, Linux
+- **丰富的库**:标准库和第三方库
+- **广泛应用**:Web 开发, 数据科学, 人工智能, 自动化等
 
 ## 学习资源
 
@@ -369,8 +369,8 @@ Python 是一种广泛使用的高级编程语言，以其简洁易读的语法�
 
 ## 版本信息
 
-- Python 3.x：当前主流版本
-- Python 2.x：已于 2020 年停止维护
+- Python 3.x:当前主流版本
+- Python 2.x:已于 2020 年停止维护
 """
     
     timestamp = __import__('datetime').datetime.now()
@@ -608,7 +608,7 @@ content_type: note
 collected_at: {timestamp.isoformat()}
 tags:
   - 机器学习
-  - 学习笔记
+  - 学习Notes
   - 示例数据
 word_count: {len(content.split())}
 status: processed

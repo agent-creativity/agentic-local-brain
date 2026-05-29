@@ -1,12 +1,12 @@
 """
-实体抽取器模块
+Entity extractor module
 
-基于 LLM 的实体和关系抽取，用于构建知识图谱。
-在 processing pipeline 中与 TagExtractor 并行执行。
+LLM-based entity and relation extraction for building knowledge graphs.
+Runs in parallel with TagExtractor in the processing pipeline.
 
-设计原则：
-- extract() 负责 LLM 调用和解析，返回 Python 对象，可独立 mock 测试
-- save() 负责写入 SQLite，可用 in-memory SQLite 测试
+Design principles:
+- extract() handles LLM calls and parsing, returns Python objects, independently mockable
+- save() handles writing to SQLite, testable with in-memory SQLite
 """
 
 import json
@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 
 class EntityExtractor(BaseProcessor):
     """
-    实体和关系抽取处理器。
+    Entity and relation extraction processor.
 
-    从文档标题和内容中抽取实体（人物、概念、工具等）和实体间关系，
-    写入 SQLite 构建知识图谱。
+    Extracts entities (people, concepts, tools, etc.) and entity relations from document title and content, 
+    writing to SQLite to build a knowledge graph.
     """
 
     ENTITY_TYPES = {"person", "concept", "tool", "project", "organization"}
@@ -115,11 +115,11 @@ Return ONLY a JSON object in this exact format, no other text:
 
     def extract(self, title: str, content: str) -> Dict[str, Any]:
         """
-        LLM 抽取实体和关系。
+        Extract entities and relations using LLM.
 
         Args:
-            title: 文档标题
-            content: 文档内容
+            title: Document title.
+            content: Document content.
 
         Returns:
             {"entities": [...], "relations": [...]}
@@ -139,12 +139,12 @@ Return ONLY a JSON object in this exact format, no other text:
 
     def save(self, extracted: Dict[str, Any], knowledge_id: str, conn: Optional[sqlite3.Connection] = None) -> Dict[str, int]:
         """
-        将抽取结果写入 SQLite。
+        Write extraction results to SQLite.
 
         Args:
-            extracted: extract() 的返回值
-            knowledge_id: 关联的知识项 ID
-            conn: SQLite 连接（可选，用于测试注入 in-memory DB）
+            extracted: Return value from extract().
+            knowledge_id: Associated knowledge item ID.
+            conn: SQLite connection (optional, for injecting in-memory DB in tests).
 
         Returns:
             {"entities_saved": int, "relations_saved": int}
@@ -268,13 +268,13 @@ Return ONLY a JSON object in this exact format, no other text:
 
     def process(self, title: str, content: str, knowledge_id: str = None, conn: Optional[sqlite3.Connection] = None, **kwargs: Any) -> ProcessResult:
         """
-        完整流程：extract -> save
+        Complete flow: extract -> save.
 
         Args:
-            title: 文档标题
-            content: 文档内容
-            knowledge_id: 知识项 ID（如果提供则同时保存）
-            conn: SQLite 连接（可选）
+            title: Document title.
+            content: Document content.
+            knowledge_id: Knowledge item ID (if provided, also saves).
+            conn: SQLite connection (optional).
         """
         if not title or not title.strip():
             return ProcessResult(success=False, error="Title cannot be empty")

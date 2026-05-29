@@ -1,13 +1,13 @@
 """
-收集器模块
+Collectors module
 
-负责从各种数据源收集内容，包括：
-- 本地文件
-- 网页 URL
-- 书签
-- 学术论文
-- 邮件
-- 笔记
+Collects content from various data sources, including:
+- Local files
+- Web page URL.
+- Bookmarks
+- Academic papers
+- Emails
+- Notes
 """
 
 from kb.collectors.base import BaseCollector, CollectResult

@@ -1,8 +1,8 @@
 """
-嵌入向量生成器模块
+Embedding vector generator module
 
-基于多种提供者（DashScope、OpenAI 兼容 API）的文本向量化功能。
-支持批量向量化和错误重试机制。
+Text vectorization based on multiple providers (DashScope, OpenAI-compatible API).
+Supports batch vectorization and error retry mechanism.
 """
 
 import logging
@@ -34,22 +34,22 @@ from kb.config import Config
 
 
 class EmbeddingProvider(ABC):
-    """嵌入向量提供者抽象基类"""
+    """Abstract base class for embedding vector providers."""
 
     @abstractmethod
     def embed(self, texts: List[str], **kwargs: Any) -> List[List[float]]:
         """
-        将文本列表转换为向量列表
+        Convert a list of texts to a list of vectors.
 
         Args:
-            texts: 待向量化的文本列表
-            **kwargs: 额外的生成参数
+            texts: List of texts to vectorize.
+            **kwargs: Additional generation parameters.
 
         Returns:
-            List[List[float]]: 向量列表，每个向量是一个浮点数列表
+            List[List[float]]: List of vectors, each vector is a list of floats.
 
         Raises:
-            Exception: API 调用失败或达到最大重试次数
+            Exception: API call failed or max retries reached.
         """
         pass
 
@@ -57,22 +57,22 @@ class EmbeddingProvider(ABC):
     @abstractmethod
     def dimension(self) -> int:
         """
-        获取向量维度
+        Get the vector dimension.
 
         Returns:
-            int: 向量维度
+            int: Vector dimension.
         """
         pass
 
 
 class DashScopeEmbeddingProvider(EmbeddingProvider):
     """
-    DashScope (阿里云百炼) 嵌入向量提供者
+    DashScope (Alibaba Cloud Bailian) embedding vector provider.
 
-    使用 text-embedding-v4 模型进行文本向量化。
+    Uses the text-embedding-v4 model for text vectorization.
     """
 
-    # 默认维度（text-embedding-v4 的维度）
+    # Default dimension (for text-embedding-v4)
     DEFAULT_DIMENSION = 1536
 
     def __init__(
@@ -83,13 +83,13 @@ class DashScopeEmbeddingProvider(EmbeddingProvider):
         **kwargs: Any
     ) -> None:
         """
-        初始化 DashScope 嵌入向量提供者
+        Initialize DashScope embedding vector provider.
 
         Args:
-            api_key: DashScope API 密钥
-            model: 模型名称，默认为 text-embedding-v4
-            dimension: 向量维度，如果不指定则使用模型默认维度
-            **kwargs: 额外的配置参数
+            api_key: DashScope API key.
+            model: Model name, defaults to text-embedding-v4.
+            dimension: Vector dimension; uses model default if not specified.
+            **kwargs: Additional configuration parameters.
         """
         if dashscope is None or TextEmbedding is None:
             raise ImportError(
@@ -107,10 +107,10 @@ class DashScopeEmbeddingProvider(EmbeddingProvider):
     @property
     def dimension(self) -> int:
         """
-        获取向量维度
+        Get the vector dimension.
 
         Returns:
-            int: 向量维度
+            int: Vector dimension.
         """
         return self._dimension
 
@@ -122,20 +122,20 @@ class DashScopeEmbeddingProvider(EmbeddingProvider):
         **kwargs: Any
     ) -> List[List[float]]:
         """
-        调用 DashScope API 生成文本向量
+        Call DashScope API to generate text vectors.
 
         Args:
-            texts: 待向量化的文本列表
-            max_retries: 最大重试次数，默认为 3
-            batch_size: 批量处理大小，默认为 25
-            **kwargs: 额外的生成参数
+            texts: List of texts to vectorize.
+            max_retries: Maximum number of retries, defaults to 3.
+            batch_size: Batch processing size, defaults to 25.
+            **kwargs: Additional generation parameters.
 
         Returns:
-            List[List[float]]: 向量列表
+            List[List[float]]: List of vectors.
 
         Raises:
-            Exception: API 调用失败或达到最大重试次数
-            ValueError: 输入文本列表为空
+            Exception: API call failed or max retries reached.
+            ValueError: Input text list is empty.
         """
         if not texts:
             raise ValueError("Texts list cannot be empty")
@@ -143,7 +143,7 @@ class DashScopeEmbeddingProvider(EmbeddingProvider):
         all_embeddings: List[List[float]] = []
         last_error: Optional[Exception] = None
 
-        # 分批处理
+        # Process in batches
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
             batch_embeddings = self._embed_batch(
@@ -160,18 +160,18 @@ class DashScopeEmbeddingProvider(EmbeddingProvider):
         **kwargs: Any
     ) -> List[List[float]]:
         """
-        处理单个批次的向量化
+        Process a single batch of vectorization.
 
         Args:
-            texts: 批次文本列表
-            max_retries: 最大重试次数
-            **kwargs: 额外的生成参数
+            texts: Batch text list.
+            max_retries: Maximum number of retries.
+            **kwargs: Additional generation parameters.
 
         Returns:
-            List[List[float]]: 批次向量列表
+            List[List[float]]: Batch vector list.
 
         Raises:
-            Exception: API 调用失败
+            Exception: API call failed.
         """
         for attempt in range(max_retries):
             try:
@@ -194,7 +194,7 @@ class DashScopeEmbeddingProvider(EmbeddingProvider):
             except Exception as e:
                 last_error = e
 
-            # 指数退避重试
+            # Exponential backoff retry
             if attempt < max_retries - 1:
                 wait_time = (2 ** attempt) * 1
                 time.sleep(wait_time)
@@ -206,9 +206,9 @@ class DashScopeEmbeddingProvider(EmbeddingProvider):
 
 class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
     """
-    OpenAI 兼容 API 嵌入向量提供者
+    OpenAI-compatible API embedding vector provider.
 
-    支持任何兼容 OpenAI API 格式的服务（如 vLLM、Ollama 等）。
+    Supports any service compatible with the OpenAI API format (e.g., vLLM, Ollama).
     """
 
     def __init__(
@@ -220,14 +220,14 @@ class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
         **kwargs: Any
     ) -> None:
         """
-        初始化 OpenAI 兼容嵌入向量提供者
+        Initialize OpenAI-compatible embedding vector provider.
 
         Args:
-            api_key: API 密钥
-            base_url: API 基础 URL
-            model: 模型名称
-            dimension: 向量维度，如果不指定则通过 API 获取
-            **kwargs: 额外的配置参数
+            api_key: API key.
+            base_url: API base URL.
+            model: Model name.
+            dimension: Vector dimension; obtained via API if not specified.
+            **kwargs: Additional configuration parameters.
         """
         if OpenAI is None:
             raise ImportError(
@@ -247,10 +247,10 @@ class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
     @property
     def dimension(self) -> int:
         """
-        获取向量维度
+        Get the vector dimension.
 
         Returns:
-            int: 向量维度
+            int: Vector dimension.
         """
         return self._dimension or 0
 
@@ -262,20 +262,20 @@ class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
         **kwargs: Any
     ) -> List[List[float]]:
         """
-        调用 OpenAI 兼容 API 生成文本向量
+        Call OpenAI-compatible API to generate text vectors.
 
         Args:
-            texts: 待向量化的文本列表
-            max_retries: 最大重试次数，默认为 3
-            batch_size: 批量处理大小，默认为 25
-            **kwargs: 额外的生成参数
+            texts: List of texts to vectorize.
+            max_retries: Maximum number of retries, defaults to 3.
+            batch_size: Batch processing size, defaults to 25.
+            **kwargs: Additional generation parameters.
 
         Returns:
-            List[List[float]]: 向量列表
+            List[List[float]]: List of vectors.
 
         Raises:
-            Exception: API 调用失败或达到最大重试次数
-            ValueError: 输入文本列表为空
+            Exception: API call failed or max retries reached.
+            ValueError: Input text list is empty.
         """
         if not texts:
             raise ValueError("Texts list cannot be empty")
@@ -283,7 +283,7 @@ class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
         all_embeddings: List[List[float]] = []
         last_error: Optional[Exception] = None
 
-        # 分批处理
+        # Process in batches
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
             try:
@@ -293,7 +293,7 @@ class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
                 all_embeddings.extend(batch_embeddings)
             except Exception as e:
                 last_error = e
-                # 如果是最后一批，则抛出异常
+                # If this is the last batch, raise the exception
                 if i + batch_size >= len(texts):
                     raise last_error
 
@@ -306,18 +306,18 @@ class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
         **kwargs: Any
     ) -> List[List[float]]:
         """
-        处理单个批次的向量化
+        Process a single batch of vectorization.
 
         Args:
-            texts: 批次文本列表
-            max_retries: 最大重试次数
-            **kwargs: 额外的生成参数
+            texts: Batch text list.
+            max_retries: Maximum number of retries.
+            **kwargs: Additional generation parameters.
 
         Returns:
-            List[List[float]]: 批次向量列表
+            List[List[float]]: Batch vector list.
 
         Raises:
-            Exception: API 调用失败
+            Exception: API call failed.
         """
         for attempt in range(max_retries):
             try:
@@ -331,7 +331,7 @@ class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
                 for item in response.data:
                     embeddings.append(item.embedding)
 
-                # 更新维度信息
+                # Update dimension info
                 if embeddings and not self._dimension:
                     self._dimension = len(embeddings[0])
 
@@ -340,7 +340,7 @@ class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
             except Exception as e:
                 last_error = e
 
-            # 指数退避重试
+            # Exponential backoff retry
             if attempt < max_retries - 1:
                 wait_time = (2 ** attempt) * 1
                 time.sleep(wait_time)
@@ -356,9 +356,9 @@ DASHSCOPE_EMBEDDING_API_BASE = "https://dashscope.aliyuncs.com/compatible-mode/v
 
 class LiteLLMEmbeddingProvider(EmbeddingProvider):
     """
-    LiteLLM 嵌入向量提供者
+    LiteLLM embedding vector provider.
 
-    使用 litellm.embedding() 统一调用各种 embedding API。
+    Uses litellm.embedding() to uniformly call various embedding APIs.
     """
 
     DEFAULT_DIMENSION = 1536
@@ -376,15 +376,15 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
         **kwargs: Any
     ) -> None:
         """
-        初始化 LiteLLM 嵌入向量提供者
+        Initialize LiteLLM embedding vector provider.
 
         Args:
-            model: litellm 模型名称（如 "openai/text-embedding-v4"）
-            api_key: API 密钥
-            api_base: API 基础 URL，可选
-            dimension: 向量维度
-            batch_size: 批量处理大小，DashScope defaults to 10, others to 25
-            **kwargs: 额外的配置参数（如 encoding_format）
+            model: LiteLLM model name (e.g., "openai/text-embedding-v4").
+            api_key: API key.
+            api_base: API base URL, optional.
+            dimension: Vector dimension.
+            batch_size: Batch processing size, DashScope defaults to 10, others to 25.
+            **kwargs: Additional configuration parameters (e.g., encoding_format).
         """
         if litellm is None:
             raise ImportError(
@@ -396,7 +396,7 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
         self.api_key = api_key
         self.api_base = api_base
         self._dimension = dimension or self.DEFAULT_DIMENSION
-        
+
         # Auto-detect batch size based on provider
         if batch_size is not None:
             self.batch_size = batch_size
@@ -404,7 +404,7 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
             self.batch_size = self.DASHSCOPE_BATCH_SIZE
         else:
             self.batch_size = self.DEFAULT_BATCH_SIZE
-        
+
         self.extra_kwargs = kwargs
 
     @property
@@ -419,23 +419,23 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
         **kwargs: Any
     ) -> List[List[float]]:
         """
-        调用 litellm embedding API 生成文本向量
+        Call litellm embedding API to generate text vectors.
 
         Args:
-            texts: 待向量化的文本列表
-            max_retries: 最大重试次数
-            batch_size: 批量处理大小，如果为 None 则使用实例的 batch_size
-            **kwargs: 额外的生成参数
+            texts: List of texts to vectorize.
+            max_retries: Maximum number of retries.
+            batch_size: Batch processing size; uses instance batch_size if None.
+            **kwargs: Additional generation parameters.
 
         Returns:
-            List[List[float]]: 向量列表
+            List[List[float]]: List of vectors.
         """
         if not texts:
             raise ValueError("Texts list cannot be empty")
 
         # Use instance batch_size if not specified
         effective_batch_size = batch_size if batch_size is not None else self.batch_size
-        
+
         all_embeddings: List[List[float]] = []
 
         for i in range(0, len(texts), effective_batch_size):
@@ -500,12 +500,12 @@ class LiteLLMEmbeddingProvider(EmbeddingProvider):
 
 class Embedder:
     """
-    嵌入向量生成器
+    Embedding vector generator.
 
-    封装嵌入向量提供者，提供统一的向量化接口。
-    支持从配置创建、批量向量化等功能。
+    Wraps embedding vector providers to offer a unified vectorization interface.
+    Supports creation from configuration, batch vectorization, etc.
 
-    使用示例：
+    Usage examples:
         >>> from kb.processors.embedder import Embedder
         >>> embedder = Embedder.from_config()
         >>> embeddings = embedder.embed(["文本1", "文本2"])
@@ -517,11 +517,11 @@ class Embedder:
         **kwargs: Any
     ) -> None:
         """
-        初始化嵌入向量生成器
+        Initialize embedding vector generator.
 
         Args:
-            provider: 嵌入向量提供者实例
-            **kwargs: 额外的配置参数
+            provider: Embedding vector provider instance.
+            **kwargs: Additional configuration parameters.
         """
         self.provider = provider
         self.config = kwargs
@@ -529,16 +529,16 @@ class Embedder:
     @classmethod
     def from_config(cls, config: Optional[Config] = None) -> "Embedder":
         """
-        从配置创建嵌入向量生成器实例
+        Create an embedding vector generator instance from configuration.
 
         Args:
-            config: 配置对象，如果为 None 则使用默认配置
+            config: Configuration object; uses default configuration if None.
 
         Returns:
-            Embedder: 嵌入向量生成器实例
+            Embedder: Embedding vector generator instance.
 
         Raises:
-            ValueError: 配置无效或缺少必需字段
+            ValueError: Invalid configuration or missing required fields.
         """
         if config is None:
             config = Config()
@@ -546,7 +546,7 @@ class Embedder:
         embedding_config = config.get("embedding", {})
         provider_name = embedding_config.get("provider", "dashscope")
 
-        # 根据提供者类型创建相应的实例
+        # Create the appropriate instance based on provider type
         if provider_name == "litellm":
             # Direct litellm mode
             if litellm is None:
@@ -642,15 +642,15 @@ class Embedder:
         **kwargs: Any
     ) -> DashScopeEmbeddingProvider:
         """
-        创建 DashScope 嵌入向量提供者
+        Create a DashScope embedding vector provider.
 
         Args:
-            api_key: DashScope API 密钥
-            model: 模型名称
-            **kwargs: 额外的配置参数
+            api_key: DashScope API key.
+            model: Model name.
+            **kwargs: Additional configuration parameters.
 
         Returns:
-            DashScopeEmbeddingProvider: DashScope 提供者实例
+            DashScopeEmbeddingProvider: DashScope provider instance.
         """
         return DashScopeEmbeddingProvider(
             api_key=api_key,
@@ -666,16 +666,16 @@ class Embedder:
         **kwargs: Any
     ) -> OpenAICompatibleEmbeddingProvider:
         """
-        创建 OpenAI 兼容嵌入向量提供者
+        Create an OpenAI-compatible embedding vector provider.
 
         Args:
-            api_key: API 密钥
-            base_url: API 基础 URL
-            model: 模型名称
-            **kwargs: 额外的配置参数
+            api_key: API key.
+            base_url: API base URL.
+            model: Model name.
+            **kwargs: Additional configuration parameters.
 
         Returns:
-            OpenAICompatibleEmbeddingProvider: OpenAI 兼容提供者实例
+            OpenAICompatibleEmbeddingProvider: OpenAI-compatible provider instance.
         """
         return OpenAICompatibleEmbeddingProvider(
             api_key=api_key,
@@ -690,20 +690,20 @@ class Embedder:
         **kwargs: Any
     ) -> List[List[float]]:
         """
-        将文本列表转换为向量列表
+        Convert a list of texts to a list of vectors.
 
         Args:
-            texts: 待向量化的文本列表
-            **kwargs: 额外的处理参数
-                - max_retries: 最大重试次数，默认为 3
-                - batch_size: 批量处理大小，默认为 25
+            texts: List of texts to vectorize.
+            **kwargs: Additional processing parameters.
+                - max_retries: Maximum number of retries, defaults to 3.
+                - batch_size: Batch processing size, defaults to 25.
 
         Returns:
-            List[List[float]]: 向量列表
+            List[List[float]]: List of vectors.
 
         Raises:
-            ValueError: 输入文本列表为空
-            Exception: 向量化失败
+            ValueError: Input text list is empty.
+            Exception: Vectorization failed.
         """
         if not texts:
             raise ValueError("Texts list cannot be empty")
@@ -713,9 +713,9 @@ class Embedder:
     @property
     def dimension(self) -> int:
         """
-        获取向量维度
+        Get the vector dimension.
 
         Returns:
-            int: 向量维度
+            int: Vector dimension.
         """
         return self.provider.dimension

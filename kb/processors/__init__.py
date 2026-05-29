@@ -1,12 +1,12 @@
 """
-处理模块
+Processors module
 
-负责内容的处理和转换，包括：
-- 文本分块
-- 嵌入向量生成
-- 内容清洗
-- 元数据提取
-- 标签提取
+Handles content processing and transformation, including:
+- Text chunking
+- Embedding vector generation
+- Content cleaning
+- Metadata extraction
+- Tag extraction
 """
 
 from kb.processors.base import BaseProcessor, ProcessResult

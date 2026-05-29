@@ -1,7 +1,7 @@
 """
-邮件收集器模块
+Email collector module
 
-支持解析 MBOX 和 EML 邮件文件，提取内容并保存到知识库。
+Supports parsing MBOX and EML email files, extracting content and saving to the knowledge base.
 """
 
 import email
@@ -22,33 +22,33 @@ from kb.collectors.base import BaseCollector, CollectResult
 
 class EmailCollector(BaseCollector):
     """
-    邮件收集器
+    Email collector.
 
-    支持解析以下格式的邮件文件：
-    - MBOX: 包含多封邮件的归档文件
-    - EML: 单封邮件文件
+    Supports parsing the following email file formats:
+    - MBOX: Archive file containing multiple emails
+    - EML: Single email file
 
-    处理流程：
-    1. 检测文件类型（MBOX 或 EML）
-    2. 解析邮件内容
-    3. 提取邮件正文（优先纯文本，降级到 HTML）
-    4. 生成 YAML Front Matter 元数据
-    5. 保存到 ~/.knowledge-base/1_collect/emails/ 目录
-    6. 返回收集结果
+    Processing flow:
+    1. Detect file type (MBOX or EML)
+    2. Parse email content
+    3. Extract email body (prefer plain text, fall back to HTML)
+    4. Generate YAML Front Matter metadata.
+    5. Save to ~/.knowledge-base/1_collect/emails/ directory.
+    6. Return collection result.
 
-    示例：
+    Examples:
         >>> collector = EmailCollector()
         >>> result = collector.collect("inbox.mbox", max_emails=50)
         >>> if result.success:
-        ...     print(f"成功收集 {result.metadata['collected_count']} 封邮件")
+        ...     print(f"成功收集 {result.metadata['collected_count']} 封Emails")
     """
 
     def __init__(self, output_dir: Optional[Path] = None) -> None:
         """
-        初始化邮件收集器
+        Initialize email collector.
 
         Args:
-            output_dir: 输出目录，默认为 ~/.knowledge-base/1_collect/
+            output_dir: Output directory. Defaults to ~/.knowledge-base/1_collect/.
         """
         super().__init__(output_dir)
         self._sub_dir = "emails"
@@ -63,22 +63,22 @@ class EmailCollector(BaseCollector):
         **kwargs: Any,
     ) -> CollectResult:
         """
-        收集邮件文件
+        Collect email file.
 
         Args:
-            source: 邮件文件路径（.mbox 或 .eml）
-            tags: 用户提供的标签列表（可选）
-            max_emails: 最大收集邮件数（仅对 MBOX 文件有效，默认 100）
-            skip_existing: 是否跳过已存在的内容（默认 False）
-            storage: SQLiteStorage 实例，用于重复检测（可选）
-            **kwargs: 额外的参数
+            source: Email file path (.mbox or .eml).
+            tags: User-provided tag list (optional).
+            max_emails: Maximum number of emails to collect (for MBOX files only, defaults to 100).
+            skip_existing: Whether to skip existing content (default False).
+            storage: SQLiteStorage instance for duplicate detection (optional).
+            **kwargs: Additional parameters.
 
         Returns:
-            CollectResult: 收集结果。对于 MBOX 文件，返回批量收集结果
+            CollectResult: Collection result. For MBOX files, returns batch collection result.
         """
         file_path = Path(source).resolve()
 
-        # 验证文件存在
+        # Validate file exists
         if not file_path.exists():
             return CollectResult(success=False, error=f"File not found: {file_path}")
 
@@ -109,18 +109,18 @@ class EmailCollector(BaseCollector):
         **kwargs: Any,
     ) -> CollectResult:
         """
-        收集 MBOX 文件中的邮件
+        Collect emails from MBOX file.
 
         Args:
-            file_path: MBOX 文件路径
-            tags: 标签列表
-            max_emails: 最大收集邮件数
-            skip_existing: 是否跳过已存在的内容（默认 False）
-            storage: SQLiteStorage 实例，用于重复检测（可选）
-            **kwargs: 额外的参数
+            file_path: MBOX file path.
+            tags: Tag list.
+            max_emails: Maximum number of emails to collect.
+            skip_existing: Whether to skip existing content (default False).
+            storage: SQLiteStorage instance for duplicate detection (optional).
+            **kwargs: Additional parameters.
 
         Returns:
-            CollectResult: 批量收集结果
+            CollectResult: Batch collection result.
         """
         mbox = mailbox.mbox(str(file_path))
         collected_count = 0
@@ -145,7 +145,7 @@ class EmailCollector(BaseCollector):
 
         mbox.close()
 
-        # 返回批量收集结果
+        # Return batch collection result
         if collected_count > 0 or skipped_count > 0:
             # Include individual results for CLI to register to database
             individual_results = [r for r in results if r.success]
@@ -185,17 +185,17 @@ class EmailCollector(BaseCollector):
         **kwargs: Any,
     ) -> CollectResult:
         """
-        收集单个 EML 文件
+        Collect a single EML file.
 
         Args:
-            file_path: EML 文件路径
-            tags: 标签列表
-            skip_existing: 是否跳过已存在的内容（默认 False）
-            storage: SQLiteStorage 实例，用于重复检测（可选）
-            **kwargs: 额外的参数
+            file_path: EML file path.
+            tags: Tag list.
+            skip_existing: Whether to skip existing content (default False).
+            storage: SQLiteStorage instance for duplicate detection (optional).
+            **kwargs: Additional parameters.
 
         Returns:
-            CollectResult: 收集结果
+            CollectResult: Collection result.
         """
         try:
             with open(file_path, "rb") as f:
@@ -215,28 +215,28 @@ class EmailCollector(BaseCollector):
         **kwargs: Any,
     ) -> CollectResult:
         """
-        收集单封邮件
+        Collect a single email.
 
         Args:
-            msg: email.message.Message 对象
-            tags: 标签列表
-            source_file: 源文件路径
-            skip_existing: 是否跳过已存在的内容（默认 False）
-            storage: SQLiteStorage 实例，用于重复检测（可选）
-            **kwargs: 额外的参数
+            msg: email.message.Message object.
+            tags: Tag list.
+            source_file: Source file path.
+            skip_existing: Whether to skip existing content (default False).
+            storage: SQLiteStorage instance for duplicate detection (optional).
+            **kwargs: Additional parameters.
 
         Returns:
-            CollectResult: 收集结果
+            CollectResult: Collection result.
         """
         try:
-            # 提取邮件头信息
+            # Extract email header info.
             subject = self._decode_header(msg.get("Subject", ""))
             sender = self._decode_header(msg.get("From", ""))
             recipients = self._parse_recipients(msg)
             message_id = msg.get("Message-ID", "")
             email_date = self._parse_date(msg.get("Date", ""))
 
-            # 如果没有主题，使用占位符
+            # If no subject, use placeholder
             if not subject:
                 subject = "(No Subject)"
 
@@ -262,10 +262,10 @@ class EmailCollector(BaseCollector):
                         error=f"Duplicate: already collected as '{existing['title']}' (id: {existing['id']})"
                     )
 
-            # 提取正文
+            # Extract body
             body = self._extract_content(msg)
 
-            # 生成内容
+            # Generate content
             content = self._format_email_content(
                 subject=subject,
                 sender=sender,
@@ -278,7 +278,7 @@ class EmailCollector(BaseCollector):
             # Email collectors always use subject as title
             filtered_kwargs = {k: v for k, v in kwargs.items() if k != 'title'}
 
-            # 生成元数据
+            # Generate metadata
             metadata = self._generate_metadata(
                 title=subject,
                 content=content,
@@ -291,10 +291,10 @@ class EmailCollector(BaseCollector):
                 **filtered_kwargs,
             )
 
-            # 生成安全的文件名
+            # Generate safe filename
             filename = self._generate_safe_filename("email", subject)
 
-            # 保存到文件
+            # Save to file
             saved_path = self._save_to_file(
                 content=content,
                 metadata=metadata,
@@ -302,10 +302,10 @@ class EmailCollector(BaseCollector):
                 sub_dir=self._sub_dir,
             )
 
-            # 统计字数
+            # Count words
             word_count = self._count_words(content)
 
-            # 生成内容哈希
+            # Generate content hash
             content_hash = self._generate_content_hash(content)
 
             return CollectResult(
@@ -323,15 +323,15 @@ class EmailCollector(BaseCollector):
 
     def _extract_content(self, msg: Message) -> str:
         """
-        从邮件中提取正文内容
+        Extract body content from email.
 
-        优先提取纯文本，如果没有则提取 HTML 并去除标签
+        Prioritizes plain text; if unavailable, extracts HTML and strips tags.
 
         Args:
-            msg: email.message.Message 对象
+            msg: email.message.Message object.
 
         Returns:
-            str: 提取的文本内容
+            str: Extracted text content.
         """
         text_content = ""
         html_content = ""
@@ -341,7 +341,7 @@ class EmailCollector(BaseCollector):
                 content_type = part.get_content_type()
                 content_disposition = str(part.get("Content-Disposition", ""))
 
-                # 跳过附件
+                # Skip attachments
                 if "attachment" in content_disposition:
                     continue
 
@@ -356,11 +356,11 @@ class EmailCollector(BaseCollector):
             elif content_type == "text/html":
                 html_content = self._decode_payload(msg)
 
-        # 优先使用纯文本
+        # Prefer plain text
         if text_content:
             return text_content.strip()
 
-        # 降级到 HTML（去除标签）
+        # Fall back to HTML (strip tags)
         if html_content:
             return self._strip_html_tags(html_content).strip()
 
@@ -368,20 +368,20 @@ class EmailCollector(BaseCollector):
 
     def _decode_payload(self, part: Message) -> str:
         """
-        解码邮件部分的内容
+        Decode email part content.
 
         Args:
-            part: 邮件部分
+            part: Email part.
 
         Returns:
-            str: 解码后的文本
+            str: Decoded text.
         """
         try:
             payload = part.get_payload(decode=True)
             if payload is None:
                 return ""
 
-            # 尝试不同的编码
+            # Try different encodings
             charset = part.get_content_charset() or "utf-8"
             encodings = [charset, "utf-8", "latin-1", "gb2312", "gbk"]
 
@@ -391,20 +391,20 @@ class EmailCollector(BaseCollector):
                 except (UnicodeDecodeError, LookupError):
                     continue
 
-            # 最后的降级方案
+            # Last resort fallback
             return payload.decode("utf-8", errors="replace")
         except Exception:
             return ""
 
     def _decode_header(self, header: str) -> str:
         """
-        解码邮件头
+        Decode email header.
 
         Args:
-            header: 原始邮件头
+            header: Raw email header.
 
         Returns:
-            str: 解码后的字符串
+            str: Decoded string.
         """
         if not header:
             return ""
@@ -427,13 +427,13 @@ class EmailCollector(BaseCollector):
 
     def _parse_recipients(self, msg: Message) -> List[str]:
         """
-        解析收件人列表
+        Parse recipient list.
 
         Args:
-            msg: 邮件消息
+            msg: Email message.
 
         Returns:
-            List[str]: 收件人列表
+            List[str]: List of recipients.
         """
         recipients = []
 
@@ -441,7 +441,7 @@ class EmailCollector(BaseCollector):
             value = msg.get(header, "")
             if value:
                 decoded = self._decode_header(value)
-                # 分割多个地址
+                # Split multiple addresses
                 for addr in decoded.split(","):
                     addr = addr.strip()
                     if addr:
@@ -451,13 +451,13 @@ class EmailCollector(BaseCollector):
 
     def _parse_date(self, date_str: str) -> str:
         """
-        解析邮件日期
+        Parse email date.
 
         Args:
-            date_str: 日期字符串
+            date_str: Date string.
 
         Returns:
-            str: 格式化的日期字符串
+            str: Formatted date string.
         """
         if not date_str:
             return ""
@@ -470,29 +470,29 @@ class EmailCollector(BaseCollector):
 
     def _strip_html_tags(self, html: str) -> str:
         """
-        去除 HTML 标签
+        Strip HTML tags.
 
         Args:
-            html: HTML 内容
+            html: HTML content.
 
         Returns:
-            str: 纯文本内容
+            str: Plain text content.
         """
-        # 移除脚本和样式
+        # Remove scripts and styles
         html = re.sub(r"<script[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE)
         html = re.sub(r"<style[^>]*>.*?</style>", "", html, flags=re.DOTALL | re.IGNORECASE)
 
-        # 移除 HTML 标签
+        # Remove HTML tags
         text = re.sub(r"<[^>]+>", " ", html)
 
-        # 处理 HTML 实体
+        # Handle HTML entities
         text = re.sub(r"&nbsp;", " ", text)
         text = re.sub(r"&lt;", "<", text)
         text = re.sub(r"&gt;", ">", text)
         text = re.sub(r"&amp;", "&", text)
         text = re.sub(r"&quot;", '"', text)
 
-        # 清理多余空白
+        # Clean up excessive whitespace
         text = re.sub(r"\s+", " ", text)
 
         return text.strip()
@@ -506,25 +506,25 @@ class EmailCollector(BaseCollector):
         body: str,
     ) -> str:
         """
-        格式化邮件内容为 Markdown
+        Format email content as Markdown.
 
         Args:
-            subject: 主题
-            sender: 发件人
-            recipients: 收件人列表
-            email_date: 日期
-            body: 正文
+            subject: Subject.
+            sender: Sender.
+            recipients: List of recipients.
+            email_date: Date.
+            body: Body text.
 
         Returns:
-            str: Markdown 格式的内容
+            str: Content in Markdown format.
         """
         lines = []
 
-        # 标题
+        # Title.
         lines.append(f"# {subject}")
         lines.append("")
 
-        # 邮件头信息
+        # Email header information
         lines.append(f"**From:** {sender}")
         if recipients:
             lines.append(f"**To:** {', '.join(recipients)}")
@@ -532,11 +532,11 @@ class EmailCollector(BaseCollector):
             lines.append(f"**Date:** {email_date}")
         lines.append("")
 
-        # 分隔线
+        # Separator line
         lines.append("---")
         lines.append("")
 
-        # 正文
+        # Body
         lines.append(body)
 
         return "\n".join(lines)
@@ -554,32 +554,32 @@ class EmailCollector(BaseCollector):
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """
-        生成邮件元数据
+        Generate email metadata.
 
         Args:
-            title: 邮件主题
-            content: 文档内容
-            source: 原始数据源
-            tags: 标签列表
-            sender: 发件人
-            recipients: 收件人列表
-            email_date: 邮件日期
-            message_id: 邮件 ID
-            **kwargs: 额外的元数据字段
+            title: Email subject.
+            content: Document content.
+            source: Original data source.
+            tags: Tag list.
+            sender: Sender.
+            recipients: List of recipients.
+            email_date: Email date.
+            message_id: Emails ID
+            **kwargs: Additional metadata fields.
 
         Returns:
-            Dict[str, Any]: 元数据字典
+            Dict[str, Any]: Metadata dictionary.
         """
-        # 生成唯一 ID
+        # Generate unique ID
         if message_id:
-            # 使用 message_id 的哈希作为 ID
+            # Use hash of message_id as ID
             id_hash = hashlib.md5(message_id.encode()).hexdigest()[:12]
             email_id = f"email_{id_hash}"
         else:
             timestamp = datetime.now()
             email_id = f"email_{timestamp.strftime('%Y%m%d_%H%M%S')}"
 
-        # 基础元数据
+        # Base metadata
         metadata = {
             "id": email_id,
             "title": title,
@@ -595,7 +595,7 @@ class EmailCollector(BaseCollector):
             "message_id": message_id,
         }
 
-        # 合并额外的元数据
+        # Merge additional metadata
         metadata.update(kwargs)
 
         return metadata

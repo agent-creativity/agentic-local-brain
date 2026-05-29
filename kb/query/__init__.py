@@ -1,11 +1,11 @@
 """
-查询模块
+Query module
 
-负责知识的检索和查询，包括：
-- 语义搜索（基于向量相似度）
-- 关键词搜索（基于文本匹配）
-- RAG 查询（检索增强生成）
-- v0.7: 多阶段检索流水线
+Handles knowledge retrieval and querying, including:
+- Semantic search (vector similarity-based)
+- Keyword search (text matching-based)
+- RAG query (Retrieval Augmented Generation)
+- v0.7: Multi-stage retrieval pipeline
 """
 
 from kb.query.models import (

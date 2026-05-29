@@ -1,7 +1,7 @@
 """
-收集器基类模块
+Base collector module
 
-定义所有收集器的抽象基类，提供统一的接口和数据模型。
+Defines the abstract base class for all collectors, providing a unified interface and data models.
 """
 
 import hashlib
@@ -15,18 +15,18 @@ from typing import Any, Dict, List, Optional
 @dataclass
 class CollectResult:
     """
-    收集结果数据类
+    Collection result data class.
 
     Attributes:
-        success: 是否收集成功
-        file_path: 保存的文件路径
-        title: 文档标题
-        word_count: 字数统计
-        tags: 提取的标签列表
-        metadata: 额外的元数据信息
-        error: 错误信息（如果失败）
-        content_hash: 内容哈希值（用于重复检测）
-        summary: 文档摘要
+        success: Whether the collection was successful.
+        file_path: Path of the saved file.
+        title: Document title.
+        word_count: Word count.
+        tags: List of extracted tags.
+        metadata: Additional metadata.
+        error: Error message (if failed).
+        content_hash: Content hash for duplicate detection.
+        summary: Document summary.
     """
 
     success: bool
@@ -50,23 +50,23 @@ class CollectResult:
 
 class BaseCollector(ABC):
     """
-    收集器抽象基类
+    Abstract base class for collectors.
 
-    所有具体的收集器（文件、网页、书签等）都应继承此类，
-    实现统一的收集接口。
+    All concrete collectors (file, webpage, bookmark, etc.) should inherit this class
+    and implement the unified collection interface.
 
-    子类需要实现的方法：
-        - collect: 执行收集操作
-        - _extract_content: 提取纯文本内容
-        - _generate_metadata: 生成元数据
+    Methods that subclasses must implement:
+        - collect: Execute the collection operation
+        - _extract_content: Extract plain text content
+        - _generate_metadata: Generate metadata
     """
 
     def __init__(self, output_dir: Optional[Path] = None) -> None:
         """
-        初始化收集器
+        Initialize the collector.
 
         Args:
-            output_dir: 输出目录，默认为 ~/.knowledge-base/1_collect/
+            output_dir: Output directory. Defaults to ~/.knowledge-base/1_collect/.
         """
         self.output_dir = output_dir or (Path.home() / ".knowledge-base" / "1_collect")
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -74,27 +74,27 @@ class BaseCollector(ABC):
     @abstractmethod
     def collect(self, source: Any, **kwargs: Any) -> CollectResult:
         """
-        执行收集操作
+        Execute the collection operation.
 
         Args:
-            source: 数据源（文件路径、URL 等）
-            **kwargs: 额外的参数（如 tags, title 等）
+            source: Data source (file path, URL, etc.).
+            **kwargs: Additional parameters (e.g., tags, title).
 
         Returns:
-            CollectResult: 收集结果
+            CollectResult: Collection result.
         """
         pass
 
     @abstractmethod
     def _extract_content(self, source: Any) -> str:
         """
-        从数据源提取纯文本内容
+        Extract plain text content from the data source.
 
         Args:
-            source: 数据源
+            source: Data source.
 
         Returns:
-            str: 提取的纯文本内容
+            str: Extracted plain text content.
         """
         pass
 
@@ -107,16 +107,16 @@ class BaseCollector(ABC):
         **kwargs: Any
     ) -> Dict[str, Any]:
         """
-        生成文档元数据
+        Generate document metadata.
 
         Args:
-            title: 文档标题
-            content: 文档内容
-            source: 原始数据源
-            **kwargs: 额外的元数据字段
+            title: Document title.
+            content: Document content.
+            source: Original data source.
+            **kwargs: Additional metadata fields.
 
         Returns:
-            Dict[str, Any]: 元数据字典
+            Dict[str, Any]: Metadata dictionary.
         """
         pass
 
@@ -128,26 +128,26 @@ class BaseCollector(ABC):
         sub_dir: str
     ) -> Path:
         """
-        保存内容到 Markdown 文件（带 YAML Front Matter）
+        Save content to a Markdown file with YAML Front Matter.
 
         Args:
-            content: 文档正文内容
-            metadata: YAML Front Matter 元数据
-            filename: 文件名
-            sub_dir: 子目录名称（如 files, urls 等）
+            content: Document body content.
+            metadata: YAML Front Matter metadata.
+            filename: File name.
+            sub_dir: Subdirectory name (e.g., files, urls).
 
         Returns:
-            Path: 保存的文件路径
+            Path: Path of the saved file.
         """
-        # 创建子目录
+        # Create subdirectory
         target_dir = self.output_dir / sub_dir
         target_dir.mkdir(parents=True, exist_ok=True)
 
-        # 生成完整的 Markdown 内容
+        # Generate complete Markdown content
         yaml_header = self._format_yaml(metadata)
         full_content = f"---\n{yaml_header}---\n\n{content}"
 
-        # 写入文件
+        # Write to file
         file_path = target_dir / filename
         file_path.write_text(full_content, encoding="utf-8")
 
@@ -156,18 +156,18 @@ class BaseCollector(ABC):
     @staticmethod
     def _format_yaml(metadata: Dict[str, Any]) -> str:
         """
-        将元数据字典格式化为 YAML 字符串
+        Format a metadata dictionary as a YAML string.
 
         Args:
-            metadata: 元数据字典
+            metadata: Metadata dictionary.
 
         Returns:
-            str: YAML 格式的字符串
+            str: YAML-formatted string.
         """
         lines = []
         for key, value in metadata.items():
             if isinstance(value, list):
-                # 列表类型：使用 YAML 列表格式
+                # List type: use YAML list format
                 if value:
                     lines.append(f"{key}:")
                     for item in value:
@@ -183,7 +183,7 @@ class BaseCollector(ABC):
             elif value is None:
                 lines.append(f"{key}: null")
             else:
-                # 字符串类型：如果有特殊字符，添加引号
+                # String type: add quotes if special characters present
                 str_value = str(value)
                 if any(c in str_value for c in [':', '#', '{', '}', '[', ']', ',']):
                     lines.append(f'{key}: "{str_value}"')
@@ -194,14 +194,14 @@ class BaseCollector(ABC):
     @staticmethod
     def _generate_safe_filename(prefix: str, title: Optional[str] = None) -> str:
         """
-        生成安全的文件名（使用日期 + slug）
+        Generate a safe filename using date + slug.
 
         Args:
-            prefix: 文件类型前缀（如 file, url 等）
-            title: 文档标题（可选）
+            prefix: File type prefix (e.g., file, url).
+            title: Document title (optional).
 
         Returns:
-            str: 安全的文件名（.md 后缀）
+            str: Safe filename (.md extension).
         """
         import re
         import unicodedata
@@ -209,7 +209,7 @@ class BaseCollector(ABC):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
         if title:
-            # 检查是否包含 CJK 字符
+            # Check if contains CJK characters
             has_cjk = any("\u4e00" <= c <= "\u9fff" for c in title)
             if has_cjk:
                 try:
@@ -219,13 +219,13 @@ class BaseCollector(ABC):
                     slug = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode("ascii")
             else:
                 slug = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode("ascii")
-            # 转换为小写
+            # Convert to lowercase
             slug = slug.lower()
-            # 替换非字母数字字符为连字符
+            # Replace non-alphanumeric characters with hyphens
             slug = re.sub(r"[^a-z0-9]+", "-", slug)
-            # 移除首尾连字符
+            # Remove leading/trailing hyphens
             slug = slug.strip("-")
-            # 限制长度
+            # Limit length
             slug = slug[:50]
             return f"{timestamp}_{slug}.md"
         else:
@@ -234,17 +234,17 @@ class BaseCollector(ABC):
     @staticmethod
     def _count_words(content: str) -> int:
         """
-        统计文本字数
+        Count words in text.
 
         Args:
-            content: 文本内容
+            content: Text content.
 
         Returns:
-            int: 字数（中文字符按 1 个计，英文单词按空格分隔）
+            int: Word count (Chinese characters count as 1 each, English words split by whitespace).
         """
-        # 简单统计：中文字符 + 英文单词
+        # Simple count: Chinese characters + English words
         chinese_chars = sum(1 for char in content if "\u4e00" <= char <= "\u9fff")
-        # 移除中文字符后统计英文单词
+        # Count English words after removing Chinese characters
         english_text = "".join(
             " " if "\u4e00" <= char <= "\u9fff" else char for char in content
         )

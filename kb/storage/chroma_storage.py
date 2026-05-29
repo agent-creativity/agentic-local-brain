@@ -1,8 +1,8 @@
 """
-Chroma 向量存储模块
+Chroma vector storage module
 
-基于 ChromaDB 的向量存储实现，支持文档的增删改查操作。
-提供向量相似度检索和元数据过滤功能。
+ChromaDB-based vector storage implementation, supporting CRUD operations on documents.
+Provides vector similarity retrieval and metadata filtering.
 """
 
 import os
@@ -19,19 +19,19 @@ except ImportError:
 
 class ChromaStorage:
     """
-    Chroma 向量存储类
+    Chroma vector storage class.
 
-    封装 ChromaDB 客户端，提供文档的持久化存储和检索功能。
-    支持向量相似度搜索、元数据过滤和文档管理。
+    Wraps the ChromaDB client, providing persistent storage and retrieval for documents.
+    Supports vector similarity search, metadata filtering, and document management.
 
-    使用示例：
+    Usage examples:
         >>> from kb.storage.chroma_storage import ChromaStorage
         >>> storage = ChromaStorage(path="~/.knowledge-base/db/chroma")
         >>> storage.add_documents(
         ...     ids=["doc1", "doc2"],
         ...     embeddings=[[0.1, 0.2], [0.3, 0.4]],
         ...     metadatas=[{"source": "file1"}, {"source": "file2"}],
-        ...     documents=["文本1", "文本2"]
+        ...     documents=["text1", "text2"]
         ... )
         >>> results = storage.query(
         ...     embedding=[0.15, 0.25],
@@ -46,33 +46,33 @@ class ChromaStorage:
         **kwargs: Any
     ) -> None:
         """
-        初始化 Chroma 存储客户端
+        Initialize Chroma storage client.
 
         Args:
-            path: Chroma 数据库持久化路径
-            collection_name: 集合名称，默认为 "knowledge"
-            **kwargs: 额外的配置参数
+            path: Chroma database persistence path.
+            collection_name: Collection name, defaults to "knowledge".
+            **kwargs: Additional configuration parameters.
 
         Raises:
-            ImportError: chromadb 包未安装
-            ValueError: 路径无效
+            ImportError: chromadb package not installed.
+            ValueError: Invalid path.
         """
         if chromadb is None or Settings is None:
             raise ImportError(
                 "chromadb package is required. Install it with: pip install chromadb"
             )
 
-        # 展开路径
+        # Expand path
         expanded_path = os.path.expanduser(path)
         self.path = Path(expanded_path)
 
-        # 确保目录存在
+        # Ensure directory exists
         self.path.mkdir(parents=True, exist_ok=True)
 
         self.collection_name = collection_name
         self.extra_kwargs = kwargs
 
-        # 初始化 Chroma 客户端
+        # Initialize Chroma client
         self.client = chromadb.PersistentClient(
             path=str(self.path),
             settings=Settings(
@@ -81,10 +81,10 @@ class ChromaStorage:
             )
         )
 
-        # 获取或创建集合
+        # Get or create collection.
         self.collection = self.client.get_or_create_collection(
             name=collection_name,
-            metadata={"hnsw:space": "cosine"}  # 使用余弦相似度
+            metadata={"hnsw:space": "cosine"}  # Use cosine similarity
         )
 
     def add_documents(
@@ -96,21 +96,21 @@ class ChromaStorage:
         **kwargs: Any
     ) -> bool:
         """
-        添加文档到 Chroma 集合
+        Add documents to Chroma collection.
 
         Args:
-            ids: 文档 ID 列表
-            embeddings: 文档向量列表
-            metadatas: 文档元数据列表，可选
-            documents: 文档原始文本列表，可选
-            **kwargs: 额外的添加参数
+            ids: List of document IDs.
+            embeddings: List of document vectors.
+            metadatas: List of document metadata, optional.
+            documents: List of original document texts, optional.
+            **kwargs: Additional add parameters.
 
         Returns:
-            bool: 是否添加成功
+            bool: Whether addition was successful.
 
         Raises:
-            ValueError: 参数无效或长度不匹配
-            Exception: 添加失败
+            ValueError: Invalid parameters or length mismatch.
+            Exception: Addition failed.
         """
         if not ids:
             raise ValueError("IDs list cannot be empty")
@@ -137,10 +137,10 @@ class ChromaStorage:
             )
 
         try:
-            # 确保 metadatas 不为 None
+            # Ensure metadatas is not None
             final_metadatas = metadatas if metadatas is not None else [{} for _ in ids]
 
-            # 确保 documents 不为 None
+            # Ensure documents is not None
             final_documents = documents if documents is not None else ["" for _ in ids]
 
             self.collection.add(
@@ -163,25 +163,25 @@ class ChromaStorage:
         **kwargs: Any
     ) -> Dict[str, Any]:
         """
-        向量相似度检索
+        Vector similarity retrieval.
 
         Args:
-            embedding: 查询向量
-            top_k: 返回最相似的文档数量，默认为 5
-            where_filter: 元数据过滤条件，可选
-                示例：{"source": "file1", "category": "tech"}
-            **kwargs: 额外的查询参数
+            embedding: Query vector.
+            top_k: Number of most similar documents to return, defaults to 5.
+            where_filter: Metadata filter conditions, optional.
+                Examples:{"source": "file1", "category": "tech"}
+            **kwargs: Additional query parameters.
 
         Returns:
-            Dict[str, Any]: 查询结果，包含以下字段：
-                - ids: 匹配的文档 ID 列表
-                - distances: 距离列表
-                - metadatas: 元数据列表
-                - documents: 文档文本列表
+            Dict[str, Any]: Query results containing the following fields:
+                - ids: List of matching document IDs
+                - distances: List of distances
+                - metadatas: List of metadata.
+                - documents: List of document texts
 
         Raises:
-            ValueError: 查询向量为空
-            Exception: 查询失败
+            ValueError: Query vector is empty.
+            Exception: Query failed.
         """
         if not embedding:
             raise ValueError("Query embedding cannot be empty")
@@ -199,7 +199,7 @@ class ChromaStorage:
 
             results = self.collection.query(**query_params)
 
-            # 格式化返回结果
+            # Format return results
             return {
                 "ids": results["ids"][0] if results["ids"] else [],
                 "distances": results["distances"][0] if results["distances"] else [],
@@ -212,18 +212,18 @@ class ChromaStorage:
 
     def delete(self, ids: List[str], **kwargs: Any) -> bool:
         """
-        删除文档
+        Delete documents.
 
         Args:
-            ids: 要删除的文档 ID 列表
-            **kwargs: 额外的删除参数
+            ids: List of document IDs to delete.
+            **kwargs: Additional delete parameters.
 
         Returns:
-            bool: 是否删除成功
+            bool: Whether deletion was successful.
 
         Raises:
-            ValueError: ID 列表为空
-            Exception: 删除失败
+            ValueError: ID list is empty.
+            Exception: Deletion failed.
         """
         if not ids:
             raise ValueError("IDs list cannot be empty")
@@ -237,13 +237,13 @@ class ChromaStorage:
 
     def count(self) -> int:
         """
-        获取集合中文档数量
+        Get number of documents in collection.
 
         Returns:
-            int: 文档数量
+            int: Number of documents.
 
         Raises:
-            Exception: 查询失败
+            Exception: Query failed.
         """
         try:
             return self.collection.count()
@@ -258,23 +258,23 @@ class ChromaStorage:
         **kwargs: Any
     ) -> Dict[str, Any]:
         """
-        获取文档（不进行向量检索）
+        Get documents (without vector retrieval).
 
         Args:
-            ids: 文档 ID 列表，可选
-            where_filter: 元数据过滤条件，可选
-            limit: 返回结果数量限制，可选
-            **kwargs: 额外的查询参数
+            ids: List of document IDs, optional.
+            where_filter: Metadata filter conditions, optional.
+            limit: Result count limit, optional.
+            **kwargs: Additional query parameters.
 
         Returns:
-            Dict[str, Any]: 查询结果，包含以下字段：
-                - ids: 文档 ID 列表
-                - embeddings: 向量列表
-                - metadatas: 元数据列表
-                - documents: 文档文本列表
+            Dict[str, Any]: Query results containing the following fields:
+                - ids: List of document IDs.
+                - embeddings: List of vectors.
+                - metadatas: List of metadata.
+                - documents: List of document texts
 
         Raises:
-            Exception: 查询失败
+            Exception: Query failed.
         """
         try:
             get_params: Dict[str, Any] = {}
@@ -311,21 +311,21 @@ class ChromaStorage:
         **kwargs: Any
     ) -> bool:
         """
-        更新文档
+        Update documents.
 
         Args:
-            ids: 文档 ID 列表
-            embeddings: 新的向量列表，可选
-            metadatas: 新的元数据列表，可选
-            documents: 新的文档文本列表，可选
-            **kwargs: 额外的更新参数
+            ids: List of document IDs.
+            embeddings: New vector list, optional.
+            metadatas: New metadata list, optional.
+            documents: New document text list, optional.
+            **kwargs: Additional update parameters.
 
         Returns:
-            bool: 是否更新成功
+            bool: Whether update was successful.
 
         Raises:
-            ValueError: 参数无效或长度不匹配
-            Exception: 更新失败
+            ValueError: Invalid parameters or length mismatch.
+            Exception: Update failed.
         """
         if not ids:
             raise ValueError("IDs list cannot be empty")
@@ -354,16 +354,16 @@ class ChromaStorage:
 
     def peek(self, limit: int = 10) -> Dict[str, Any]:
         """
-        预览集合中的文档
+        Preview documents in collection.
 
         Args:
-            limit: 预览数量，默认为 10
+            limit: Number to preview, defaults to 10.
 
         Returns:
-            Dict[str, Any]: 预览结果
+            Dict[str, Any]: Preview results.
 
         Raises:
-            Exception: 查询失败
+            Exception: Query failed.
         """
         try:
             results = self.collection.peek(limit=limit)
@@ -380,16 +380,16 @@ class ChromaStorage:
 
     def reset(self) -> bool:
         """
-        重置集合（删除所有文档）
+        Reset collection (delete all documents).
 
         Returns:
-            bool: 是否重置成功
+            bool: Whether reset was successful.
 
         Raises:
-            Exception: 重置失败
+            Exception: Reset failed.
         """
         try:
-            # 删除并重新创建集合
+            # Delete and recreate collection
             self.client.delete_collection(name=self.collection_name)
             self.collection = self.client.create_collection(
                 name=self.collection_name,

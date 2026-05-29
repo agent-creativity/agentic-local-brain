@@ -1,8 +1,8 @@
 """
-标签提取器模块
+Tag extractor module
 
-基于 LLM 的标签提取功能，通过 LiteLLM 统一调用各类 LLM。
-从文档标题和内容中提取 3-5 个相关标签。
+LLM-based tag extraction, using LiteLLM to uniformly call various LLMs.
+Extracts 3-5 relevant tags from document title and content.
 """
 
 import json
@@ -19,38 +19,38 @@ from kb.processors.base import BaseProcessor, ProcessResult
 
 
 class LLMProvider(ABC):
-    """LLM 提供者抽象基类"""
+    """Abstract base class for LLM providers."""
 
     @abstractmethod
     def generate(self, prompt: str, **kwargs: Any) -> str:
         """
-        生成文本响应
+        Generate text response.
 
         Args:
-            prompt: 提示词
-            **kwargs: 额外的生成参数
+            prompt: Prompt text.
+            **kwargs: Additional generation parameters.
 
         Returns:
-            str: 生成的文本
+            str: Generated text.
         """
         pass
 
 
 class LiteLLMProvider(LLMProvider):
     """
-    LiteLLM 统一 Provider
+    LiteLLM unified provider.
 
-    通过 litellm SDK 统一调用各类 LLM，支持 dashscope、openai 等。
+    Uniformly calls various LLMs through the litellm SDK, supporting dashscope, openai, etc.
     """
 
     def __init__(self, model: str, api_key: str, **kwargs: Any) -> None:
         """
-        初始化 LiteLLM 提供者
+        Initialize LiteLLM provider.
 
         Args:
-            model: LiteLLM 格式的模型名，如 "dashscope/qwen-plus" 或 "openai/gpt-4"
-            api_key: API 密钥
-            **kwargs: 传递给 litellm.completion() 的额外参数（如 api_base）
+            model: LiteLLM format model name, e.g., "dashscope/qwen-plus" or "openai/gpt-4".
+            api_key: API key.
+            **kwargs: Additional parameters passed to litellm.completion() (e.g., api_base).
         """
         self.model = model
         self.api_key = api_key
@@ -58,19 +58,19 @@ class LiteLLMProvider(LLMProvider):
 
     def generate(self, prompt: str, max_retries: int = 3, **kwargs: Any) -> str:
         """
-        通过 LiteLLM 生成文本
+        Generate text via LiteLLM.
 
         Args:
-            prompt: 提示词
-            max_retries: 最大重试次数，默认为 3
-            **kwargs: 额外的生成参数
+            prompt: Prompt text.
+            max_retries: Maximum number of retries, defaults to 3.
+            **kwargs: Additional generation parameters.
 
         Returns:
-            str: 生成的文本
+            str: Generated text.
 
         Raises:
-            ImportError: litellm 未安装
-            Exception: API 调用失败
+            ImportError: litellm not installed.
+            Exception: API call failed.
         """
         try:
             import litellm
@@ -102,15 +102,15 @@ class LiteLLMProvider(LLMProvider):
 
 class TagExtractor(BaseProcessor):
     """
-    基于 LLM 的标签提取器
+    LLM-based tag extractor.
 
-    从文档标题和内容中提取 3-5 个相关标签。支持多种 LLM 提供者。
+    Extracts 3-5 relevant tags from document title and content. Supports multiple LLM providers.
 
-    使用示例：
+    Usage examples:
         >>> from kb.processors.tag_extractor import TagExtractor
         >>> extractor = TagExtractor.from_config()
         >>> result = extractor.process(
-        ...     title="机器学习入门",
+        ...     title="Introduction to ML",
         ...     content="机器学习是人工智能的一个分支..."
         ... )
         >>> print(result.data)  # ['机器学习', '人工智能', '深度学习']
@@ -143,14 +143,14 @@ Return ONLY a JSON object in this exact format, no other text:
         **kwargs: Any
     ) -> None:
         """
-        初始化标签提取器
+        Initialize tag extractor.
 
         Args:
-            provider: LLM 提供者实例
-            min_tags: 最少提取标签数，默认为 3
-            max_tags: 最多提取标签数，默认为 5
-            summary_max_length: 摘要最大长度（字符数），默认为 512
-            **kwargs: 额外的配置参数
+            provider: LLM provider instance.
+            min_tags: Minimum number of tags to extract, defaults to 3.
+            max_tags: Maximum number of tags to extract, defaults to 5.
+            summary_max_length: Maximum summary length (in characters), defaults to 512.
+            **kwargs: Additional configuration parameters.
         """
         super().__init__(**kwargs)
         self.provider = provider
@@ -161,16 +161,16 @@ Return ONLY a JSON object in this exact format, no other text:
     @classmethod
     def from_config(cls, config: Optional[Config] = None) -> "TagExtractor":
         """
-        从配置创建标签提取器实例
+        Create tag extractor instance from configuration.
 
         Args:
-            config: 配置对象，如果为 None 则使用默认配置
+            config: Configuration object; uses default if None.
 
         Returns:
-            TagExtractor: 标签提取器实例
+            TagExtractor: Tag extractor instance.
 
         Raises:
-            ValueError: 配置无效或缺少必需字段
+            ValueError: Invalid configuration or missing required fields.
         """
         if config is None:
             config = Config()
@@ -183,16 +183,16 @@ Return ONLY a JSON object in this exact format, no other text:
         if not api_key:
             raise ValueError("LLM API key is required in configuration")
 
-        # 根据提供者类型创建相应的实例
+        # Create the appropriate instance based on provider type
         if provider_name == "litellm":
-            # LiteLLM provider: model 已经是 "provider/model" 格式
+            # LiteLLM provider: model is already in "provider/model" format
             provider = LiteLLMProvider(api_key=api_key, model=model)
         elif provider_name == "dashscope":
-            # 向后兼容：自动映射旧格式到 litellm 的 "dashscope/model" 格式
+            # Backward compatibility: auto-map old format to litellm "dashscope/model" format
             litellm_model = model if "/" in model else f"dashscope/{model}"
             provider = LiteLLMProvider(api_key=api_key, model=litellm_model)
         elif provider_name == "openai_compatible":
-            # 向后兼容：映射到 litellm，使用 api_base 传递自定义端点
+            # Backward compatibility: map to litellm, pass custom endpoint via api_base
             base_url = llm_config.get("base_url", "")
             if not base_url:
                 raise ValueError(
@@ -207,7 +207,7 @@ Return ONLY a JSON object in this exact format, no other text:
         else:
             raise ValueError(f"Unsupported LLM provider: {provider_name}")
 
-        # 从配置中读取标签数量限制和摘要长度限制
+        # Read tag count limits and summary length limit from configuration
         tag_config = config.get("tag_extraction", {})
         min_tags = tag_config.get("min_tags", 3)
         max_tags = tag_config.get("max_tags", 5)
@@ -229,20 +229,20 @@ Return ONLY a JSON object in this exact format, no other text:
         **kwargs: Any
     ) -> ProcessResult:
         """
-        从标题和内容中提取标签
+        Extract tags from title and content.
 
         Args:
-            title: 文档标题
-            content: 文档内容
-            **kwargs: 额外的处理参数
-                - max_retries: 最大重试次数，默认为 3
-                - temperature: 生成温度，默认为 0.3
+            title: Document title.
+            content: Document content.
+            **kwargs: Additional processing parameters.
+                - max_retries: Maximum retries, defaults to 3
+                - temperature: Generation temperature, defaults to 0.3
 
         Returns:
-            ProcessResult: 包含提取标签的处理结果
+            ProcessResult: Processing result containing extracted tags.
 
         Raises:
-            ValueError: 标题或内容为空
+            ValueError: Title or content is empty.
         """
         if not title or not title.strip():
             return ProcessResult(

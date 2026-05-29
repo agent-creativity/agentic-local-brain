@@ -1,8 +1,8 @@
 """
-SQLite 元数据存储模块
+SQLite metadata storage module
 
-基于 SQLite 的结构化元数据存储实现，支持知识项、标签和分块的存储管理。
-提供全文搜索（FTS5）和标签管理功能。
+SQLite-based structured metadata storage supporting knowledge items, tags, and chunk management.
+Provides full-text search (FTS5) and tag management.
 """
 
 import json
@@ -16,12 +16,12 @@ from typing import Any, Dict, Generator, List, Optional
 
 class SQLiteStorage:
     """
-    SQLite 元数据存储类
+    SQLite metadata storage class.
 
-    封装 SQLite 数据库，提供知识项、标签和分块的持久化存储。
-    支持全文搜索、标签管理和统计功能。
+    Wraps the SQLite database, providing persistent storage for knowledge items, tags, and chunks.
+    Supports full-text search, tag management, and statistics.
 
-    使用示例：
+    Usage examples:
         >>> from kb.storage.sqlite_storage import SQLiteStorage
         >>> storage = SQLiteStorage(db_path="~/.knowledge-base/db/metadata.db")
         >>> storage.add_knowledge(
@@ -36,42 +36,42 @@ class SQLiteStorage:
 
     def __init__(self, db_path: str = None) -> None:
         """
-        初始化 SQLite 存储
+        Initialize SQLite storage.
 
         Args:
-            db_path: 数据库文件路径，默认为 ~/.knowledge-base/db/metadata.db
+            db_path: Database file path. Defaults to ~/.knowledge-base/db/metadata.db.
         """
         if db_path is None:
             db_path = "~/.knowledge-base/db/metadata.db"
 
-        # 展开路径
+        # Expand path
         expanded_path = os.path.expanduser(db_path)
         self.db_path = Path(expanded_path)
 
-        # 确保目录存在
+        # Ensure directory exists
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # 初始化数据库连接
+        # Initialize database connection
         self._conn: Optional[sqlite3.Connection] = None
         self._init_db()
         self._migrate_schema()
 
     @property
     def conn(self) -> sqlite3.Connection:
-        """获取数据库连接"""
+        """Get database connection."""
         if self._conn is None:
             self._conn = sqlite3.connect(
                 str(self.db_path),
                 check_same_thread=False
             )
             self._conn.row_factory = sqlite3.Row
-            # 启用外键约束
+            # Enable foreign key constraints
             self._conn.execute("PRAGMA foreign_keys = ON")
         return self._conn
 
     @contextmanager
     def _transaction(self) -> Generator[sqlite3.Cursor, None, None]:
-        """事务上下文管理器"""
+        """Transaction context manager."""
         cursor = self.conn.cursor()
         try:
             yield cursor
@@ -100,9 +100,9 @@ class SQLiteStorage:
             cursor.close()
 
     def _init_db(self) -> None:
-        """创建数据库表（如果不存在）"""
+        """Create database tables if they don't exist."""
         with self._transaction() as cursor:
-            # 创建 knowledge 表
+            # Create knowledge table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS knowledge (
                     id TEXT PRIMARY KEY,
@@ -117,7 +117,7 @@ class SQLiteStorage:
                 )
             """)
 
-            # 创建 tags 表
+            # Create tags table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS tags (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -126,7 +126,7 @@ class SQLiteStorage:
                 )
             """)
 
-            # 创建 knowledge_tags 关联表
+            # Create knowledge_tags association table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS knowledge_tags (
                     knowledge_id TEXT,
@@ -137,7 +137,7 @@ class SQLiteStorage:
                 )
             """)
 
-            # 创建 chunks 表
+            # Create chunks table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS chunks (
                     id TEXT PRIMARY KEY,
@@ -149,8 +149,8 @@ class SQLiteStorage:
                 )
             """)
 
-            # 创建 FTS5 虚拟表用于全文搜索
-            # 检查是否已存在
+            # Create FTS5 virtual table for full-text search
+            # Check if it already exists
             cursor.execute("""
                 SELECT name FROM sqlite_master 
                 WHERE type='table' AND name='knowledge_fts'
@@ -165,8 +165,8 @@ class SQLiteStorage:
                     )
                 """)
 
-                # 创建触发器以保持 FTS 表同步
-                # 注意: 使用隐式 rowid (integer) 而非 id (text)
+                # Create triggers to keep FTS table in sync
+                # Note: uses implicit rowid (integer) instead of id (text)
                 cursor.execute("""
                     CREATE TRIGGER IF NOT EXISTS knowledge_ai AFTER INSERT ON knowledge BEGIN
                         INSERT INTO knowledge_fts(rowid, title, summary)
@@ -190,7 +190,7 @@ class SQLiteStorage:
                     END
                 """)
 
-            # 创建索引以提高查询性能
+            # Create indexes to improve query performance
             cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_knowledge_content_type 
                 ON knowledge(content_type)
@@ -212,7 +212,7 @@ class SQLiteStorage:
 
             # ---- Knowledge Mining tables (v0.6) ----
 
-            # 实体表
+            # Entities table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS entities (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -229,7 +229,7 @@ class SQLiteStorage:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(type)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_entities_name ON entities(name)")
 
-            # 实体-文档关联表
+            # Entity-document association table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS entity_mentions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -244,7 +244,7 @@ class SQLiteStorage:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_mentions_knowledge ON entity_mentions(knowledge_id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_mentions_entity ON entity_mentions(entity_id)")
 
-            # 实体关系表
+            # Entity relations table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS entity_relations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -262,7 +262,7 @@ class SQLiteStorage:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_relations_target ON entity_relations(target_entity_id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_relations_composite ON entity_relations(source_entity_id, target_entity_id)")
 
-            # 关系来源表
+            # Relation sources table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS entity_relation_sources (
                     relation_id INTEGER NOT NULL,
@@ -274,7 +274,7 @@ class SQLiteStorage:
                 )
             """)
 
-            # 文档级 embedding 缓存
+            # Document-level embedding cache
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS document_embeddings (
                     knowledge_id TEXT PRIMARY KEY,
@@ -284,7 +284,7 @@ class SQLiteStorage:
                 )
             """)
 
-            # 文档间关系表
+            # Document relations table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS document_relations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -302,7 +302,7 @@ class SQLiteStorage:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_doc_relations_source ON document_relations(source_knowledge_id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_doc_relations_target ON document_relations(target_knowledge_id)")
 
-            # 主题聚类表
+            # Topic clusters table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS topic_clusters (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -315,7 +315,7 @@ class SQLiteStorage:
                 )
             """)
 
-            # 文档-主题关联表
+            # Document-topic association table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS knowledge_topics (
                     knowledge_id TEXT NOT NULL,
@@ -327,7 +327,7 @@ class SQLiteStorage:
                 )
             """)
 
-            # 阅读历史表
+            # Reading history table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS reading_history (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -397,21 +397,21 @@ class SQLiteStorage:
         content_hash: str = None
     ) -> bool:
         """
-        插入一个知识项
+        Insert a knowledge item.
 
         Args:
-            id: 知识项唯一标识
-            title: 标题
-            content_type: 内容类型 (file/webpage/bookmark/paper/email/note)
-            source: 原始来源
-            collected_at: 收集时间
-            summary: 摘要，可选
-            word_count: 字数，可选
-            file_path: 文件系统路径，可选
-            content_hash: 内容哈希值，可选
+            id: Unique knowledge item ID.
+            title: Title.
+            content_type: Content type (file/webpage/bookmark/paper/email/note).
+            source: Original source.
+            collected_at: Collection time.
+            summary: Summary (optional).
+            word_count: Word count (optional).
+            file_path: File system path (optional).
+            content_hash: Content hash (optional).
 
         Returns:
-            bool: 是否插入成功
+            bool: Whether insertion was successful.
         """
         try:
             with self._transaction() as cursor:
@@ -435,20 +435,20 @@ class SQLiteStorage:
 
             return True
         except sqlite3.IntegrityError:
-            # ID 已存在
+            # ID already exists
             return False
         except Exception:
             return False
 
     def get_knowledge(self, id: str) -> Optional[Dict[str, Any]]:
         """
-        根据 ID 获取知识项
+        Get a knowledge item by ID.
 
         Args:
-            id: 知识项唯一标识
+            id: Unique knowledge item ID.
 
         Returns:
-            Optional[Dict[str, Any]]: 知识项字典，不存在返回 None
+            Optional[Dict[str, Any]]: Knowledge item dictionary, or None if not found.
         """
         cursor = self.conn.cursor()
         try:
@@ -471,19 +471,19 @@ class SQLiteStorage:
         sort_order: str = "desc"
     ) -> List[Dict[str, Any]]:
         """
-        列出知识项
+        List knowledge items.
 
         Args:
-            content_type: 内容类型过滤，可选
-            limit: 返回数量限制
-            offset: 偏移量
-            tag: 标签过滤，可选
-            search: 全文搜索关键词，可选
-            sort_by: 排序字段，可选 (collected_at, title, word_count)
-            sort_order: 排序方向，可选 (asc, desc)
+            content_type: Content type filter (optional).
+            limit: Limit on number of results.
+            offset: Offset.
+            tag: Tag filter (optional).
+            search: Full-text search keywords (optional).
+            sort_by: Sort field (optional: collected_at, title, word_count).
+            sort_order: Sort direction (optional: asc, desc).
 
         Returns:
-            List[Dict[str, Any]]: 知识项列表
+            List[Dict[str, Any]]: List of knowledge items.
         """
         # Whitelist allowed sort columns to prevent SQL injection
         allowed_sort_columns = {"collected_at", "title", "word_count", "source"}
@@ -539,32 +539,32 @@ class SQLiteStorage:
 
     def delete_knowledge(self, id: str) -> bool:
         """
-        删除知识项及其关联的标签和分块
+        Delete a knowledge item and its associated tags and chunks.
 
         Args:
-            id: 知识项唯一标识
+            id: Unique knowledge item ID.
 
         Returns:
-            bool: 是否删除成功
+            bool: Whether deletion was successful.
         """
         try:
             with self._transaction() as cursor:
-                # 先获取关联的标签以更新计数
+                # First get associated tags to update counts
                 cursor.execute("""
                     SELECT tag_id FROM knowledge_tags WHERE knowledge_id = ?
                 """, (id,))
                 tag_ids = [row[0] for row in cursor.fetchall()]
 
-                # 删除知识项（CASCADE 会自动删除关联的 chunks 和 knowledge_tags）
+                # Delete knowledge item (CASCADE auto-deletes associated chunks and knowledge_tags)
                 cursor.execute("DELETE FROM knowledge WHERE id = ?", (id,))
 
-                # 更新标签计数
+                # Update tag counts
                 for tag_id in tag_ids:
                     cursor.execute("""
                         UPDATE tags SET count = count - 1 WHERE id = ?
                     """, (tag_id,))
 
-                # 删除计数为0的标签
+                # Delete tags with zero count
                 cursor.execute("DELETE FROM tags WHERE count <= 0")
 
             return True
@@ -573,25 +573,25 @@ class SQLiteStorage:
 
     def update_knowledge(self, id: str, **kwargs) -> bool:
         """
-        更新知识项字段
+        Update knowledge item fields.
 
         Args:
-            id: 知识项唯一标识
-            **kwargs: 要更新的字段
+            id: Unique knowledge item ID.
+            **kwargs: Fields to update.
 
         Returns:
-            bool: 是否更新成功
+            bool: Whether update was successful.
         """
         if not kwargs:
             return True
 
-        # 允许更新的字段
+        # Allowed fields for update
         allowed_fields = {
             'title', 'content_type', 'source', 'collected_at',
             'summary', 'word_count', 'file_path', 'user_notes'
         }
 
-        # 过滤只允许的字段
+        # Filter to only allowed fields
         update_fields = {k: v for k, v in kwargs.items() if k in allowed_fields}
         if not update_fields:
             return True
@@ -611,13 +611,13 @@ class SQLiteStorage:
 
     def count_knowledge(self, content_type: str = None) -> int:
         """
-        统计知识项数量
+        Count knowledge items.
 
         Args:
-            content_type: 内容类型过滤，可选
+            content_type: Content type filter (optional).
 
         Returns:
-            int: 知识项数量
+            int: Number of knowledge items.
         """
         cursor = self.conn.cursor()
         try:
@@ -694,14 +694,14 @@ class SQLiteStorage:
 
     def add_tags(self, knowledge_id: str, tags: List[str]) -> bool:
         """
-        为知识项添加标签
+        Add tags to a knowledge item.
 
         Args:
-            knowledge_id: 知识项 ID
-            tags: 标签列表
+            knowledge_id: Knowledge item ID.
+            tags: Tag list.
 
         Returns:
-            bool: 是否添加成功
+            bool: Whether addition was successful.
         """
         if not tags:
             return True
@@ -713,7 +713,7 @@ class SQLiteStorage:
                     if not tag_name:
                         continue
 
-                    # 获取或创建标签
+                    # Get or create tag
                     cursor.execute(
                         "SELECT id FROM tags WHERE name = ?",
                         (tag_name,)
@@ -729,13 +729,13 @@ class SQLiteStorage:
                         )
                         tag_id = cursor.lastrowid
 
-                    # 添加关联（如果不存在）
+                    # Add association (if not exists)
                     cursor.execute("""
                         INSERT OR IGNORE INTO knowledge_tags (knowledge_id, tag_id)
                         VALUES (?, ?)
                     """, (knowledge_id, tag_id))
 
-                    # 如果成功插入了新关联，更新计数
+                    # If a new association was successfully inserted, update count
                     if cursor.rowcount > 0:
                         cursor.execute(
                             "UPDATE tags SET count = count + 1 WHERE id = ?",
@@ -748,13 +748,13 @@ class SQLiteStorage:
 
     def get_tags(self, knowledge_id: str) -> List[str]:
         """
-        获取知识项的所有标签
+        Get all tags for a knowledge item.
 
         Args:
-            knowledge_id: 知识项 ID
+            knowledge_id: Knowledge item ID.
 
         Returns:
-            List[str]: 标签名称列表
+            List[str]: List of tag names.
         """
         cursor = self.conn.cursor()
         try:
@@ -774,14 +774,14 @@ class SQLiteStorage:
         limit: int = 100
     ) -> List[Dict[str, Any]]:
         """
-        列出所有标签及其计数
+        List all tags with counts.
 
         Args:
-            order_by: 排序方式 ('count' 或 'name')
-            limit: 返回数量限制
+            order_by: Sort method ('count' or 'name').
+            limit: Limit on number of results.
 
         Returns:
-            List[Dict[str, Any]]: 标签列表 [{'name': str, 'count': int}, ...]
+            List[Dict[str, Any]]: Tag list. [{'name': str, 'count': int}, ...]
         """
         cursor = self.conn.cursor()
         try:
@@ -797,21 +797,21 @@ class SQLiteStorage:
 
     def merge_tags(self, source_tag: str, target_tag: str) -> int:
         """
-        合并标签（将 source_tag 合并到 target_tag）
+        Merge tags (merge source_tag into target_tag).
 
         Args:
-            source_tag: 源标签名称
-            target_tag: 目标标签名称
+            source_tag: Source tag name.
+            target_tag: Target tag name.
 
         Returns:
-            int: 受影响的知识项数量，如果失败返回 0
+            int: Number of affected knowledge items, 0 on failure.
         """
         if source_tag == target_tag:
             return 0
 
         try:
             with self._transaction() as cursor:
-                # 获取源标签和目标标签 ID
+                # Get source and target tag IDs
                 cursor.execute("SELECT id FROM tags WHERE name = ?", (source_tag,))
                 source_row = cursor.fetchone()
                 if not source_row:
@@ -824,25 +824,25 @@ class SQLiteStorage:
                 if target_row:
                     target_id = target_row[0]
                 else:
-                    # 创建目标标签
+                    # Create target tag
                     cursor.execute(
                         "INSERT INTO tags (name, count) VALUES (?, 0)",
                         (target_tag,)
                     )
                     target_id = cursor.lastrowid
 
-                # 获取源标签关联的知识项
+                # Get knowledge items associated with source tag
                 cursor.execute("""
                     SELECT knowledge_id FROM knowledge_tags WHERE tag_id = ?
                 """, (source_id,))
                 knowledge_ids = [row[0] for row in cursor.fetchall()]
                 
-                # 记录受影响的数量
+                # Record the affected count
                 affected_count = len(knowledge_ids)
 
-                # 更新关联到目标标签
+                # Update associations to target tag
                 for kid in knowledge_ids:
-                    # 检查目标标签是否已关联
+                    # Check if target tag is already associated
                     cursor.execute("""
                         SELECT 1 FROM knowledge_tags 
                         WHERE knowledge_id = ? AND tag_id = ?
@@ -859,13 +859,13 @@ class SQLiteStorage:
                             (target_id,)
                         )
                     else:
-                        # 已存在关联，删除源关联
+                        # Association already exists, delete source association
                         cursor.execute("""
                             DELETE FROM knowledge_tags 
                             WHERE knowledge_id = ? AND tag_id = ?
                         """, (kid, source_id))
 
-                # 删除源标签
+                # Delete source tag
                 cursor.execute("DELETE FROM tags WHERE id = ?", (source_id,))
 
             return affected_count
@@ -874,13 +874,13 @@ class SQLiteStorage:
 
     def delete_tag(self, tag_name: str) -> int:
         """
-        删除标签及其所有关联
+        Delete a tag and all its associations.
 
         Args:
-            tag_name: 标签名称
+            tag_name: Tag name.
 
         Returns:
-            int: 受影响的知识项数量，如果失败返回 0
+            int: Number of affected knowledge items, 0 on failure.
         """
         try:
             with self._transaction() as cursor:
@@ -891,20 +891,20 @@ class SQLiteStorage:
 
                 tag_id = row[0]
                 
-                # 获取受影响的知识项数量
+                # Get the number of affected knowledge items
                 cursor.execute(
                     "SELECT COUNT(*) FROM knowledge_tags WHERE tag_id = ?",
                     (tag_id,)
                 )
                 affected_count = cursor.fetchone()[0]
 
-                # 删除关联
+                # Delete associations
                 cursor.execute(
                     "DELETE FROM knowledge_tags WHERE tag_id = ?",
                     (tag_id,)
                 )
 
-                # 删除标签
+                # Delete tag
                 cursor.execute("DELETE FROM tags WHERE id = ?", (tag_id,))
 
             return affected_count
@@ -918,15 +918,15 @@ class SQLiteStorage:
         limit: int = 50
     ) -> List[Dict[str, Any]]:
         """
-        根据标签查找知识项
+        Find knowledge items by tags.
 
         Args:
-            tags: 标签列表
-            match_all: 是否需要匹配所有标签
-            limit: 返回数量限制
+            tags: Tag list.
+            match_all: Whether to match all tags.
+            limit: Limit on number of results.
 
         Returns:
-            List[Dict[str, Any]]: 知识项列表
+            List[Dict[str, Any]]: List of knowledge items.
         """
         if not tags:
             return []
@@ -936,7 +936,7 @@ class SQLiteStorage:
             placeholders = ",".join(["?" for _ in tags])
 
             if match_all:
-                # 需要匹配所有标签
+                # Must match all tags
                 cursor.execute(f"""
                     SELECT k.* FROM knowledge k
                     JOIN knowledge_tags kt ON k.id = kt.knowledge_id
@@ -947,7 +947,7 @@ class SQLiteStorage:
                     LIMIT ?
                 """, tags + [len(tags), limit])
             else:
-                # 匹配任意标签
+                # Match any tag
                 cursor.execute(f"""
                     SELECT DISTINCT k.* FROM knowledge k
                     JOIN knowledge_tags kt ON k.id = kt.knowledge_id
@@ -962,27 +962,27 @@ class SQLiteStorage:
 
     def get_by_tags_any(self, tags: List[str], limit: int = 50) -> List[Dict[str, Any]]:
         """
-        查找包含任意指定标签的知识项
+        Find knowledge items containing any of the specified tags.
 
         Args:
-            tags: 标签列表
-            limit: 返回数量限制
+            tags: Tag list.
+            limit: Limit on number of results.
 
         Returns:
-            List[Dict[str, Any]]: 知识项列表
+            List[Dict[str, Any]]: List of knowledge items.
         """
         return self.find_by_tags(tags, match_all=False, limit=limit)
 
     def get_by_tags_all(self, tags: List[str], limit: int = 50) -> List[Dict[str, Any]]:
         """
-        查找包含所有指定标签的知识项
+        Find knowledge items containing all specified tags.
 
         Args:
-            tags: 标签列表
-            limit: 返回数量限制
+            tags: Tag list.
+            limit: Limit on number of results.
 
         Returns:
-            List[Dict[str, Any]]: 知识项列表
+            List[Dict[str, Any]]: List of knowledge items.
         """
         return self.find_by_tags(tags, match_all=True, limit=limit)
 
@@ -990,14 +990,14 @@ class SQLiteStorage:
 
     def add_chunks(self, knowledge_id: str, chunks: List[Dict[str, Any]]) -> bool:
         """
-        为知识项添加分块
+        Add chunks for a knowledge item.
 
         Args:
-            knowledge_id: 知识项 ID
-            chunks: 分块列表，每个分块包含 {id, chunk_index, content, embedding_id}
+            knowledge_id: Knowledge item ID.
+            chunks: List of chunks, each containing {id, chunk_index, content, embedding_id}.
 
         Returns:
-            bool: 是否添加成功
+            bool: Whether addition was successful.
         """
         if not chunks:
             return True
@@ -1022,13 +1022,13 @@ class SQLiteStorage:
 
     def get_chunks(self, knowledge_id: str) -> List[Dict[str, Any]]:
         """
-        获取知识项的所有分块
+        Get all chunks for a knowledge item.
 
         Args:
-            knowledge_id: 知识项 ID
+            knowledge_id: Knowledge item ID.
 
         Returns:
-            List[Dict[str, Any]]: 分块列表，按 chunk_index 排序
+            List[Dict[str, Any]]: List of chunks, sorted by chunk_index.
         """
         cursor = self.conn.cursor()
         try:
@@ -1043,13 +1043,13 @@ class SQLiteStorage:
 
     def delete_chunks(self, knowledge_id: str) -> bool:
         """
-        删除知识项的所有分块
+        Delete all chunks for a knowledge item.
 
         Args:
-            knowledge_id: 知识项 ID
+            knowledge_id: Knowledge item ID.
 
         Returns:
-            bool: 是否删除成功
+            bool: Whether deletion was successful.
         """
         try:
             with self._transaction() as cursor:
@@ -1065,21 +1065,21 @@ class SQLiteStorage:
 
     def search_fulltext(self, query: str, limit: int = 20) -> List[Dict[str, Any]]:
         """
-        全文搜索
+        Full-text search.
 
         Args:
-            query: 搜索查询
-            limit: 返回数量限制
+            query: Search query.
+            limit: Limit on number of results.
 
         Returns:
-            List[Dict[str, Any]]: 匹配的知识项列表
+            List[Dict[str, Any]]: List of matching knowledge items.
         """
         if not query or not query.strip():
             return []
 
         cursor = self.conn.cursor()
         try:
-            # 使用 FTS5 搜索
+            # Use FTS5 search
             cursor.execute("""
                 SELECT k.* FROM knowledge k
                 JOIN knowledge_fts fts ON k.rowid = fts.rowid
@@ -1089,7 +1089,7 @@ class SQLiteStorage:
             """, (query, limit))
             return [dict(row) for row in cursor.fetchall()]
         except Exception:
-            # FTS 查询失败时回退到 LIKE 搜索
+            # Fall back to LIKE search when FTS query fails
             like_query = f"%{query}%"
             cursor.execute("""
                 SELECT * FROM knowledge
@@ -1104,10 +1104,10 @@ class SQLiteStorage:
 
     def count_all(self) -> int:
         """
-        获取知识项总数
+        Get total number of knowledge items.
 
         Returns:
-            int: 知识项总数
+            int: Total number of knowledge items.
         """
         cursor = self.conn.cursor()
         try:
@@ -1118,10 +1118,10 @@ class SQLiteStorage:
 
     def count_by_type(self) -> Dict[str, int]:
         """
-        按内容类型统计知识项数量
+        Count knowledge items by content type.
 
         Returns:
-            Dict[str, int]: {content_type: count} 的字典
+            Dict[str, int]: Dictionary of {content_type: count}.
         """
         cursor = self.conn.cursor()
         try:
@@ -1136,10 +1136,10 @@ class SQLiteStorage:
 
     def get_tag_statistics(self) -> Dict[str, int]:
         """
-        获取标签统计信息
+        Get tag statistics.
 
         Returns:
-            Dict[str, int]: {tag_name: count} 的字典
+            Dict[str, int]: Dictionary of {tag_name: count}.
         """
         cursor = self.conn.cursor()
         try:
@@ -1156,13 +1156,13 @@ class SQLiteStorage:
 
     def get_collection_timeline(self, days: int = 30) -> List[tuple]:
         """
-        获取收集时间线统计
+        Get collection timeline statistics.
 
         Args:
-            days: 返回最近多少天的数据，默认30天
+            days: Number of recent days to return, defaults to 30.
 
         Returns:
-            List[tuple]: [(date, count), ...] 按日期排序
+            List[tuple]: [(date, count), ...] sorted by date.
         """
         cursor = self.conn.cursor()
         try:
@@ -1179,10 +1179,10 @@ class SQLiteStorage:
 
     def get_all_tags(self) -> Dict[str, int]:
         """
-        获取所有标签及其计数
+        Get all tags with counts.
 
         Returns:
-            Dict[str, int]: {tag_name: count} 的字典
+            Dict[str, int]: Dictionary of {tag_name: count}.
         """
         cursor = self.conn.cursor()
         try:
@@ -1197,18 +1197,18 @@ class SQLiteStorage:
 
     def get_all_knowledge(self, tags: List[str] = None) -> List[Dict[str, Any]]:
         """
-        获取所有知识项，可选按标签过滤
+        Get all knowledge items, optionally filtered by tags.
 
         Args:
-            tags: 标签列表，只返回包含这些标签的知识项
+            tags: Tag list, only return knowledge items containing these tags.
 
         Returns:
-            List[Dict[str, Any]]: 知识项列表，包含 tags 字段
+            List[Dict[str, Any]]: List of knowledge items, including tags field.
         """
         cursor = self.conn.cursor()
         try:
             if tags:
-                # 按标签过滤
+                # Filter by tags
                 placeholders = ",".join(["?" for _ in tags])
                 cursor.execute(f"""
                     SELECT DISTINCT k.* FROM knowledge k
@@ -1218,7 +1218,7 @@ class SQLiteStorage:
                     ORDER BY k.collected_at DESC
                 """, tags)
             else:
-                # 获取所有
+                # Get all
                 cursor.execute("""
                     SELECT * FROM knowledge
                     ORDER BY collected_at DESC
@@ -1228,7 +1228,7 @@ class SQLiteStorage:
             items = []
             for row in rows:
                 item = dict(row)
-                # 获取每个知识项的标签
+                # Get tags for each knowledge item
                 item['tags'] = self.get_tags(item['id'])
                 items.append(item)
             return items
@@ -1237,22 +1237,22 @@ class SQLiteStorage:
 
     def get_stats(self) -> Dict[str, Any]:
         """
-        获取统计信息
+        Get statistics.
 
         Returns:
-            Dict[str, Any]: 统计信息，包括：
-                - total_items: 总知识项数
-                - items_by_type: 按类型分组的数量
-                - total_tags: 总标签数
-                - total_chunks: 总分块数
+            Dict[str, Any]: Statistics including:
+                - total_items: Total knowledge items.
+                - items_by_type: Count grouped by type.
+                - total_tags: Total tags.
+                - total_chunks: Total chunks.
         """
         cursor = self.conn.cursor()
         try:
-            # 总知识项数
+            # Total knowledge items.
             cursor.execute("SELECT COUNT(*) FROM knowledge")
             total_items = cursor.fetchone()[0]
 
-            # 按类型分组
+            # Group by type
             cursor.execute("""
                 SELECT content_type, COUNT(*) as count 
                 FROM knowledge 
@@ -1260,11 +1260,11 @@ class SQLiteStorage:
             """)
             items_by_type = {row[0]: row[1] for row in cursor.fetchall()}
 
-            # 总标签数
+            # Total tags.
             cursor.execute("SELECT COUNT(*) FROM tags")
             total_tags = cursor.fetchone()[0]
 
-            # 总分块数
+            # Total chunks.
             cursor.execute("SELECT COUNT(*) FROM chunks")
             total_chunks = cursor.fetchone()[0]
 
@@ -1665,42 +1665,42 @@ class SQLiteStorage:
     # ---- Utility ----
 
     def close(self) -> None:
-        """关闭数据库连接"""
+        """Close database connection."""
         if self._conn:
             self._conn.close()
             self._conn = None
 
     def reset(self) -> bool:
         """
-        重置数据库（删除并重新创建所有表）
+        Reset database (delete and recreate all tables).
 
         Returns:
-            bool: 是否重置成功
+            bool: Whether reset was successful.
         """
         try:
             with self._transaction() as cursor:
-                # 删除所有表（按依赖顺序）
+                # Drop all tables (in dependency order)
                 cursor.execute("DROP TABLE IF EXISTS knowledge_fts")
                 cursor.execute("DROP TABLE IF EXISTS chunks")
                 cursor.execute("DROP TABLE IF EXISTS knowledge_tags")
                 cursor.execute("DROP TABLE IF EXISTS tags")
                 cursor.execute("DROP TABLE IF EXISTS knowledge")
 
-                # 删除触发器
+                # Drop triggers
                 cursor.execute("DROP TRIGGER IF EXISTS knowledge_ai")
                 cursor.execute("DROP TRIGGER IF EXISTS knowledge_ad")
                 cursor.execute("DROP TRIGGER IF EXISTS knowledge_au")
 
-            # 重新初始化
+            # Reinitialize
             self._init_db()
             return True
         except Exception:
             return False
 
     def __enter__(self) -> "SQLiteStorage":
-        """上下文管理器入口"""
+        """Context manager entry."""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        """上下文管理器退出"""
+        """Context manager exit."""
         self.close()

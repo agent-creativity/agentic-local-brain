@@ -1,10 +1,10 @@
 """
-书签解析器模块
+Bookmark parser module
 
-支持解析多种浏览器书签格式：
-- Chrome/Edge: JSON 格式
-- HTML 导出: Netscape Bookmark File 格式
-- Safari: plist 格式（可选）
+Supports parsing multiple browser bookmark formats:
+- Chrome/Edge: JSON format
+- HTML export: Netscape Bookmark File format
+- Safari: plist format (optional)
 """
 
 from __future__ import annotations
@@ -21,14 +21,14 @@ from urllib.parse import urlparse
 @dataclass
 class BookmarkItem:
     """
-    书签数据项
+    Bookmark data item.
 
     Attributes:
-        title: 书签标题
-        url: 书签 URL
-        folder_path: 文件夹路径层级，如 ["技术", "Python"]
-        added_date: 添加日期（时间戳或 ISO 格式字符串）
-        metadata: 额外的元数据信息
+        title: Bookmark title.
+        url: Bookmark URL.
+        folder_path: Folder path hierarchy, e.g. ["Tech", "Python"].
+        added_date: Date added (timestamp or ISO format string).
+        metadata: Additional metadata.
     """
 
     title: str
@@ -43,17 +43,17 @@ class BookmarkItem:
 
 class ChromeBookmarkParser:
     """
-    Chrome/Edge 书签解析器
+    Chrome/Edge bookmark parser.
 
-    Chrome 和 Edge 浏览器的书签存储在 JSON 格式文件中。
+    Chrome and Edge store bookmarks in JSON format files.
     """
 
     def __init__(self) -> None:
-        """初始化 Chrome 书签解析器"""
+        """Initialize Chrome bookmark parser."""
         self._bookmarks: List[BookmarkItem] = []
 
     def parse_file(self, file_path: str | Path) -> List[BookmarkItem]:
-        """解析 Chrome 书签文件"""
+        """Parse Chrome bookmark file."""
         file_path = Path(file_path).resolve()
 
         if not file_path.exists():
@@ -78,7 +78,7 @@ class ChromeBookmarkParser:
         return self._bookmarks
 
     def parse_dict(self, data: Dict[str, Any]) -> List[BookmarkItem]:
-        """解析书签字典数据"""
+        """Parse bookmark dictionary data."""
         if "roots" not in data:
             raise ValueError("无效的 Chrome 书签数据格式")
 
@@ -99,7 +99,7 @@ class ChromeBookmarkParser:
         node: Dict[str, Any],
         folder_path: List[str],
     ) -> None:
-        """递归解析书签节点"""
+        """Recursively parse bookmark nodes."""
         if node.get("type") == "url":
             bookmark = BookmarkItem(
                 title=node.get("name", "无标题"),
@@ -123,7 +123,7 @@ class ChromeBookmarkParser:
 
     @staticmethod
     def _convert_chrome_timestamp(timestamp: Optional[str]) -> Optional[str]:
-        """转换 Chrome 时间戳为 ISO 格式"""
+        """Convert Chrome timestamp to ISO format."""
         if not timestamp:
             return None
 
@@ -143,7 +143,7 @@ class ChromeBookmarkParser:
 
     @staticmethod
     def _is_valid_url(url: str) -> bool:
-        """验证 URL 是否有效"""
+        """Check if URL is valid."""
         try:
             parsed = urlparse(url)
             return bool(parsed.scheme in ("http", "https") and parsed.netloc)
@@ -153,18 +153,18 @@ class ChromeBookmarkParser:
 
 class HTMLBookmarkParser:
     """
-    HTML 书签文件解析器
+    HTML bookmark file parser.
 
-    解析 Netscape Bookmark File 格式的 HTML 导出文件。
-    使用正则表达式解析，因为这种格式的 HTML 通常不规范。
+    Parses Netscape Bookmark File format HTML export files.
+    Uses regex parsing since this HTML format is typically non-standard.
     """
 
     def __init__(self) -> None:
-        """初始化 HTML 书签解析器"""
+        """Initialize HTML bookmark parser."""
         self._bookmarks: List[BookmarkItem] = []
 
     def parse_file(self, file_path: str | Path) -> List[BookmarkItem]:
-        """解析 HTML 书签文件"""
+        """Parse HTML bookmark file."""
         file_path = Path(file_path).resolve()
 
         if not file_path.exists():
@@ -174,14 +174,14 @@ class HTMLBookmarkParser:
         return self.parse_html(content)
 
     def parse_html(self, html_content: str) -> List[BookmarkItem]:
-        """解析 HTML 内容"""
+        """Parse HTML content."""
         self._bookmarks = []
 
-        # 检查是否包含 DL 标签
+        # Check if DL tag is present
         if "<DL>" not in html_content.upper():
             raise ValueError("无效的书签 HTML 格式：未找到 <DL> 元素")
 
-        # 使用正则表达式解析
+        # Parse using regex
         self._parse_html_regex(html_content, folder_path=[])
 
         return self._bookmarks
@@ -191,18 +191,18 @@ class HTMLBookmarkParser:
         html_content: str,
         folder_path: List[str],
     ) -> None:
-        """使用正则表达式递归解析 HTML 书签"""
-        # 使用简单的字符串查找方法
+        """Recursively parse HTML bookmarks using regex."""
+        # Use simple string search method
         pos = 0
         html_upper = html_content.upper()
         
         while pos < len(html_content):
-            # 查找下一个 <DT>
+            # Find next <DT>
             dt_start = html_upper.find('<DT>', pos)
             if dt_start == -1:
                 break
             
-            # 查找当前 <DT> 的结束边界：下一个 <DT> 或 </DL>
+            # Find current <DT>'s end boundary: next <DT> or </DL>
             search_from = dt_start + 4
             next_dt = html_upper.find('<DT>', search_from)
             next_dl_close = html_upper.find('</DL>', search_from)
@@ -213,26 +213,26 @@ class HTMLBookmarkParser:
             dt_content = html_content[dt_start + 4:dt_end]
             pos = dt_end
             
-            # 检查是否是文件夹
+            # Check if it's a folder
             h3_start = dt_content.upper().find('<H3')
             if h3_start != -1:
-                # 是文件夹
+                # It's a folder
                 h3_end = dt_content.upper().find('</H3>', h3_start)
                 if h3_end != -1:
                     folder_name = dt_content[h3_start:h3_end + 5]
-                    # 提取文件夹名称
+                    # Extract folder name
                     import re
                     folder_match = re.search(r'<H3[^>]*>(.*?)</H3>', folder_name, re.IGNORECASE | re.DOTALL)
                     if folder_match:
                         folder_name = folder_match.group(1).strip()
                         new_folder_path = folder_path + [folder_name]
                         
-                        # 查找紧随 H3 的 DL（从 </H3> 之后在原始 html 中搜索）
+                        # Find DL following H3 (search in original html after </H3>)
                         h3_abs_end = dt_start + 4 + h3_end + 5
                         remaining = html_content[h3_abs_end:]
                         dl_start = remaining.upper().find('<DL>')
                         if dl_start != -1:
-                            # 找到匹配的 </DL>
+                            # Find matching </DL>
                             dl_content_start = dl_start + 4
                             dl_depth = 1
                             dl_pos = dl_content_start
@@ -251,13 +251,13 @@ class HTMLBookmarkParser:
                                     if dl_depth == 0:
                                         dl_content = remaining[dl_content_start:next_close]
                                         self._parse_html_regex(dl_content, folder_path=new_folder_path)
-                                        # 跳过整个 </DL> 标签
+                                        # Skip the entire </DL> tag
                                         pos = h3_abs_end + next_close + 5
                                         break
                                     dl_pos = next_close + 5
                 continue
             
-            # 检查是否是书签
+            # Check if it's a bookmark
             a_start = dt_content.upper().find('<A ')
             if a_start != -1:
                 import re
@@ -270,7 +270,7 @@ class HTMLBookmarkParser:
                     url = bookmark_match.group(1).strip()
                     title = bookmark_match.group(2).strip()
                     
-                    # 提取 ADD_DATE
+                    # Extract ADD_DATE
                     add_date = None
                     add_date_match = re.search(r'ADD_DATE=["\']?(\d+)["\']?', dt_content, re.IGNORECASE)
                     if add_date_match:
@@ -287,7 +287,7 @@ class HTMLBookmarkParser:
 
     @staticmethod
     def _convert_html_timestamp(timestamp: Optional[str]) -> Optional[str]:
-        """转换 HTML 时间戳（Unix 时间戳）为 ISO 格式"""
+        """Convert HTML timestamp (Unix) to ISO format."""
         if not timestamp:
             return None
 
@@ -304,7 +304,7 @@ class HTMLBookmarkParser:
 
     @staticmethod
     def _is_valid_url(url: str) -> bool:
-        """验证 URL 是否有效"""
+        """Check if URL is valid."""
         try:
             from urllib.parse import urlparse
 
@@ -316,17 +316,17 @@ class HTMLBookmarkParser:
 
 class SafariBookmarkParser:
     """
-    Safari 书签解析器（可选）
+    Safari bookmark parser (optional).
 
-    Safari 书签存储在 plist 格式的二进制或 XML 文件中。
+    Safari stores bookmarks in plist format (binary or XML).
     """
 
     def __init__(self) -> None:
-        """初始化 Safari 书签解析器"""
+        """Initialize Safari bookmark parser."""
         self._bookmarks: List[BookmarkItem] = []
 
     def parse_file(self, file_path: str | Path) -> List[BookmarkItem]:
-        """解析 Safari 书签 plist 文件"""
+        """Parse Safari bookmarks plist file."""
         file_path = Path(file_path).resolve()
 
         if not file_path.exists():
@@ -348,7 +348,7 @@ class SafariBookmarkParser:
         data: Any,
         folder_path: Optional[List[str]] = None,
     ) -> None:
-        """递归解析 plist 数据"""
+        """Recursively parse plist data."""
         if folder_path is None:
             folder_path = []
 
@@ -380,7 +380,7 @@ class SafariBookmarkParser:
 
     @staticmethod
     def _is_valid_url(url: str) -> bool:
-        """验证 URL 是否有效"""
+        """Check if URL is valid."""
         try:
             from urllib.parse import urlparse
 

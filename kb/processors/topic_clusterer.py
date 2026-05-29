@@ -1,13 +1,13 @@
 """
-主题聚类模块
+Topic clustering module
 
-基于 HDBSCAN 的文档主题自动发现，支持增量分类和 centroid 更新。
+HDBSCAN-based automatic document topic discovery, supporting incremental classification and centroid updates.
 
-聚类流程：
-1. 获取所有文档的 document embedding
-2. HDBSCAN 无监督聚类
-3. LLM 为每个 cluster 生成主题标签和描述
-4. 结果写入 topic_clusters + knowledge_topics 表
+Clustering process:
+1. Get document embeddings for all documents
+2. HDBSCAN unsupervised clustering
+3. LLM generates topic labels and descriptions for each cluster
+4. Write results to topic_clusters + knowledge_topics tables
 """
 
 import json
@@ -30,10 +30,10 @@ except ImportError:
 
 class TopicClusterer:
     """
-    主题聚类服务。
+    Topic clustering service.
 
-    使用 HDBSCAN 对文档级 embedding 做无监督聚类，
-    LLM 生成主题标签，支持增量分类和 centroid 更新。
+    Uses HDBSCAN for unsupervised clustering on document-level embeddings, 
+    with LLM-generated topic labels, supporting incremental classification and centroid updates.
     """
 
     LABEL_PROMPT = """Based on the following document titles from a knowledge base cluster, generate a concise topic label and description.
@@ -109,7 +109,7 @@ Return ONLY a JSON object:
         conn: Optional[sqlite3.Connection] = None,
     ) -> Dict[str, Any]:
         """
-        全量聚类：对所有文档 embedding 做 HDBSCAN 聚类。
+        Full clustering: HDBSCAN clustering on all document embeddings.
 
         Returns:
             {"clusters": int, "classified": int, "noise": int}
@@ -249,15 +249,15 @@ Return ONLY a JSON object:
         conn: Optional[sqlite3.Connection] = None,
     ) -> Optional[int]:
         """
-        增量分类：将新文档分配到最近的 cluster，并更新 centroid。
+        Incremental classification: assigns new document to nearest cluster and updates centroid.
 
         Args:
-            knowledge_id: 文档 ID
-            embedding: 文档 embedding
-            conn: SQLite 连接
+            knowledge_id: Document ID.
+            embedding: Document embedding.
+            conn: SQLite connection.
 
         Returns:
-            分配的 cluster_id，或 None（无匹配）
+            Assigned cluster_id, or None (no match).
         """
         should_close = False
         if conn is None:

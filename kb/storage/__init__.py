@@ -1,10 +1,10 @@
 """
-存储层模块
+Storage layer module
 
-负责数据的持久化存储，包括：
-- 向量数据库（Chroma）
-- 原始文件存储
-- 元数据存储（SQLite）
+Handles persistent data storage, including:
+- Vector database (Chroma)
+- Raw file storage
+- Metadata storage (SQLite)
 """
 
 from kb.storage.chroma_storage import ChromaStorage

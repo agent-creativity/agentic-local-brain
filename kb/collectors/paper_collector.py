@@ -1,7 +1,7 @@
 """
-学术论文收集器模块
+Academic paper collector module
 
-支持从 arXiv 收集学术论文，提取元数据和摘要并保存到知识库。
+Supports collecting academic papers from arXiv, extracting metadata and abstracts, and saving to the knowledge base.
 """
 
 import re
@@ -17,35 +17,35 @@ from kb.collectors.base import BaseCollector, CollectResult
 
 class PaperCollector(BaseCollector):
     """
-    学术论文收集器
+    Academic paper collector.
 
-    支持从 arXiv 收集学术论文：
-    - 解析 arXiv ID（支持多种格式）
-    - 通过 arXiv API 获取论文元数据
-    - 提取标题、作者、摘要、分类等信息
-    - 保存为带 YAML Front Matter 的 Markdown 文件
+    Supports collecting academic papers from arXiv:
+    - Parse arXiv ID (supports multiple formats)
+    - Retrieve paper metadata via arXiv API
+    - Extract title, authors, abstract, categories, etc.
+    - Save as Markdown files with YAML Front Matter
 
-    处理流程：
-    1. 解析 arXiv ID
-    2. 调用 arXiv API 获取论文信息
-    3. 解析 XML 响应
-    4. 生成 YAML Front Matter 元数据
-    5. 保存到 ~/.knowledge-base/1_collect/papers/ 目录
-    6. 返回收集结果
+    Processing flow:
+    1. Parse arXiv ID
+    2. Call arXiv API to get paper information
+    3. Parse XML response
+    4. Generate YAML Front Matter metadata
+    5. Save to ~/.knowledge-base/1_collect/papers/ directory
+    6. Return collection result
 
-    示例：
+    Examples:
         >>> collector = PaperCollector()
         >>> result = collector.collect("arxiv:2301.12345")
         >>> if result.success:
         ...     print(f"成功: {result.title}")
     """
 
-    # arXiv API 配置
+    # arXiv API Configuration.
     ARXIV_API_URL = "https://export.arxiv.org/api/query"
     DEFAULT_TIMEOUT = 30
 
-    # arXiv ID 格式正则
-    # 支持格式: arxiv:2301.12345, 2301.12345, https://arxiv.org/abs/2301.12345
+    # arXiv ID format regex
+    # Supported formats: arxiv:2301.12345, 2301.12345, https://arxiv.org/abs/2301.12345
     ARXIV_ID_PATTERNS = [
         r"arxiv:(\d{4}\.\d{4,5}(?:v\d+)?)",  # arxiv:2301.12345
         r"^(\d{4}\.\d{4,5}(?:v\d+)?)$",  # 2301.12345
@@ -66,11 +66,11 @@ class PaperCollector(BaseCollector):
         timeout: Optional[int] = None,
     ) -> None:
         """
-        初始化论文收集器
+        Initialize paper collector.
 
         Args:
-            output_dir: 输出目录，默认为 ~/.knowledge-base/1_collect/
-            timeout: HTTP 请求超时时间（秒），默认 30 秒
+            output_dir: Output directory. Defaults to ~/.knowledge-base/1_collect/.
+            timeout: HTTP request timeout in seconds, defaults to 30.
         """
         super().__init__(output_dir)
         self._sub_dir = "papers"
@@ -86,20 +86,20 @@ class PaperCollector(BaseCollector):
         **kwargs: Any,
     ) -> CollectResult:
         """
-        收集 arXiv 论文
+        Collect arXiv paper.
 
         Args:
-            source: arXiv ID 或 URL（支持格式: arxiv:2301.12345, 2301.12345, 或 arXiv URL）
-            tags: 用户提供的标签列表（可选）
-            download_pdf: 是否下载 PDF（默认 False，暂不实现）
-            skip_existing: 是否跳过已存在的内容（默认 False）
-            storage: SQLiteStorage 实例，用于重复检测（可选）
-            **kwargs: 额外的参数
+            source: arXiv ID or URL (supported formats: arxiv:2301.12345, 2301.12345, or arXiv URL).
+            tags: User-provided tag list (optional).
+            download_pdf: Whether to download PDF (defaults to False, not yet implemented).
+            skip_existing: Whether to skip existing content (default False).
+            storage: SQLiteStorage instance for duplicate detection (optional).
+            **kwargs: Additional parameters.
 
         Returns:
-            CollectResult: 收集结果
+            CollectResult: Collection result.
         """
-        # 解析 arXiv ID
+        # Parse arXiv ID
         arxiv_id = self._parse_arxiv_id(source)
         if not arxiv_id:
             return CollectResult(
@@ -119,20 +119,20 @@ class PaperCollector(BaseCollector):
                 )
 
         try:
-            # 从 arXiv API 获取论文信息
+            # Fetch paper info from arXiv API
             paper_info = self._fetch_paper_info(arxiv_id)
             if not paper_info:
                 return CollectResult(
                     success=False, error=f"Paper not found: {arxiv_id}"
                 )
 
-            # 提取内容
+            # Extract content
             content = self._extract_content(paper_info)
 
             # Use CLI-provided title if available, otherwise use paper title
             final_title = kwargs.pop("title", None) or paper_info["title"]
 
-            # 生成元数据
+            # Generate metadata
             metadata = self._generate_metadata(
                 title=final_title,
                 content=content,
@@ -142,10 +142,10 @@ class PaperCollector(BaseCollector):
                 **kwargs,
             )
 
-            # 生成安全的文件名
+            # Generate safe filename
             filename = self._generate_safe_filename("paper", final_title)
 
-            # 保存到文件
+            # Save to file
             saved_path = self._save_to_file(
                 content=content,
                 metadata=metadata,
@@ -153,10 +153,10 @@ class PaperCollector(BaseCollector):
                 sub_dir=self._sub_dir,
             )
 
-            # 统计字数
+            # Count words
             word_count = self._count_words(content)
 
-            # 生成内容哈希
+            # Generate content hash
             content_hash = self._generate_content_hash(content)
 
             return CollectResult(
@@ -180,19 +180,19 @@ class PaperCollector(BaseCollector):
 
     def _parse_arxiv_id(self, source: str) -> Optional[str]:
         """
-        解析 arXiv ID
+        Parse arXiv ID.
 
-        支持多种格式：
+        Supports multiple formats:
         - arxiv:2301.12345
         - 2301.12345
         - https://arxiv.org/abs/2301.12345
         - https://arxiv.org/pdf/2301.12345.pdf
 
         Args:
-            source: 原始输入字符串
+            source: Original input string.
 
         Returns:
-            Optional[str]: 解析出的 arXiv ID，解析失败返回 None
+            Optional[str]: Parsed arXiv ID, or None on failure.
         """
         source = source.strip()
 
@@ -205,13 +205,13 @@ class PaperCollector(BaseCollector):
 
     def _fetch_paper_info(self, arxiv_id: str) -> Optional[Dict[str, Any]]:
         """
-        从 arXiv API 获取论文信息
+        Fetch paper information from arXiv API.
 
         Args:
             arxiv_id: arXiv ID
 
         Returns:
-            Optional[Dict[str, Any]]: 论文信息字典，失败返回 None
+            Optional[Dict[str, Any]]: Paper info dictionary, or None on failure.
         """
         url = f"{self.ARXIV_API_URL}?id_list={arxiv_id}"
 
@@ -225,24 +225,24 @@ class PaperCollector(BaseCollector):
         self, xml_content: str, arxiv_id: str
     ) -> Optional[Dict[str, Any]]:
         """
-        解析 arXiv API XML 响应
+        Parse arXiv API XML response.
 
         Args:
-            xml_content: XML 响应内容
+            xml_content: XML response content.
             arxiv_id: arXiv ID
 
         Returns:
-            Optional[Dict[str, Any]]: 解析的论文信息
+            Optional[Dict[str, Any]]: Parsed paper information.
         """
         try:
             root = ET.fromstring(xml_content)
 
-            # 查找 entry 元素
+            # Find entry element
             entry = root.find("atom:entry", self.ATOM_NS)
             if entry is None:
                 return None
 
-            # 检查是否有错误（论文不存在的情况）
+            # Check for errors (paper not found case)
             title_elem = entry.find("atom:title", self.ATOM_NS)
             if title_elem is None:
                 return None
@@ -251,32 +251,32 @@ class PaperCollector(BaseCollector):
             if not title or title.lower() == "error":
                 return None
 
-            # 提取作者
+            # Extract authors
             authors = []
             for author_elem in entry.findall("atom:author", self.ATOM_NS):
                 name_elem = author_elem.find("atom:name", self.ATOM_NS)
                 if name_elem is not None and name_elem.text:
                     authors.append(name_elem.text.strip())
 
-            # 提取摘要
+            # Extract abstract
             summary_elem = entry.find("atom:summary", self.ATOM_NS)
             abstract = self._clean_text(summary_elem.text or "") if summary_elem is not None else ""
 
-            # 提取分类
+            # Extract categories
             categories = []
             for category_elem in entry.findall("atom:category", self.ATOM_NS):
                 term = category_elem.get("term")
                 if term:
                     categories.append(term)
 
-            # 提取发布日期
+            # Extract publication date
             published_elem = entry.find("atom:published", self.ATOM_NS)
             published_date = ""
             if published_elem is not None and published_elem.text:
-                # 格式: 2023-01-15T12:00:00Z
-                published_date = published_elem.text[:10]  # 只取日期部分
+                # Format: 2023-01-15T12:00:00Z
+                published_date = published_elem.text[:10]  # Take date part only
 
-            # 提取链接
+            # Extract links
             pdf_url = ""
             arxiv_url = ""
             for link_elem in entry.findall("atom:link", self.ATOM_NS):
@@ -287,7 +287,7 @@ class PaperCollector(BaseCollector):
                 elif link_type == "text/html":
                     arxiv_url = link_href
 
-            # 如果没有找到 HTML 链接，构造默认链接
+            # If no HTML link found, construct default link
             if not arxiv_url:
                 arxiv_url = f"https://arxiv.org/abs/{arxiv_id}"
             if not pdf_url:
@@ -309,39 +309,39 @@ class PaperCollector(BaseCollector):
 
     def _extract_content(self, paper_info: Dict[str, Any]) -> str:
         """
-        从论文信息生成 Markdown 内容
+        Generate Markdown content from paper information.
 
         Args:
-            paper_info: 论文信息字典
+            paper_info: Paper information dictionary.
 
         Returns:
-            str: Markdown 格式的内容
+            str: Content in Markdown format.
         """
         lines = []
 
-        # 标题
+        # Title.
         lines.append(f"# {paper_info['title']}")
         lines.append("")
 
-        # 作者
+        # Authors
         if paper_info["authors"]:
             lines.append("## Authors")
             lines.append(", ".join(paper_info["authors"]))
             lines.append("")
 
-        # 摘要
+        # Abstract
         if paper_info["abstract"]:
             lines.append("## Abstract")
             lines.append(paper_info["abstract"])
             lines.append("")
 
-        # 分类
+        # Categories
         if paper_info["categories"]:
             lines.append("## Categories")
             lines.append(", ".join(paper_info["categories"]))
             lines.append("")
 
-        # 链接
+        # Links
         lines.append("## Links")
         lines.append(f"- [PDF]({paper_info['pdf_url']})")
         lines.append(f"- [arXiv]({paper_info['arxiv_url']})")
@@ -358,30 +358,30 @@ class PaperCollector(BaseCollector):
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """
-        生成论文元数据
+        Generate paper metadata.
 
         Args:
-            title: 论文标题
-            content: 文档内容
-            source: 原始数据源
-            tags: 标签列表
-            paper_info: 论文信息字典
-            **kwargs: 额外的元数据字段
+            title: Paper title.
+            content: Document content.
+            source: Original data source.
+            tags: Tag list.
+            paper_info: Paper information dictionary.
+            **kwargs: Additional metadata fields.
 
         Returns:
-            Dict[str, Any]: 元数据字典
+            Dict[str, Any]: Metadata dictionary.
         """
         paper_info = paper_info or {}
 
-        # 生成唯一 ID
+        # Generate unique ID
         arxiv_id = paper_info.get("arxiv_id", "unknown")
-        # 将 / 替换为 _ 以处理旧格式 ID
+        # Replace / with _ to handle old format IDs
         safe_arxiv_id = arxiv_id.replace("/", "_")
         paper_id = f"paper_{safe_arxiv_id}"
 
         timestamp = datetime.now()
 
-        # 基础元数据
+        # Base metadata
         metadata = {
             "id": paper_id,
             "title": title,
@@ -398,7 +398,7 @@ class PaperCollector(BaseCollector):
             "pdf_url": paper_info.get("pdf_url", ""),
         }
 
-        # 合并额外的元数据
+        # Merge additional metadata
         metadata.update(kwargs)
 
         return metadata
@@ -406,14 +406,14 @@ class PaperCollector(BaseCollector):
     @staticmethod
     def _clean_text(text: str) -> str:
         """
-        清理文本（移除多余空白）
+        Clean text (remove excessive whitespace).
 
         Args:
-            text: 原始文本
+            text: Original text.
 
         Returns:
-            str: 清理后的文本
+            str: Cleaned text.
         """
-        # 移除换行符和多余空白
+        # Remove newlines and excessive whitespace
         text = re.sub(r"\s+", " ", text)
         return text.strip()
