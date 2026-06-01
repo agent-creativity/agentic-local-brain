@@ -37,6 +37,8 @@ export default {
     emails: '邮件',
     files: '文件',
     viewAll: '查看全部',
+    recentItems: '最近收集',
+    sessions: '个会话',
   },
   items: {
     title: '知识收集',
@@ -50,6 +52,15 @@ export default {
     delete: '删除',
     previous: '上一页',
     next: '下一页',
+    confirmDelete: '确认删除该条目？',
+    alsoDeleteFile: '同时删除文件',
+    source: '来源',
+    collectedAt: '收集时间',
+    wordCount: '字数',
+    tags: '标签',
+    notes: '批注',
+    editTitle: '编辑标题',
+    saveNotes: '保存批注',
   },
   common: {
     loading: '加载中...',
@@ -60,5 +71,6 @@ export default {
     confirm: '确认',
     delete: '删除',
     search: '搜索',
+    noData: '暂无数据',
   },
 }

@@ -37,6 +37,8 @@ export default {
     emails: 'Emails',
     files: 'Files',
     viewAll: 'View All',
+    recentItems: 'Recently Collected',
+    sessions: 'sessions',
   },
   items: {
     title: 'Knowledge',
@@ -50,6 +52,15 @@ export default {
     delete: 'Delete',
     previous: 'Previous',
     next: 'Next',
+    confirmDelete: 'Confirm delete this item?',
+    alsoDeleteFile: 'Also delete the file',
+    source: 'Source',
+    collectedAt: 'Collected',
+    wordCount: 'Words',
+    tags: 'Tags',
+    notes: 'Notes',
+    editTitle: 'Edit title',
+    saveNotes: 'Save notes',
   },
   common: {
     loading: 'Loading...',
@@ -60,5 +71,6 @@ export default {
     confirm: 'Confirm',
     delete: 'Delete',
     search: 'Search',
+    noData: 'No data',
   },
 }
