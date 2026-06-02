@@ -1,14 +1,18 @@
 import { get } from './client'
+import { cached } from './cache'
 import type { Stats, RagStats, KnowledgeItem } from './types'
 
+const TTL = 30_000
+
 export function getStats() {
-  return get<Stats>('/stats')
+  return cached('stats', TTL, () => get<Stats>('/stats'))
 }
 
 export function getRecentItems(params?: { limit?: number; content_type?: string }) {
-  return get<KnowledgeItem[]>('/recent', params)
+  const key = `recent:${params?.content_type || 'all'}:${params?.limit || 20}`
+  return cached(key, TTL, () => get<KnowledgeItem[]>('/recent', params))
 }
 
 export function getRagStats() {
-  return get<RagStats>('/rag-stats')
+  return cached('rag-stats', TTL, () => get<RagStats>('/rag-stats'))
 }

@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { use } from 'echarts/core'
-import { GraphChart } from 'echarts/charts'
-import { TooltipComponent, LegendComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import VChart from 'vue-echarts'
 import { getGraph, getGraphStats, searchGraph } from '../api/graph'
 import type { GraphData, GraphStats } from '../api/types'
 
-use([GraphChart, TooltipComponent, LegendComponent, CanvasRenderer])
+const VChart = defineAsyncComponent(async () => {
+  const [{ use }, { GraphChart }, { TooltipComponent, LegendComponent }, { CanvasRenderer }, mod] = await Promise.all([
+    import('echarts/core'),
+    import('echarts/charts'),
+    import('echarts/components'),
+    import('echarts/renderers'),
+    import('vue-echarts'),
+  ])
+  use([GraphChart, TooltipComponent, LegendComponent, CanvasRenderer])
+  return mod
+})
 
 const { t } = useI18n()
 
@@ -113,7 +118,12 @@ const chartOption = computed(() => {
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else-if="!graphData || graphData.nodes.length === 0" class="empty">{{ t('common.noData') }}</div>
     <div v-else class="graph-container">
-      <VChart :option="chartOption" autoresize class="graph-chart" />
+      <Suspense>
+        <VChart :option="chartOption" autoresize class="graph-chart" />
+        <template #fallback>
+          <div class="loading">{{ t('common.loading') }}</div>
+        </template>
+      </Suspense>
     </div>
   </div>
 </template>
