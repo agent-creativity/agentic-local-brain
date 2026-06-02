@@ -62,27 +62,34 @@ export interface TagMergeRequest {
 
 export interface GraphData {
   nodes: GraphNode[]
-  links: GraphLink[]
+  edges: GraphEdge[]
 }
 
 export interface GraphNode {
-  id: string
+  id: number
   name: string
+  display_name: string
   type: string
-  properties?: Record<string, unknown>
+  description?: string
+  mention_count?: number
 }
 
-export interface GraphLink {
-  source: string
-  target: string
-  relation: string
+export interface GraphEdge {
+  id: number
+  source_entity_id: number
+  target_entity_id: number
+  relation_type: string
+  weight?: number
 }
 
 export interface GraphStats {
   total_entities: number
   total_relations: number
-  entity_types: Record<string, number>
-  relation_types: Record<string, number>
+  total_doc_relations?: number
+  total_mentions?: number
+  type_distribution?: Array<{ type: string; count: number }>
+  relation_distribution?: Array<{ relation_type: string; count: number }>
+  top_entities?: Array<{ id: number; name: string; display_name: string; type: string; mention_count: number }>
 }
 
 export interface Entity {

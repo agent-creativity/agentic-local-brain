@@ -69,6 +69,7 @@ async function doSearch() {
 const chartOption = computed(() => {
   if (!graphData.value) return {}
   const categories = [...new Set(graphData.value.nodes.map((n) => n.type))]
+  const nodeIdSet = new Set(graphData.value.nodes.map((n) => n.id))
   return {
     tooltip: { trigger: 'item', formatter: (p: any) => p.data?.name || '' },
     legend: { data: categories, top: 10, textStyle: { fontSize: 11 } },
@@ -79,17 +80,19 @@ const chartOption = computed(() => {
       draggable: true,
       categories: categories.map((c) => ({ name: c })),
       data: graphData.value.nodes.map((n) => ({
-        name: n.name,
-        id: n.id,
+        name: n.display_name || n.name,
+        id: String(n.id),
         category: categories.indexOf(n.type),
-        symbolSize: 20,
+        symbolSize: Math.max(10, Math.min(40, Math.log2((n.mention_count || 1) + 1) * 6)),
         itemStyle: { color: typeColors[n.type.toLowerCase()] || typeColors.default },
       })),
-      links: graphData.value.links.map((l) => ({
-        source: l.source,
-        target: l.target,
-        value: l.relation,
-      })),
+      links: graphData.value.edges
+        .filter((e) => nodeIdSet.has(e.source_entity_id) && nodeIdSet.has(e.target_entity_id))
+        .map((e) => ({
+          source: String(e.source_entity_id),
+          target: String(e.target_entity_id),
+          value: e.relation_type,
+        })),
       label: { show: true, position: 'right', fontSize: 10 },
       lineStyle: { color: 'source', curveness: 0.1, opacity: 0.5 },
       force: { repulsion: 200, edgeLength: 120, gravity: 0.1 },
