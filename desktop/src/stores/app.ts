@@ -5,7 +5,7 @@ export const useAppStore = defineStore('app', () => {
   const locale = ref<'en' | 'zh'>('zh')
   const sidebarCollapsed = ref(false)
   const serverStatus = ref<'starting' | 'running' | 'stopped' | 'error'>('starting')
-  const serverPort = ref(8765)
+  const serverPort = ref(11201)
 
   const apiBaseUrl = computed(() => `http://localhost:${serverPort.value}/api`)
 

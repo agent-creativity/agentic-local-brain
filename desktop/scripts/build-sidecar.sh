@@ -39,6 +39,8 @@ pyinstaller \
     --hidden-import uvicorn.lifespan.on \
     --hidden-import fastapi \
     --hidden-import chromadb \
+    --hidden-import schedule \
+    --hidden-import croniter \
     kb/cli.py
 
 # Rename to include target triple (required by Tauri sidecar)

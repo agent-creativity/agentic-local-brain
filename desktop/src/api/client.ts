@@ -1,4 +1,4 @@
-const DEFAULT_BASE_URL = 'http://localhost:8765/api'
+const DEFAULT_BASE_URL = 'http://localhost:11201/api'
 
 let baseUrl = DEFAULT_BASE_URL
 
