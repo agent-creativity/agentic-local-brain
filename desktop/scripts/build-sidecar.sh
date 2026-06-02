@@ -41,6 +41,7 @@ pyinstaller \
     --hidden-import chromadb \
     --hidden-import schedule \
     --hidden-import croniter \
+    --collect-data litellm \
     kb/cli.py
 
 # Rename to include target triple (required by Tauri sidecar)
