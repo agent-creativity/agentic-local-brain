@@ -27,6 +27,7 @@ const navGroups: NavGroup[] = [
   {
     label: 'nav.knowledge',
     items: [
+      { label: 'nav.allItems', icon: '📋', to: '/items', match: (p) => p === '/items' },
       { label: 'nav.note', icon: '📝', to: '/items/note' },
       { label: 'nav.bookmark', icon: '🔖', to: '/items/bookmark' },
       { label: 'nav.webpage', icon: '🌐', to: '/items/webpage' },
@@ -39,6 +40,7 @@ const navGroups: NavGroup[] = [
     label: 'nav.discover',
     items: [
       { label: 'nav.tags', icon: '🏷️', to: '/tags' },
+      { label: 'nav.mining', icon: '⛏️', to: '/mining' },
       { label: 'nav.graph', icon: '🕸️', to: '/graph' },
       { label: 'nav.topics', icon: '📊', to: '/topics' },
       { label: 'nav.timeline', icon: '📅', to: '/timeline' },

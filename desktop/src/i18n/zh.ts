@@ -5,6 +5,7 @@ export default {
   nav: {
     dashboard: '概览',
     knowledge: '知识收集',
+    allItems: '全部知识',
     note: '笔记',
     bookmark: '书签',
     webpage: '网页',
@@ -13,6 +14,7 @@ export default {
     file: '文件',
     discover: '发现',
     tags: '标签管理',
+    mining: '知识挖掘',
     graph: '知识图谱',
     topics: '主题聚类',
     timeline: '时间线',

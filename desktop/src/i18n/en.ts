@@ -5,6 +5,7 @@ export default {
   nav: {
     dashboard: 'Overview',
     knowledge: 'Knowledge',
+    allItems: 'All Items',
     note: 'Notes',
     bookmark: 'Bookmarks',
     webpage: 'Webpages',
@@ -13,6 +14,7 @@ export default {
     file: 'Files',
     discover: 'Discover',
     tags: 'Tags',
+    mining: 'Mining',
     graph: 'Knowledge Graph',
     topics: 'Topics',
     timeline: 'Timeline',

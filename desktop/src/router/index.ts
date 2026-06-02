@@ -21,9 +21,20 @@ const router = createRouter({
       props: true,
     },
     {
+      path: '/items',
+      name: 'items-all',
+      component: () => import('../views/ItemsView.vue'),
+      props: { type: '' },
+    },
+    {
       path: '/tags',
       name: 'tags',
       component: () => import('../views/TagsView.vue'),
+    },
+    {
+      path: '/mining',
+      name: 'mining',
+      component: () => import('../views/MiningView.vue'),
     },
     {
       path: '/graph',

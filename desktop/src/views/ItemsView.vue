@@ -10,7 +10,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
-const contentType = computed(() => route.params.type as string)
+const contentType = computed(() => (route.params.type as string) || '')
 const items = ref<KnowledgeItem[]>([])
 const tags = ref<Tag[]>([])
 const loading = ref(true)
@@ -27,7 +27,7 @@ async function fetchItems() {
   error.value = ''
   try {
     const result = await listItems({
-      content_type: contentType.value,
+      content_type: contentType.value || undefined,
       limit: pageSize + 1,
       offset: page.value * pageSize,
       search: searchQuery.value || undefined,
@@ -116,7 +116,7 @@ function truncate(text: string | null, len: number) {
 
 <template>
   <div class="page">
-    <h1 class="page-title">{{ t(`nav.${contentType}`) }}</h1>
+    <h1 class="page-title">{{ contentType ? t(`nav.${contentType}`) : t('nav.allItems') }}</h1>
 
     <!-- Search and filter bar -->
     <div class="filter-bar">
