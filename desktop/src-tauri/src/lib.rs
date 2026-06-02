@@ -1,4 +1,5 @@
 mod sidecar;
+mod tray;
 
 use sidecar::SidecarState;
 use tauri::Manager;
@@ -9,6 +10,8 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .manage(SidecarState::new(port))
         .setup(move |app| {
             if cfg!(debug_assertions) {
@@ -18,6 +21,8 @@ pub fn run() {
                         .build(),
                 )?;
             }
+
+            tray::setup_tray(app)?;
 
             let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
@@ -29,6 +34,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             sidecar::get_server_port,
             sidecar::get_server_status,
+            send_notification,
         ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::Destroyed = event {
@@ -44,6 +50,17 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[tauri::command]
+fn send_notification(app: tauri::AppHandle, title: String, body: String) -> Result<(), String> {
+    use tauri_plugin_notification::NotificationExt;
+    app.notification()
+        .builder()
+        .title(&title)
+        .body(&body)
+        .show()
+        .map_err(|e| e.to_string())
 }
 
 async fn start_sidecar(app: &tauri::AppHandle, port: u16) {

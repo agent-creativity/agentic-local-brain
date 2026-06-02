@@ -19,6 +19,9 @@
           "args": true
         }
       ]
-    }
+    },
+    "notification:default",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister"
   ]
 }
