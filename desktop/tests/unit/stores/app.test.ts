@@ -12,12 +12,12 @@ describe('App Store', () => {
     expect(store.locale).toBe('zh')
     expect(store.sidebarCollapsed).toBe(false)
     expect(store.serverStatus).toBe('starting')
-    expect(store.serverPort).toBe(8765)
+    expect(store.serverPort).toBe(11201)
   })
 
   it('computes apiBaseUrl from serverPort', () => {
     const store = useAppStore()
-    expect(store.apiBaseUrl).toBe('http://localhost:8765/api')
+    expect(store.apiBaseUrl).toBe('http://localhost:11201/api')
   })
 
   it('toggleSidebar flips collapsed state', () => {
