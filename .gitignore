@@ -15,3 +15,7 @@ build/
 
 # Worktrees
 .worktrees/
+
+# Claude Code local settings (contains API keys)
+.claude/settings.local.json
+.claude/.claude/
