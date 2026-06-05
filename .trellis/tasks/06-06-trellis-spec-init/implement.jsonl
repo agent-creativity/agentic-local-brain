@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "Dev 需要了解 backend spec 索引结构，更新各 spec 的 Status 字段"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "需要按 kb/ 实际目录结构填充此模板"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "需要按 SQLite+ChromaDB 实际用法填充此模板"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "需要按项目实际错误处理模式填充此模板"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "需要按 Black/isort/mypy/pytest 实际配置填充此模板"}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "需要按 logging.getLogger(__name__) 实际模式填充此模板"}
+{"file": ".trellis/spec/guides/index.md", "reason": "了解 guides 目录结构，确认不需修改"}

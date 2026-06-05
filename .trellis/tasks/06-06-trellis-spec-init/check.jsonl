@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "Reviewer 需核对索引与各 spec 文件一致性"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "Reviewer 需核对目录结构描述与实际代码一致"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "Reviewer 需核对数据库规范与实际 storage 代码一致"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Reviewer 需核对错误处理规范与实际代码模式一致"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Reviewer 需核对质量标准与 pyproject.toml 配置一致"}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "Reviewer 需核对日志规范与实际代码用法一致"}
+{"file": ".trellis/tasks/06-06-trellis-spec-init/prd.md", "reason": "Reviewer 需对照 PRD 验收标准逐条验证"}
