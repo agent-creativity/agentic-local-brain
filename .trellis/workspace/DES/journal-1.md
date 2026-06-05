@@ -38,3 +38,36 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: Multi-turn RAG Phase 1: messages[] + streaming
+
+**Date**: 2026-06-06
+**Task**: Multi-turn RAG Phase 1: messages[] + streaming
+**Branch**: `worktree-multi-turn-rag-phase1`
+
+### Summary
+
+Refactored _generate_answer() to use proper multi-turn messages[] instead of flat text history injection. Added SSE streaming endpoint POST /rag/chat/stream with sources/token/done/error events. 32 tests pass including new coverage for _build_messages, multi-turn generation, and run_stream.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2604c03` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
