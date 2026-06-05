@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Pipeline graceful degradation patterns for LLM unavailable/streaming failures"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Code standards, testing conventions, type hints for new methods"}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "Log level and format conventions for new streaming/messages code paths"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "ConversationManager SQLite patterns for saving streaming results"}
+{"file": ".trellis/tasks/06-06-multi-turn-rag-phase-1-proper-messages-streaming/prd.md", "reason": "PRD with requirements, decisions, and implementation plan"}

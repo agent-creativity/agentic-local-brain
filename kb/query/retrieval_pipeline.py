@@ -12,23 +12,28 @@ This module implements a pluggable retrieval pipeline that orchestrates multiple
 
 import logging
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from kb.config import Config
+from kb.query.context_builder import (
+    BaseContextBuilder,
+    HierarchicalContextBuilder,
+    SimpleContextBuilder,
+)
+from kb.query.conversation import ConversationManager
+from kb.query.keyword_search import KeywordSearch
 from kb.query.models import (
+    ConversationTurn,
     EnhancedRAGResult,
     EntityContext,
     RankedChunk,
     RetrievalContext,
     SearchResult,
 )
-from kb.query.semantic_search import SemanticSearch
-from kb.query.keyword_search import KeywordSearch
-from kb.query.query_expander import ExpandedQuery, BaseQueryExpander, NoOpQueryExpander
-from kb.query.reranker import BaseReranker, NoOpReranker
-from kb.query.context_builder import BaseContextBuilder, SimpleContextBuilder, HierarchicalContextBuilder
-from kb.query.conversation import ConversationManager
 from kb.query.prompt_templates import PromptTemplateManager
+from kb.query.query_expander import BaseQueryExpander, ExpandedQuery, NoOpQueryExpander
+from kb.query.reranker import BaseReranker, NoOpReranker
+from kb.query.semantic_search import SemanticSearch
 
 try:
     import litellm
@@ -167,7 +172,7 @@ class RetrievalPipeline:
                 f"[配置] max_tokens={raw_max_tokens} 超过上限，已截断为 {self.max_tokens}"
             )
         self.system_prompt = rag_config.get("system_prompt", DEFAULT_SYSTEM_PROMPT)
-        
+
         # LLM configuration
         self.llm_available = False
         self._init_llm_config(config)
@@ -180,22 +185,22 @@ class RetrievalPipeline:
 
     def _init_llm_config(self, config: Config) -> None:
         """Initialize LLM configuration from config.
-        
+
         Args:
             config: Configuration object
         """
         if litellm is None:
             logger.warning("litellm not installed, LLM generation unavailable")
             return
-        
+
         llm_config = config.get("llm", {})
         provider = llm_config.get("provider", "dashscope")
         api_key = llm_config.get("api_key", "")
-        
+
         if not api_key:
             logger.warning("No LLM API key configured")
             return
-        
+
         try:
             if provider == "litellm":
                 self.llm_model = llm_config.get("model", "dashscope/qwen-plus")
@@ -280,7 +285,7 @@ class RetrievalPipeline:
         # Handle conversation session management
         is_new_session = False
         effective_session_id = session_id
-        conversation_history = None
+        conversation_turns: List[ConversationTurn] = []
         history_turns = 0
 
         if self.conversation_manager is not None:
@@ -288,31 +293,34 @@ class RetrievalPipeline:
             if not effective_session_id:
                 effective_session_id = self.conversation_manager.create_session()
                 is_new_session = True
-                logger.debug(f"Created new conversation session: {effective_session_id}")
-            
-            # Get conversation history for context injection
+                logger.debug(
+                    f"Created new conversation session: {effective_session_id}"
+                )
+
+            # Get structured conversation turns for multi-turn messages[]
             try:
                 rag_config = self.config.get("query", {}).get("rag", {})
                 conv_config = rag_config.get("conversation", {})
                 max_history_turns = conv_config.get("history_turns_in_context", 5)
-                
-                conversation_history = self.conversation_manager.format_history_for_prompt(
-                    effective_session_id, max_turns=max_history_turns
+
+                conversation_turns = self.conversation_manager.get_recent_turns(
+                    effective_session_id, limit=max_history_turns
                 )
-                
-                # Count turns for turn_number
-                session = self.conversation_manager.get_session(effective_session_id)
-                if session:
-                    history_turns = len(session.turns)
-                
-                if conversation_history:
-                    logger.debug(f"Loaded {history_turns} turns of conversation history")
+                history_turns = len(conversation_turns)
+
+                if conversation_turns:
+                    logger.debug(
+                        f"Loaded {history_turns} conversation turns for messages[]"
+                    )
             except Exception as e:
                 logger.warning(f"Failed to load conversation history: {e}")
 
         try:
             # Stage 1: Query Expansion (with conversation context if available)
-            expansion_context = conversation_context or conversation_history
+            # Query expander still uses flat text context (its prompt format differs)
+            expansion_context = conversation_context
+            if not expansion_context and conversation_turns:
+                expansion_context = self._turns_to_flat_text(conversation_turns)
             expanded_query = self._expand_query(question, expansion_context)
             if expanded_query.rewrites or expanded_query.entities:
                 stages_fired.append("query_expansion")
@@ -337,7 +345,10 @@ class RetrievalPipeline:
                 result = self._empty_result(question, effective_session_id)
                 result.turn_number = history_turns // 2 + 1 if is_new_session else None
                 if use_cache and cache_key:
-                    _pipeline_cache[cache_key] = (result, time.monotonic() + _PIPELINE_CACHE_TTL)
+                    _pipeline_cache[cache_key] = (
+                        result,
+                        time.monotonic() + _PIPELINE_CACHE_TTL,
+                    )
                 return result
 
             # Stage 3: Reranking
@@ -367,18 +378,18 @@ class RetrievalPipeline:
             )
             stages_fired.append("context_building")
 
-            # Stage 6: Answer Generation (with conversation history)
+            # Stage 6: Answer Generation (with multi-turn messages[])
             options["stages_fired"] = stages_fired
             answer, confidence = self._generate_answer(
                 question=question,
                 context=retrieval_context,
                 options=options,
-                conversation_history=conversation_history,
+                conversation_turns=conversation_turns if conversation_turns else None,
             )
             stages_fired.append("answer_generation")
 
             # Convert top chunks to SearchResult for result.sources
-            top_chunks = reranked_chunks[:self.rerank_top_k]
+            top_chunks = reranked_chunks[: self.rerank_top_k]
             search_results = self._chunks_to_results(top_chunks)
 
             # Calculate turn number
@@ -392,7 +403,7 @@ class RetrievalPipeline:
                 context=self._context_to_string(retrieval_context),
                 confidence=confidence,
                 retrieval_strategy=",".join(stages_fired),
-                reranked_sources=reranked_chunks[:self.rerank_top_k],
+                reranked_sources=reranked_chunks[: self.rerank_top_k],
                 entity_context=[e.__dict__ for e in entities] if entities else None,
                 topic_context=topic_context,
                 session_id=effective_session_id,
@@ -404,39 +415,213 @@ class RetrievalPipeline:
                 try:
                     # Store full source data for conversation persistence
                     source_dicts = [s.to_dict() for s in search_results]
-                    
+
                     # Add user turn
                     self.conversation_manager.add_turn(
                         session_id=effective_session_id,
                         role="user",
                         content=question,
-                        sources=None
+                        sources=None,
                     )
-                    
+
                     # Add assistant turn
                     self.conversation_manager.add_turn(
                         session_id=effective_session_id,
                         role="assistant",
                         content=answer,
-                        sources=source_dicts if source_dicts else None
+                        sources=source_dicts if source_dicts else None,
                     )
-                    
-                    logger.debug(f"Saved conversation turns for session {effective_session_id}")
+
+                    logger.debug(
+                        f"Saved conversation turns for session {effective_session_id}"
+                    )
                 except Exception as e:
                     logger.warning(f"Failed to save conversation turns: {e}")
 
             elapsed = time.time() - pipeline_start
-            logger.info(f"Pipeline completed in {elapsed*1000:.1f}ms with stages: {stages_fired}")
+            logger.info(
+                f"Pipeline completed in {elapsed*1000:.1f}ms with stages: {stages_fired}"
+            )
 
             # --- Cache store ---
             if use_cache and cache_key:
-                _pipeline_cache[cache_key] = (result, time.monotonic() + _PIPELINE_CACHE_TTL)
+                _pipeline_cache[cache_key] = (
+                    result,
+                    time.monotonic() + _PIPELINE_CACHE_TTL,
+                )
 
             return result
 
         except Exception as e:
             logger.error(f"Pipeline execution failed: {e}")
             raise
+
+    def run_stream(
+        self,
+        question: str,
+        session_id: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        top_k: Optional[int] = None,
+        conversation_context: Optional[str] = None,
+        options: Optional[Dict[str, Any]] = None,
+    ) -> Iterator[Dict[str, Any]]:
+        """Execute retrieval pipeline with streaming answer generation.
+
+        Runs Stage 1-5 synchronously, then streams Stage 6 (LLM generation)
+        as a generator yielding SSE event dicts.
+
+        Yields:
+            Dict with 'type' key: 'sources', 'token', 'done', or 'error'
+        """
+        if not question or not question.strip():
+            yield {"type": "error", "message": "Question cannot be empty"}
+            return
+
+        effective_top_k = top_k or self.default_top_k
+        options = options or {}
+
+        # --- Session management (same as run()) ---
+        effective_session_id = session_id
+        conversation_turns: List[ConversationTurn] = []
+
+        if self.conversation_manager is not None:
+            if not effective_session_id:
+                effective_session_id = self.conversation_manager.create_session()
+
+            try:
+                rag_config = self.config.get("query", {}).get("rag", {})
+                conv_config = rag_config.get("conversation", {})
+                max_history_turns = conv_config.get("history_turns_in_context", 5)
+                conversation_turns = self.conversation_manager.get_recent_turns(
+                    effective_session_id, limit=max_history_turns
+                )
+            except Exception as e:
+                logger.warning(f"Failed to load conversation history: {e}")
+
+        try:
+            # Stage 1: Query Expansion
+            expansion_context = conversation_context
+            if not expansion_context and conversation_turns:
+                expansion_context = self._turns_to_flat_text(conversation_turns)
+            expanded_query = self._expand_query(question, expansion_context)
+
+            # Stage 2: Hybrid Retrieval
+            retrieval_top_k = max(effective_top_k * 2, 20)
+            chunks = self._hybrid_retrieve(
+                expanded_query=expanded_query, tags=tags, top_k=retrieval_top_k
+            )
+
+            if not chunks:
+                yield {
+                    "type": "done",
+                    "session_id": effective_session_id,
+                    "confidence": 0.0,
+                    "answer": "No relevant information found in the knowledge base.",
+                }
+                return
+
+            # Stage 3: Reranking
+            stages_fired = ["hybrid_retrieval"]
+            reranked_chunks = self._rerank(question, chunks, options)
+            if reranked_chunks != chunks:
+                stages_fired.append("reranking")
+
+            # Stage 4: Context Enrichment
+            entities, topic_context, enriched_chunks = self._enrich_context(
+                question=question, chunks=reranked_chunks, options=options
+            )
+            reranked_chunks = enriched_chunks
+
+            # Stage 5: Context Building
+            retrieval_context = self._build_context(
+                chunks=reranked_chunks,
+                entities=entities,
+                topic_context=topic_context,
+                budget=self.context_budget,
+                options=options,
+            )
+            stages_fired.append("context_building")
+
+            # Yield sources event
+            top_chunks = reranked_chunks[: self.rerank_top_k]
+            search_results = self._chunks_to_results(top_chunks)
+            yield {
+                "type": "sources",
+                "sources": [s.to_dict() for s in search_results],
+                "session_id": effective_session_id,
+            }
+
+            # Stage 6: Streaming answer generation
+            if not self.llm_available or litellm is None:
+                yield {"type": "error", "message": "LLM service unavailable"}
+                return
+
+            system_prompt, user_prompt = self._prepare_prompts(
+                question, retrieval_context, options
+            )
+            messages = self._build_messages(
+                system_prompt,
+                user_prompt,
+                conversation_turns if conversation_turns else None,
+            )
+            kwargs = self._build_llm_kwargs(messages, options, stream=True)
+
+            full_answer = []
+            stream_error = None
+            try:
+                response = litellm.completion(**kwargs)
+                for chunk in response:
+                    delta = chunk.choices[0].delta
+                    content = getattr(delta, "content", None) or ""
+                    if content:
+                        full_answer.append(content)
+                        yield {"type": "token", "content": content}
+            except Exception as e:
+                logger.error(f"LLM streaming interrupted: {e}")
+                stream_error = e
+
+            answer_text = "".join(full_answer)
+
+            # Save conversation turns (including partial text on error)
+            if (
+                self.conversation_manager is not None
+                and effective_session_id
+                and answer_text
+            ):
+                try:
+                    source_dicts = [s.to_dict() for s in search_results]
+                    self.conversation_manager.add_turn(
+                        session_id=effective_session_id,
+                        role="user",
+                        content=question,
+                    )
+                    self.conversation_manager.add_turn(
+                        session_id=effective_session_id,
+                        role="assistant",
+                        content=answer_text,
+                        sources=source_dicts if source_dicts else None,
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to save conversation turns: {e}")
+
+            if stream_error is not None:
+                yield {"type": "error", "message": str(stream_error)}
+                return
+
+            confidence = self._calculate_confidence(
+                retrieval_context.chunks, stages_fired
+            )
+
+            yield {
+                "type": "done",
+                "session_id": effective_session_id,
+                "confidence": confidence,
+                "answer": answer_text,
+            }
+
+        except Exception as e:
+            logger.error(f"Streaming pipeline failed: {e}")
+            yield {"type": "error", "message": str(e)}
 
     def _expand_query(
         self,
@@ -456,7 +641,9 @@ class RetrievalPipeline:
         Returns:
             ExpandedQuery: The expanded query with rewrites and entities
         """
-        if self.query_expander is None or isinstance(self.query_expander, NoOpQueryExpander):
+        if self.query_expander is None or isinstance(
+            self.query_expander, NoOpQueryExpander
+        ):
             logger.debug("No query expander configured, using original query")
             return ExpandedQuery(original=question)
 
@@ -464,7 +651,7 @@ class RetrievalPipeline:
             start_time = time.time()
             expanded = self.query_expander.expand(question, conversation_context)
             elapsed = time.time() - start_time
-            
+
             logger.debug(
                 f"Query expansion completed in {elapsed*1000:.1f}ms: "
                 f"{len(expanded.rewrites)} rewrites, {len(expanded.entities)} entities"
@@ -537,7 +724,7 @@ class RetrievalPipeline:
 
         # Step 1: Collect all query variants for semantic search
         query_variants = [expanded_query.original] + expanded_query.rewrites
-        
+
         # Step 2: Run semantic search batch on all query variants
         if self.semantic_search:
             try:
@@ -548,7 +735,9 @@ class RetrievalPipeline:
                 )
                 if semantic_results:
                     result_lists.append(semantic_results)
-                    logger.debug(f"Semantic search found {len(semantic_results)} results")
+                    logger.debug(
+                        f"Semantic search found {len(semantic_results)} results"
+                    )
             except Exception as e:
                 logger.warning(f"Semantic search failed: {e}")
 
@@ -636,7 +825,7 @@ class RetrievalPipeline:
             List[RankedChunk]: Reranked chunks
         """
         # Check per-request toggle
-        if not options.get('use_reranking', True):
+        if not options.get("use_reranking", True):
             logger.debug("Reranking disabled via request options")
             return chunks
 
@@ -724,7 +913,9 @@ class RetrievalPipeline:
                             relations=[
                                 {
                                     "type": r.get("relation_type"),
-                                    "entity": r.get("related_entity", {}).get("name", ""),
+                                    "entity": r.get("related_entity", {}).get(
+                                        "name", ""
+                                    ),
                                 }
                                 for r in ent.get("relations", [])
                             ],
@@ -768,7 +959,9 @@ class RetrievalPipeline:
 
                 # Find dominant topic (most frequent among retrieved docs)
                 if topic_counts:
-                    dominant_topic_id = max(topic_counts.keys(), key=lambda tid: topic_counts[tid])
+                    dominant_topic_id = max(
+                        topic_counts.keys(), key=lambda tid: topic_counts[tid]
+                    )
                     info = topic_info.get(dominant_topic_id, {})
                     label = info.get("label", "")
                     description = info.get("description", "")
@@ -781,13 +974,18 @@ class RetrievalPipeline:
                 logger.warning(f"Topic enrichment failed: {e}")
 
         # === Reading History Personalization ===
-        if options.get("use_reading_history", True) and self.reading_history is not None:
+        if (
+            options.get("use_reading_history", True)
+            and self.reading_history is not None
+        ):
             try:
                 # Get recent document views
                 recent_views = self.reading_history.get_recent_views(limit=20)
                 if recent_views:
                     recently_viewed_ids = {
-                        view["knowledge_id"] for view in recent_views if view.get("knowledge_id")
+                        view["knowledge_id"]
+                        for view in recent_views
+                        if view.get("knowledge_id")
                     }
 
                     # Check if any retrieved chunks' documents overlap
@@ -812,7 +1010,9 @@ class RetrievalPipeline:
         if entities:
             enrichment_parts.append(f"{len(entities)} entities")
         if topic_context:
-            enrichment_parts.append(f"topic: '{topic_context.split(':')[1].split('-')[0].strip() if '-' in topic_context else topic_context.split(':')[1].strip()}'")
+            enrichment_parts.append(
+                f"topic: '{topic_context.split(':')[1].split('-')[0].strip() if '-' in topic_context else topic_context.split(':')[1].strip()}'"
+            )
         if enriched_chunks != chunks:
             enrichment_parts.append("personalized boost")
 
@@ -859,7 +1059,9 @@ class RetrievalPipeline:
                 logger.debug("Using SimpleContextBuilder (flat format)")
             else:
                 builder = HierarchicalContextBuilder(budget=context_budget)
-                logger.debug(f"Using HierarchicalContextBuilder (hierarchical format) with budget {context_budget}")
+                logger.debug(
+                    f"Using HierarchicalContextBuilder (hierarchical format) with budget {context_budget}"
+                )
 
         try:
             result = builder.build(
@@ -922,7 +1124,9 @@ class RetrievalPipeline:
         avg_score = sum(scores) / len(scores) if scores else 0.0
         # Normalize scores to 0-1 range if they might be unnormalized
         if avg_score > 1.0:
-            avg_score = min(avg_score / 10.0, 1.0)  # Assume max around 10 for RRF scores
+            avg_score = min(
+                avg_score / 10.0, 1.0
+            )  # Assume max around 10 for RRF scores
 
         # Source coverage: how many unique sources
         unique_sources = set(c.source for c in chunks)
@@ -938,65 +1142,68 @@ class RetrievalPipeline:
 
         # Weighted combination
         confidence = (
-            0.5 * avg_score +
-            0.3 * source_coverage +
-            0.2 * strategy_completeness
+            0.5 * avg_score + 0.3 * source_coverage + 0.2 * strategy_completeness
         )
 
         # Clamp to 0-1 range
         return max(0.0, min(1.0, confidence))
 
-    def _generate_answer(
+    def _turns_to_flat_text(self, turns: List[ConversationTurn]) -> str:
+        """Convert structured conversation turns to flat text for query expansion."""
+        parts = []
+        for turn in turns:
+            role_label = "User" if turn.role == "user" else "Assistant"
+            parts.append(f"{role_label}: {turn.content}")
+        return "\n\n".join(parts)
+
+    def _build_messages(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_turns: Optional[List[ConversationTurn]] = None,
+    ) -> List[Dict[str, str]]:
+        """Build multi-turn messages[] for LLM from structured conversation turns.
+
+        Constructs: [system, ...history user/assistant alternating, current user]
+
+        Args:
+            system_prompt: System prompt content
+            user_prompt: Current user prompt (with retrieval context + question)
+            conversation_turns: Optional list of prior conversation turns
+
+        Returns:
+            List of message dicts with 'role' and 'content' keys
+        """
+        messages: List[Dict[str, str]] = [
+            {"role": "system", "content": system_prompt},
+        ]
+        if conversation_turns:
+            for turn in conversation_turns:
+                messages.append({"role": turn.role, "content": turn.content})
+        messages.append({"role": "user", "content": user_prompt})
+        return messages
+
+    def _prepare_prompts(
         self,
         question: str,
         context: RetrievalContext,
         options: Dict[str, Any],
-        conversation_history: Optional[str] = None,
         template_name: Optional[str] = None,
-    ) -> tuple[str, float]:
-        """
-        Stage 6: Generate answer using LLM with context and optional conversation history.
-
-        Calls the LLM with the assembled context to generate
-        the final answer with confidence score. If conversation_history
-        is provided, includes it in the prompt for multi-turn context.
+    ) -> Tuple[str, str]:
+        """Prepare system and user prompts for answer generation.
 
         Args:
             question: User question
             context: Assembled retrieval context
             options: Stage-specific options
-                - template_name: Name of prompt template to use
-            conversation_history: Optional formatted conversation history
-            template_name: Optional prompt template name to use
+            template_name: Optional prompt template name
 
         Returns:
-            Tuple of (answer string, confidence score)
+            Tuple of (system_prompt, user_prompt)
         """
         context_text = self._context_to_string(context)
-        
-        if not context_text:
-            return "No relevant information found in the knowledge base.", 0.0
-
-        # If LLM is not available, return a fallback response
-        if not self.llm_available or litellm is None:
-            logger.warning(
-                f"[降级] LLM 不可用，返回文档列表而非 AI 总结: "
-                f"question='{question[:80]}', chunks={len(context.chunks)}"
-            )
-            source_titles = []
-            for chunk in context.chunks[:5]:
-                title = chunk.metadata.get("title", chunk.source) if chunk.metadata else chunk.source
-                source_titles.append(title)
-
-            fallback = "Based on the retrieved sources, here are the relevant documents:\n\n"
-            for i, title in enumerate(source_titles, 1):
-                fallback += f"{i}. {title}\n"
-            return fallback, 0.5
-
-        # Get template name from options or parameter
         effective_template = template_name or options.get("template_name")
 
-        # Format entity context if available
         entity_context_str = ""
         if context.entities:
             entity_lines = []
@@ -1006,73 +1213,114 @@ class RetrievalPipeline:
                     entity_lines.append(f"  Mentions: {', '.join(entity.mentions[:3])}")
             entity_context_str = "\n".join(entity_lines)
 
-        # Try to use PromptTemplateManager if available
         if self.prompt_template_manager is not None:
             try:
                 user_prompt = self.prompt_template_manager.render(
                     template_name=effective_template,
                     context=context_text,
                     question=question,
-                    conversation_history=conversation_history or "",
+                    conversation_history="",
                     entity_context=entity_context_str,
                     topic_context=context.topic_context or "",
                 )
-                # Use a minimal system prompt since template contains the instructions
                 system_prompt = "You are a helpful assistant."
+                return system_prompt, user_prompt
             except Exception as e:
                 logger.warning(f"Failed to render template: {e}, using fallback prompt")
-                system_prompt = self.system_prompt
-                if conversation_history:
-                    system_prompt += (
-                        "\n\nPrevious conversation:\n{history}\n\n"
-                        "Continue the conversation based on the above context."
-                    ).format(history=conversation_history)
-                user_prompt = f"""Context:
+
+        system_prompt = self.system_prompt
+        user_prompt = f"""Context:
 {context_text}
 
 Question: {question}
 
 Please answer the question based on the above context."""
-        else:
-            # Fallback to legacy prompt construction
-            system_prompt = self.system_prompt
-            if conversation_history:
-                system_prompt += (
-                    "\n\nPrevious conversation:\n{history}\n\n"
-                    "Continue the conversation based on the above context."
-                ).format(history=conversation_history)
-            user_prompt = f"""Context:
-{context_text}
+        return system_prompt, user_prompt
 
-Question: {question}
+    def _build_llm_kwargs(
+        self,
+        messages: List[Dict[str, str]],
+        options: Dict[str, Any],
+        stream: bool = False,
+    ) -> Dict[str, Any]:
+        """Build kwargs dict for litellm.completion()."""
+        kwargs: Dict[str, Any] = {
+            "model": self.llm_model,
+            "messages": messages,
+            "temperature": options.get("temperature", self.temperature),
+            "max_tokens": options.get("max_tokens", self.max_tokens),
+            "api_key": self.llm_api_key,
+            "stream": stream,
+        }
+        if self.llm_api_base:
+            kwargs["api_base"] = self.llm_api_base
+        return kwargs
 
-Please answer the question based on the above context."""
+    def _fallback_source_list(self, context: RetrievalContext) -> Tuple[str, float]:
+        """Return a fallback source list when LLM is unavailable."""
+        source_titles = []
+        for chunk in context.chunks[:5]:
+            title = (
+                chunk.metadata.get("title", chunk.source)
+                if chunk.metadata
+                else chunk.source
+            )
+            source_titles.append(title)
+        fallback = (
+            "Based on the retrieved sources, here are the relevant documents:\n\n"
+        )
+        for i, title in enumerate(source_titles, 1):
+            fallback += f"{i}. {title}\n"
+        return fallback, 0.5
+
+    def _generate_answer(
+        self,
+        question: str,
+        context: RetrievalContext,
+        options: Dict[str, Any],
+        conversation_turns: Optional[List[ConversationTurn]] = None,
+        template_name: Optional[str] = None,
+    ) -> Tuple[str, float]:
+        """Stage 6: Generate answer using LLM with multi-turn messages[].
+
+        Args:
+            question: User question
+            context: Assembled retrieval context
+            options: Stage-specific options
+            conversation_turns: Optional structured conversation turns for multi-turn
+            template_name: Optional prompt template name to use
+
+        Returns:
+            Tuple of (answer string, confidence score)
+        """
+        context_text = self._context_to_string(context)
+
+        if not context_text:
+            return "No relevant information found in the knowledge base.", 0.0
+
+        if not self.llm_available or litellm is None:
+            logger.warning(
+                f"[降级] LLM 不可用，返回文档列表而非 AI 总结: "
+                f"question='{question[:80]}', chunks={len(context.chunks)}"
+            )
+            return self._fallback_source_list(context)
+
+        system_prompt, user_prompt = self._prepare_prompts(
+            question, context, options, template_name
+        )
+        messages = self._build_messages(system_prompt, user_prompt, conversation_turns)
 
         try:
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ]
-
-            kwargs = {
-                "model": self.llm_model,
-                "messages": messages,
-                "temperature": options.get("temperature", self.temperature),
-                "max_tokens": options.get("max_tokens", self.max_tokens),
-                "api_key": self.llm_api_key,
-            }
-            if self.llm_api_base:
-                kwargs["api_base"] = self.llm_api_base
-
+            kwargs = self._build_llm_kwargs(messages, options, stream=False)
             response = litellm.completion(**kwargs)
             answer = response.choices[0].message.content
 
-            # Calculate confidence using the structured method
-            # Get stages from options if available (passed by run())
             stages_fired = options.get("stages_fired", ["answer_generation"])
             confidence = self._calculate_confidence(context.chunks, stages_fired)
 
-            logger.debug(f"Generated answer with {len(answer)} chars, confidence={confidence:.2f}")
+            logger.debug(
+                f"Generated answer with {len(answer)} chars, confidence={confidence:.2f}"
+            )
             return answer, confidence
 
         except Exception as e:
@@ -1080,17 +1328,7 @@ Please answer the question based on the above context."""
                 f"[降级] LLM 生成回答失败: {e}，返回文档列表而非 AI 总结: "
                 f"question='{question[:80]}', chunks={len(context.chunks)}"
             )
-
-            # Graceful degradation: return source list
-            source_titles = []
-            for chunk in context.chunks[:5]:
-                title = chunk.metadata.get("title", chunk.source) if chunk.metadata else chunk.source
-                source_titles.append(title)
-
-            fallback = "Based on the retrieved sources, here are the relevant documents:\n\n"
-            for i, title in enumerate(source_titles, 1):
-                fallback += f"{i}. {title}\n"
-            return fallback, 0.5
+            return self._fallback_source_list(context)
 
     def _results_to_chunks(self, results: List[SearchResult]) -> List[RankedChunk]:
         """Convert SearchResult list to RankedChunk list."""

@@ -20,8 +20,10 @@ import pytest
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from kb.query.retrieval_pipeline import RetrievalPipeline, _pipeline_cache, invalidate_pipeline_cache
+from kb.query.context_builder import BaseContextBuilder, SimpleContextBuilder
+from kb.query.conversation import ConversationManager
 from kb.query.models import (
+    ConversationTurn,
     EnhancedRAGResult,
     EntityContext,
     RankedChunk,
@@ -30,9 +32,11 @@ from kb.query.models import (
 )
 from kb.query.query_expander import ExpandedQuery, NoOpQueryExpander
 from kb.query.reranker import BaseReranker, NoOpReranker
-from kb.query.context_builder import BaseContextBuilder, SimpleContextBuilder
-from kb.query.conversation import ConversationManager
-
+from kb.query.retrieval_pipeline import (
+    RetrievalPipeline,
+    _pipeline_cache,
+    invalidate_pipeline_cache,
+)
 
 # ─────────────────────────────────────────────
 # Fixtures & Helpers
@@ -93,12 +97,20 @@ def _make_pipeline(config=None, **overrides):
     pipeline = RetrievalPipeline.__new__(RetrievalPipeline)
     pipeline.config = config
     pipeline.default_top_k = config.get("query", {}).get("pipeline", {}).get("top_k", 5)
-    pipeline.rerank_top_k = config.get("query", {}).get("pipeline", {}).get("rerank_top_k", 3)
-    pipeline.context_budget = config.get("query", {}).get("rag", {}).get("context_budget", 4000)
-    pipeline.temperature = config.get("query", {}).get("rag", {}).get("temperature", 0.3)
+    pipeline.rerank_top_k = (
+        config.get("query", {}).get("pipeline", {}).get("rerank_top_k", 3)
+    )
+    pipeline.context_budget = (
+        config.get("query", {}).get("rag", {}).get("context_budget", 4000)
+    )
+    pipeline.temperature = (
+        config.get("query", {}).get("rag", {}).get("temperature", 0.3)
+    )
     pipeline.max_tokens = config.get("query", {}).get("rag", {}).get("max_tokens", 1000)
-    pipeline.system_prompt = config.get("query", {}).get("rag", {}).get(
-        "system_prompt", "You are a helpful assistant."
+    pipeline.system_prompt = (
+        config.get("query", {})
+        .get("rag", {})
+        .get("system_prompt", "You are a helpful assistant.")
     )
     pipeline.llm_available = False
     pipeline.llm_model = None
@@ -331,15 +343,23 @@ class TestRRFFusion:
         query_expander.expand.return_value = ExpandedQuery(original="test query")
 
         semantic_results = [
-            SearchResult(id="doc1", content="semantic 1", metadata={"source": "doc1"}, score=0.9),
-            SearchResult(id="doc2", content="semantic 2", metadata={"source": "doc2"}, score=0.8),
+            SearchResult(
+                id="doc1", content="semantic 1", metadata={"source": "doc1"}, score=0.9
+            ),
+            SearchResult(
+                id="doc2", content="semantic 2", metadata={"source": "doc2"}, score=0.8
+            ),
         ]
         mock_semantic = MagicMock()
         mock_semantic.search_batch.return_value = semantic_results
 
         keyword_results = [
-            SearchResult(id="doc2", content="keyword 2", metadata={"source": "doc2"}, score=0.7),
-            SearchResult(id="doc3", content="keyword 3", metadata={"source": "doc3"}, score=0.6),
+            SearchResult(
+                id="doc2", content="keyword 2", metadata={"source": "doc2"}, score=0.7
+            ),
+            SearchResult(
+                id="doc3", content="keyword 3", metadata={"source": "doc3"}, score=0.6
+            ),
         ]
         mock_keyword = MagicMock()
         mock_keyword.search.return_value = keyword_results
@@ -388,7 +408,9 @@ class TestDegradationEmptyResult:
             pipeline.run("Unknown topic")
 
         # Second call should hit cache
-        with patch.object(pipeline, "_hybrid_retrieve", return_value=[]) as mock_retrieve:
+        with patch.object(
+            pipeline, "_hybrid_retrieve", return_value=[]
+        ) as mock_retrieve:
             result = pipeline.run("Unknown topic")
             # _hybrid_retrieve should NOT be called on second invocation (cache hit)
             # But actually the cache hit happens before _hybrid_retrieve
@@ -602,7 +624,12 @@ class TestDegradationPartialFailure:
         mock_semantic.search_batch.side_effect = Exception("Embedding API down")
 
         keyword_results = [
-            SearchResult(id="doc1", content="keyword match", metadata={"source": "doc1"}, score=0.8),
+            SearchResult(
+                id="doc1",
+                content="keyword match",
+                metadata={"source": "doc1"},
+                score=0.8,
+            ),
         ]
         mock_keyword = MagicMock()
         mock_keyword.search.return_value = keyword_results
@@ -647,7 +674,14 @@ class TestConfidenceCalculation:
         pipeline = _make_pipeline(_make_mock_config())
         confidence = pipeline._calculate_confidence(
             chunks,
-            ["query_expansion", "hybrid_retrieval", "reranking", "context_enrichment", "context_building", "answer_generation"],
+            [
+                "query_expansion",
+                "hybrid_retrieval",
+                "reranking",
+                "context_enrichment",
+                "context_building",
+                "answer_generation",
+            ],
         )
 
         # Full pipeline should have confidence > 0.3
@@ -657,7 +691,9 @@ class TestConfidenceCalculation:
         """仅关键词检索时 confidence 较低"""
         chunks = _make_sample_chunks(2)
         pipeline = _make_pipeline(_make_mock_config())
-        confidence = pipeline._calculate_confidence(chunks, ["hybrid_retrieval", "context_building", "answer_generation"])
+        confidence = pipeline._calculate_confidence(
+            chunks, ["hybrid_retrieval", "context_building", "answer_generation"]
+        )
 
         # No reranking = lower confidence
         assert confidence < 0.7
@@ -672,7 +708,12 @@ class TestConfidenceCalculation:
         pipeline = _make_pipeline(_make_mock_config())
 
         # With full stages, confidence should differ from the default-only case
-        full_stages = ["hybrid_retrieval", "reranking", "context_building", "answer_generation"]
+        full_stages = [
+            "hybrid_retrieval",
+            "reranking",
+            "context_building",
+            "answer_generation",
+        ]
         default_stages = ["answer_generation"]
 
         full_confidence = pipeline._calculate_confidence(chunks, full_stages)
@@ -680,3 +721,261 @@ class TestConfidenceCalculation:
 
         # They should be different because strategy_completeness changes
         assert full_confidence != default_confidence
+
+
+# ─────────────────────────────────────────────
+# Test: Multi-turn Messages[]
+# ─────────────────────────────────────────────
+
+
+class TestBuildMessages:
+    """_build_messages() 构造多轮 messages[] 测试"""
+
+    def test_no_history_returns_system_and_user(self):
+        """无对话历史时返回 [system, user]"""
+        pipeline = _make_pipeline(_make_mock_config())
+        messages = pipeline._build_messages("sys prompt", "user prompt")
+
+        assert len(messages) == 2
+        assert messages[0] == {"role": "system", "content": "sys prompt"}
+        assert messages[1] == {"role": "user", "content": "user prompt"}
+
+    def test_with_history_returns_full_messages(self):
+        """有对话历史时返回 [system, ...history, user]"""
+        pipeline = _make_pipeline(_make_mock_config())
+        turns = [
+            ConversationTurn(role="user", content="What is Python?"),
+            ConversationTurn(
+                role="assistant", content="Python is a programming language."
+            ),
+            ConversationTurn(role="user", content="What about its type system?"),
+            ConversationTurn(role="assistant", content="Python uses dynamic typing."),
+        ]
+
+        messages = pipeline._build_messages("sys", "current question", turns)
+
+        assert len(messages) == 6  # system + 4 history + current user
+        assert messages[0]["role"] == "system"
+        assert messages[1] == {"role": "user", "content": "What is Python?"}
+        assert messages[2] == {
+            "role": "assistant",
+            "content": "Python is a programming language.",
+        }
+        assert messages[3] == {"role": "user", "content": "What about its type system?"}
+        assert messages[4] == {
+            "role": "assistant",
+            "content": "Python uses dynamic typing.",
+        }
+        assert messages[5] == {"role": "user", "content": "current question"}
+
+    def test_empty_turns_list_same_as_none(self):
+        """空 turns 列表等同于 None"""
+        pipeline = _make_pipeline(_make_mock_config())
+        messages = pipeline._build_messages("sys", "user", [])
+
+        assert len(messages) == 2
+
+
+class TestTurnsToFlatText:
+    """_turns_to_flat_text() 转换测试"""
+
+    def test_converts_turns_to_text(self):
+        pipeline = _make_pipeline(_make_mock_config())
+        turns = [
+            ConversationTurn(role="user", content="Hello"),
+            ConversationTurn(role="assistant", content="Hi there"),
+        ]
+        text = pipeline._turns_to_flat_text(turns)
+        assert "User: Hello" in text
+        assert "Assistant: Hi there" in text
+
+    def test_empty_turns_returns_empty(self):
+        pipeline = _make_pipeline(_make_mock_config())
+        assert pipeline._turns_to_flat_text([]) == ""
+
+
+class TestMultiTurnGeneration:
+    """多轮对话时 _generate_answer 传递正确 messages[] 的集成测试"""
+
+    def test_generate_answer_passes_messages_to_litellm(self):
+        """_generate_answer 将 conversation_turns 构造为 messages[] 传给 litellm"""
+        chunks = _make_sample_chunks(2)
+        context = RetrievalContext(
+            chunks=chunks,
+            entities=[],
+            topic_context=None,
+            token_count=50,
+            budget=4000,
+        )
+        turns = [
+            ConversationTurn(role="user", content="First question"),
+            ConversationTurn(role="assistant", content="First answer"),
+        ]
+
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=True)
+
+        with patch("kb.query.retrieval_pipeline.litellm") as mock_litellm:
+            mock_response = MagicMock()
+            mock_response.choices = [MagicMock()]
+            mock_response.choices[0].message.content = "Follow-up answer."
+            mock_litellm.completion.return_value = mock_response
+
+            answer, confidence = pipeline._generate_answer(
+                question="Follow-up?",
+                context=context,
+                options={},
+                conversation_turns=turns,
+            )
+
+        # Verify litellm.completion was called with multi-turn messages
+        call_kwargs = mock_litellm.completion.call_args
+        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages")
+        assert len(messages) == 4  # system + user turn + assistant turn + current user
+        assert messages[0]["role"] == "system"
+        assert messages[1] == {"role": "user", "content": "First question"}
+        assert messages[2] == {"role": "assistant", "content": "First answer"}
+        assert messages[3]["role"] == "user"
+        assert "Follow-up?" in messages[3]["content"]
+
+    def test_generate_answer_no_turns_sends_two_messages(self):
+        """无 conversation_turns 时仍发送 [system, user] 两条消息"""
+        chunks = _make_sample_chunks(1)
+        context = RetrievalContext(
+            chunks=chunks,
+            entities=[],
+            topic_context=None,
+            token_count=30,
+            budget=4000,
+        )
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=True)
+
+        with patch("kb.query.retrieval_pipeline.litellm") as mock_litellm:
+            mock_response = MagicMock()
+            mock_response.choices = [MagicMock()]
+            mock_response.choices[0].message.content = "Answer."
+            mock_litellm.completion.return_value = mock_response
+
+            pipeline._generate_answer(
+                question="Simple question",
+                context=context,
+                options={},
+            )
+
+        call_kwargs = mock_litellm.completion.call_args
+        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages")
+        assert len(messages) == 2
+        assert messages[0]["role"] == "system"
+        assert messages[1]["role"] == "user"
+
+
+# ─────────────────────────────────────────────
+# Test: Streaming Pipeline
+# ─────────────────────────────────────────────
+
+
+class TestRunStream:
+    """run_stream() 流式生成测试"""
+
+    def test_stream_yields_sources_tokens_done(self):
+        """run_stream 依次 yield sources、token、done 事件"""
+        chunks = _make_sample_chunks(2)
+
+        mock_context_builder = MagicMock(spec=BaseContextBuilder)
+        mock_context_builder.build.return_value = RetrievalContext(
+            chunks=chunks,
+            entities=[],
+            topic_context=None,
+            token_count=50,
+            budget=4000,
+        )
+
+        pipeline = _make_pipeline(
+            _make_mock_config(),
+            context_builder=mock_context_builder,
+            llm_available=True,
+        )
+
+        # Mock streaming response
+        mock_chunk_1 = MagicMock()
+        mock_chunk_1.choices = [MagicMock()]
+        mock_chunk_1.choices[0].delta.content = "Hello "
+        mock_chunk_2 = MagicMock()
+        mock_chunk_2.choices = [MagicMock()]
+        mock_chunk_2.choices[0].delta.content = "world"
+        mock_chunk_3 = MagicMock()
+        mock_chunk_3.choices = [MagicMock()]
+        mock_chunk_3.choices[0].delta.content = None
+
+        with patch.object(pipeline, "_hybrid_retrieve", return_value=chunks):
+            with patch("kb.query.retrieval_pipeline.litellm") as mock_litellm:
+                mock_litellm.completion.return_value = iter(
+                    [mock_chunk_1, mock_chunk_2, mock_chunk_3]
+                )
+
+                events = list(pipeline.run_stream("Test question"))
+
+        event_types = [e["type"] for e in events]
+        assert "sources" in event_types
+        assert "token" in event_types
+        assert "done" in event_types
+
+        # Check sources event
+        sources_event = next(e for e in events if e["type"] == "sources")
+        assert "sources" in sources_event
+
+        # Check token events contain content
+        token_events = [e for e in events if e["type"] == "token"]
+        assert len(token_events) == 2
+        assert token_events[0]["content"] == "Hello "
+        assert token_events[1]["content"] == "world"
+
+        # Check done event has full answer
+        done_event = next(e for e in events if e["type"] == "done")
+        assert done_event["answer"] == "Hello world"
+
+    def test_stream_empty_results_yields_done(self):
+        """无检索结果时 stream 直接 yield done"""
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=True)
+
+        with patch.object(pipeline, "_hybrid_retrieve", return_value=[]):
+            events = list(pipeline.run_stream("Unknown"))
+
+        assert len(events) == 1
+        assert events[0]["type"] == "done"
+        assert events[0]["confidence"] == 0.0
+
+    def test_stream_llm_unavailable_yields_error(self):
+        """LLM 不可用时 stream yield sources then error"""
+        chunks = _make_sample_chunks(2)
+        mock_context_builder = MagicMock(spec=BaseContextBuilder)
+        mock_context_builder.build.return_value = RetrievalContext(
+            chunks=chunks,
+            entities=[],
+            topic_context=None,
+            token_count=50,
+            budget=4000,
+        )
+
+        pipeline = _make_pipeline(
+            _make_mock_config(),
+            context_builder=mock_context_builder,
+            llm_available=False,
+        )
+
+        with patch.object(pipeline, "_hybrid_retrieve", return_value=chunks):
+            events = list(pipeline.run_stream("Test"))
+
+        event_types = [e["type"] for e in events]
+        assert "sources" in event_types
+        assert "error" in event_types
+        error_event = next(e for e in events if e["type"] == "error")
+        assert "unavailable" in error_event["message"].lower()
+
+    def test_stream_empty_question_yields_error(self):
+        """空问题时 stream yield error"""
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=True)
+
+        events = list(pipeline.run_stream(""))
+
+        assert len(events) == 1
+        assert events[0]["type"] == "error"
