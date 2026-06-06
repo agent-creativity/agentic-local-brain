@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 3
+- **Total Sessions**: 4
 - **Last Active**: 2026-06-06
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~106 | Active |
+| `journal-1.md` | ~139 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 4 | 2026-06-06 | Multi-turn RAG Phase 3: summarization + auto title | `5dbb8f7` | `worktree-multi-turn-rag-phase1` |
 | 3 | 2026-06-06 | Multi-turn RAG Phase 2: conversation boost + token budget | `5eb9fa3` | `worktree-multi-turn-rag-phase1` |
 | 2 | 2026-06-06 | Multi-turn RAG Phase 1: messages[] + streaming | `2604c03` | `worktree-multi-turn-rag-phase1` |
 | 1 | 2026-06-06 | Trellis Spec 初始化 | `b3055d0` | `main` |

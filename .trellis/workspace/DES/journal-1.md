@@ -104,3 +104,36 @@ Added document ID boost for multi-turn retrieval (prior turns' sources get +0.15
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: Multi-turn RAG Phase 3: summarization + auto title
+
+**Date**: 2026-06-06
+**Task**: Multi-turn RAG Phase 3: summarization + auto title
+**Branch**: `worktree-multi-turn-rag-phase1`
+
+### Summary
+
+Added lazy conversation summarization (old turns compressed to summary via LLM when exceeding threshold, injected as system message). Added auto session title generation on first turn (≤30 chars). Schema migration adds title/summary columns. 72 tests pass (23 new).
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5dbb8f7` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
