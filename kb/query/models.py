@@ -209,12 +209,12 @@ class RankedChunk:
             Dict[str, Any]: Dictionary representation
         """
         return {
-            'content': self.content,
-            'source': self.source,
-            'retrieval_score': self.retrieval_score,
-            'rerank_score': self.rerank_score,
-            'final_score': self.final_score,
-            'metadata': self.metadata,
+            "content": self.content,
+            "source": self.source,
+            "retrieval_score": self.retrieval_score,
+            "rerank_score": self.rerank_score,
+            "final_score": self.final_score,
+            "metadata": self.metadata,
         }
 
 
@@ -248,11 +248,19 @@ class RetrievalContext:
             Dict[str, Any]: Dictionary representation
         """
         return {
-            'chunks': [c.to_dict() for c in self.chunks],
-            'entities': [{'name': e.name, 'type': e.entity_type, 'mentions': e.mentions, 'relations': e.relations} for e in self.entities],
-            'topic_context': self.topic_context,
-            'token_count': self.token_count,
-            'budget': self.budget,
+            "chunks": [c.to_dict() for c in self.chunks],
+            "entities": [
+                {
+                    "name": e.name,
+                    "type": e.entity_type,
+                    "mentions": e.mentions,
+                    "relations": e.relations,
+                }
+                for e in self.entities
+            ],
+            "topic_context": self.topic_context,
+            "token_count": self.token_count,
+            "budget": self.budget,
         }
 
 
@@ -284,14 +292,14 @@ class ConversationTurn:
             Dict[str, Any]: Dictionary representation
         """
         return {
-            'role': self.role,
-            'content': self.content,
-            'sources': self.sources,
-            'timestamp': self.timestamp,
+            "role": self.role,
+            "content": self.content,
+            "sources": self.sources,
+            "timestamp": self.timestamp,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ConversationTurn':
+    def from_dict(cls, data: Dict[str, Any]) -> "ConversationTurn":
         """
         Create ConversationTurn from dictionary
 
@@ -302,10 +310,10 @@ class ConversationTurn:
             ConversationTurn: New instance
         """
         return cls(
-            role=data['role'],
-            content=data['content'],
-            sources=data.get('sources'),
-            timestamp=data.get('timestamp'),
+            role=data["role"],
+            content=data["content"],
+            sources=data.get("sources"),
+            timestamp=data.get("timestamp"),
         )
 
 
@@ -321,12 +329,16 @@ class ConversationSession:
         turns: List of conversation turns
         created_at: ISO format creation timestamp
         updated_at: ISO format last update timestamp
+        title: Optional session title (auto-generated or manual)
+        summary: Optional conversation summary for long sessions
     """
 
     session_id: str
     turns: List[ConversationTurn] = field(default_factory=list)
     created_at: str = ""
     updated_at: Optional[str] = None
+    title: Optional[str] = None
+    summary: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -336,10 +348,12 @@ class ConversationSession:
             Dict[str, Any]: Dictionary representation
         """
         return {
-            'session_id': self.session_id,
-            'turns': [t.to_dict() for t in self.turns],
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
+            "session_id": self.session_id,
+            "turns": [t.to_dict() for t in self.turns],
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "title": self.title,
+            "summary": self.summary,
         }
 
 
@@ -385,20 +399,20 @@ class EnhancedRAGResult:
             Dict[str, Any]: Dictionary representation
         """
         result = {
-            'answer': self.answer,
-            'question': self.question,
-            'sources': [s.to_dict() for s in self.sources],
-            'context': self.context,
-            'confidence': self.confidence,
-            'retrieval_strategy': self.retrieval_strategy,
-            'session_id': self.session_id,
-            'turn_number': self.turn_number,
+            "answer": self.answer,
+            "question": self.question,
+            "sources": [s.to_dict() for s in self.sources],
+            "context": self.context,
+            "confidence": self.confidence,
+            "retrieval_strategy": self.retrieval_strategy,
+            "session_id": self.session_id,
+            "turn_number": self.turn_number,
         }
         if self.reranked_sources:
-            result['reranked_sources'] = [r.to_dict() for r in self.reranked_sources]
+            result["reranked_sources"] = [r.to_dict() for r in self.reranked_sources]
         if self.entity_context:
-            result['entity_context'] = self.entity_context
-            result['entities'] = self.entity_context
+            result["entity_context"] = self.entity_context
+            result["entities"] = self.entity_context
         if self.topic_context:
-            result['topic_context'] = self.topic_context
+            result["topic_context"] = self.topic_context
         return result

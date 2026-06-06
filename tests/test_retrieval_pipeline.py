@@ -1265,3 +1265,483 @@ class TestCalculateRetrievalBudget:
 
         # Even with huge model window, should not exceed context_budget
         assert budget == pipeline.context_budget
+
+
+# ─────────────────────────────────────────────
+# Test: Conversation Summary (Phase 3)
+# ─────────────────────────────────────────────
+
+
+class TestConversationSummary:
+    """对话摘要功能测试"""
+
+    def test_generate_summary_with_mock_llm(self):
+        """_generate_summary 调用 LLM 生成摘要"""
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=True)
+        turns = [
+            ConversationTurn(role="user", content="What is Python?"),
+            ConversationTurn(
+                role="assistant", content="Python is a programming language."
+            ),
+        ]
+
+        with patch("kb.query.retrieval_pipeline.litellm") as mock_litellm:
+            mock_response = MagicMock()
+            mock_response.choices = [MagicMock()]
+            mock_response.choices[0].message.content = "Discussed Python basics."
+            mock_litellm.completion.return_value = mock_response
+
+            summary = pipeline._generate_summary(turns)
+
+        assert summary == "Discussed Python basics."
+        mock_litellm.completion.assert_called_once()
+        # Verify temperature and max_tokens overrides
+        call_kwargs = mock_litellm.completion.call_args
+        assert (
+            call_kwargs.kwargs.get("temperature")
+            or call_kwargs[1].get("temperature") == 0.1
+        )
+        assert (
+            call_kwargs.kwargs.get("max_tokens")
+            or call_kwargs[1].get("max_tokens") == 300
+        )
+
+    def test_generate_summary_with_existing_summary(self):
+        """_generate_summary 合并已有摘要和新 turns"""
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=True)
+        turns = [
+            ConversationTurn(role="user", content="Tell me about decorators."),
+            ConversationTurn(role="assistant", content="Decorators modify functions."),
+        ]
+
+        with patch("kb.query.retrieval_pipeline.litellm") as mock_litellm:
+            mock_response = MagicMock()
+            mock_response.choices = [MagicMock()]
+            mock_response.choices[0].message.content = "Merged summary."
+            mock_litellm.completion.return_value = mock_response
+
+            summary = pipeline._generate_summary(
+                turns, existing_summary="Previously discussed Python basics."
+            )
+
+        assert summary == "Merged summary."
+        # Verify the prompt includes "Previous summary"
+        call_kwargs = mock_litellm.completion.call_args
+        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages")
+        user_msg = messages[1]["content"]
+        assert "Previous summary" in user_msg
+
+    def test_generate_summary_llm_failure_returns_existing(self):
+        """LLM 失败时返回已有摘要"""
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=True)
+        turns = [
+            ConversationTurn(role="user", content="test"),
+        ]
+
+        with patch("kb.query.retrieval_pipeline.litellm") as mock_litellm:
+            mock_litellm.completion.side_effect = Exception("API error")
+
+            summary = pipeline._generate_summary(turns, existing_summary="old summary")
+
+        assert summary == "old summary"
+
+    def test_generate_summary_llm_unavailable_returns_existing(self):
+        """LLM 不可用时返回已有摘要"""
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=False)
+        turns = [
+            ConversationTurn(role="user", content="test"),
+        ]
+
+        summary = pipeline._generate_summary(turns, existing_summary="old")
+        assert summary == "old"
+
+    def test_generate_summary_empty_turns_returns_empty(self):
+        """空 turns 列表返回空字符串"""
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=True)
+        summary = pipeline._generate_summary([])
+        assert summary == ""
+
+    def test_maybe_summarize_triggers_when_over_threshold(self):
+        """_maybe_summarize 在 turns 超过阈值时触发"""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+            conv_manager = ConversationManager(db_path)
+            session_id = conv_manager.create_session()
+
+            # Add 8 turns (4 user + 4 assistant)
+            for i in range(4):
+                conv_manager.add_turn(session_id, "user", f"Question {i}")
+                conv_manager.add_turn(session_id, "assistant", f"Answer {i}")
+
+            all_turns = conv_manager.get_all_turns(session_id)
+            assert len(all_turns) == 8
+
+            pipeline = _make_pipeline(
+                _make_mock_config(),
+                llm_available=True,
+                conversation_manager=conv_manager,
+            )
+
+            with patch("kb.query.retrieval_pipeline.litellm") as mock_litellm:
+                mock_response = MagicMock()
+                mock_response.choices = [MagicMock()]
+                mock_response.choices[0].message.content = "Summary of old turns."
+                mock_litellm.completion.return_value = mock_response
+
+                # max_recent=5 means 8 turns > 5, should trigger
+                summary = pipeline._maybe_summarize(session_id, all_turns, 5)
+
+            assert summary == "Summary of old turns."
+            # Verify summary is saved to DB
+            assert conv_manager.get_summary(session_id) == "Summary of old turns."
+
+    def test_maybe_summarize_no_op_when_under_threshold(self):
+        """_maybe_summarize 在 turns 不超过阈值时不触发"""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+            conv_manager = ConversationManager(db_path)
+            session_id = conv_manager.create_session()
+
+            # Add 4 turns
+            conv_manager.add_turn(session_id, "user", "Q1")
+            conv_manager.add_turn(session_id, "assistant", "A1")
+            conv_manager.add_turn(session_id, "user", "Q2")
+            conv_manager.add_turn(session_id, "assistant", "A2")
+
+            all_turns = conv_manager.get_all_turns(session_id)
+            assert len(all_turns) == 4
+
+            pipeline = _make_pipeline(
+                _make_mock_config(),
+                llm_available=True,
+                conversation_manager=conv_manager,
+            )
+
+            # max_recent=5, only 4 turns, should not trigger
+            summary = pipeline._maybe_summarize(session_id, all_turns, 5)
+            assert summary is None
+
+    def test_build_messages_includes_summary(self):
+        """_build_messages 在有 summary 时插入 system message"""
+        pipeline = _make_pipeline(_make_mock_config())
+
+        turns = [
+            ConversationTurn(role="user", content="Follow-up question"),
+            ConversationTurn(role="assistant", content="Follow-up answer"),
+        ]
+
+        messages = pipeline._build_messages(
+            "sys prompt",
+            "current question",
+            turns,
+            summary="Summary of earlier conversation.",
+        )
+
+        # [system, summary, user turn, assistant turn, current user]
+        assert len(messages) == 5
+        assert messages[0] == {"role": "system", "content": "sys prompt"}
+        assert messages[1]["role"] == "system"
+        assert "Summary of earlier conversation." in messages[1]["content"]
+        assert messages[2] == {"role": "user", "content": "Follow-up question"}
+        assert messages[3] == {"role": "assistant", "content": "Follow-up answer"}
+        assert messages[4] == {"role": "user", "content": "current question"}
+
+    def test_build_messages_without_summary_backward_compat(self):
+        """_build_messages 无 summary 时行为不变"""
+        pipeline = _make_pipeline(_make_mock_config())
+
+        turns = [
+            ConversationTurn(role="user", content="Q1"),
+            ConversationTurn(role="assistant", content="A1"),
+        ]
+
+        messages = pipeline._build_messages("sys", "user prompt", turns)
+
+        assert len(messages) == 4
+        assert messages[0] == {"role": "system", "content": "sys"}
+        assert messages[1] == {"role": "user", "content": "Q1"}
+        assert messages[2] == {"role": "assistant", "content": "A1"}
+        assert messages[3] == {"role": "user", "content": "user prompt"}
+
+
+# ─────────────────────────────────────────────
+# Test: Auto Title (Phase 3)
+# ─────────────────────────────────────────────
+
+
+class TestAutoTitle:
+    """自动标题生成功能测试"""
+
+    def test_generate_title_with_mock_llm(self):
+        """_generate_title 调用 LLM 生成标题"""
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=True)
+
+        with patch("kb.query.retrieval_pipeline.litellm") as mock_litellm:
+            mock_response = MagicMock()
+            mock_response.choices = [MagicMock()]
+            mock_response.choices[0].message.content = "Python Basics"
+            mock_litellm.completion.return_value = mock_response
+
+            title = pipeline._generate_title(
+                "What is Python?", "Python is a programming language."
+            )
+
+        assert title == "Python Basics"
+        # Verify low temperature
+        call_kwargs = mock_litellm.completion.call_args
+        assert (
+            call_kwargs.kwargs.get("temperature")
+            or call_kwargs[1].get("temperature") == 0.1
+        )
+
+    def test_generate_title_truncates_long_title(self):
+        """LLM 返回超过 30 字符时截断"""
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=True)
+
+        with patch("kb.query.retrieval_pipeline.litellm") as mock_litellm:
+            mock_response = MagicMock()
+            mock_response.choices = [MagicMock()]
+            mock_response.choices[0].message.content = (
+                "This is a very long title that should be truncated to 30 characters"
+            )
+            mock_litellm.completion.return_value = mock_response
+
+            title = pipeline._generate_title("Q", "A")
+
+        assert len(title) <= 30
+
+    def test_generate_title_llm_failure_returns_truncated_question(self):
+        """LLM 失败时返回截断的问题作为标题"""
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=True)
+
+        with patch("kb.query.retrieval_pipeline.litellm") as mock_litellm:
+            mock_litellm.completion.side_effect = Exception("API error")
+
+            title = pipeline._generate_title(
+                "What is machine learning and how does it work?", "Some answer"
+            )
+
+        assert len(title) <= 30
+        assert title == "What is machine learning and h"
+
+    def test_generate_title_llm_unavailable_returns_truncated_question(self):
+        """LLM 不可用时返回截断的问题"""
+        pipeline = _make_pipeline(_make_mock_config(), llm_available=False)
+
+        title = pipeline._generate_title("Short question", "Answer")
+        assert title == "Short question"
+
+    def test_title_only_generated_on_first_turn(self):
+        """标题只在第一轮生成"""
+        import tempfile
+
+        chunks = _make_sample_chunks(2)
+
+        mock_context_builder = MagicMock(spec=BaseContextBuilder)
+        mock_context_builder.build.return_value = RetrievalContext(
+            chunks=chunks,
+            entities=[],
+            topic_context=None,
+            token_count=50,
+            budget=4000,
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+            conv_manager = ConversationManager(db_path)
+
+            pipeline = _make_pipeline(
+                _make_mock_config(),
+                context_builder=mock_context_builder,
+                llm_available=True,
+                conversation_manager=conv_manager,
+            )
+
+            with patch.object(pipeline, "_hybrid_retrieve", return_value=chunks):
+                with patch("kb.query.retrieval_pipeline.litellm") as mock_litellm:
+                    mock_response = MagicMock()
+                    mock_response.choices = [MagicMock()]
+                    mock_response.choices[0].message.content = "Answer text."
+                    mock_litellm.completion.return_value = mock_response
+
+                    # First call - new session, title should be generated
+                    result1 = pipeline.run("What is AI?")
+                    session_id = result1.session_id
+
+                    # Verify title was generated (called for answer + title = 2 calls)
+                    # Actually litellm.completion is called for answer gen + title gen
+                    first_call_count = mock_litellm.completion.call_count
+                    assert first_call_count == 2  # answer + title
+
+                    # Reset mock
+                    mock_litellm.completion.reset_mock()
+                    mock_litellm.completion.return_value = mock_response
+
+                    # Second call - existing session with history, title should NOT be regenerated
+                    result2 = pipeline.run("Follow up?", session_id=session_id)
+
+                    # Only 1 call for answer generation, no title
+                    assert mock_litellm.completion.call_count == 1
+
+
+# ─────────────────────────────────────────────
+# Test: ConversationManager Schema (Phase 3)
+# ─────────────────────────────────────────────
+
+
+class TestConversationManagerSchema:
+    """ConversationManager schema migration and new methods"""
+
+    def test_update_and_get_summary(self):
+        """update_summary 和 get_summary 正确读写"""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+            conv_manager = ConversationManager(db_path)
+            session_id = conv_manager.create_session()
+
+            # Initially no summary
+            assert conv_manager.get_summary(session_id) is None
+
+            # Update summary
+            conv_manager.update_summary(session_id, "Test summary")
+            assert conv_manager.get_summary(session_id) == "Test summary"
+
+            # Update again
+            conv_manager.update_summary(session_id, "Updated summary")
+            assert conv_manager.get_summary(session_id) == "Updated summary"
+
+    def test_update_and_get_title(self):
+        """update_title 和 get_title 正确读写"""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+            conv_manager = ConversationManager(db_path)
+            session_id = conv_manager.create_session()
+
+            # Initially no title
+            assert conv_manager.get_title(session_id) is None
+
+            # Update title
+            conv_manager.update_title(session_id, "Test Title")
+            assert conv_manager.get_title(session_id) == "Test Title"
+
+    def test_list_sessions_returns_title(self):
+        """list_sessions 返回 title 字段"""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+            conv_manager = ConversationManager(db_path)
+
+            # Create session with title
+            session_id = conv_manager.create_session()
+            conv_manager.add_turn(session_id, "user", "What is Python?")
+            conv_manager.update_title(session_id, "Python Intro")
+
+            sessions = conv_manager.list_sessions()
+            assert len(sessions) == 1
+            assert sessions[0]["title"] == "Python Intro"
+
+    def test_list_sessions_title_fallback_to_last_question(self):
+        """list_sessions title 为空时 fallback 到 last_question"""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+            conv_manager = ConversationManager(db_path)
+
+            session_id = conv_manager.create_session()
+            conv_manager.add_turn(session_id, "user", "What is ML?")
+
+            sessions = conv_manager.list_sessions()
+            assert len(sessions) == 1
+            # No title set, should fallback to last_question
+            assert sessions[0]["title"] == "What is ML?"
+
+    def test_get_all_turns_returns_all(self):
+        """get_all_turns 返回所有 turns，不限制条数"""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+            conv_manager = ConversationManager(db_path)
+            session_id = conv_manager.create_session()
+
+            # Add 10 turns
+            for i in range(5):
+                conv_manager.add_turn(session_id, "user", f"Q{i}")
+                conv_manager.add_turn(session_id, "assistant", f"A{i}")
+
+            all_turns = conv_manager.get_all_turns(session_id)
+            assert len(all_turns) == 10
+
+            # Verify order (oldest first)
+            assert all_turns[0].content == "Q0"
+            assert all_turns[1].content == "A0"
+            assert all_turns[8].content == "Q4"
+            assert all_turns[9].content == "A4"
+
+    def test_get_session_includes_title_and_summary(self):
+        """get_session 返回包含 title 和 summary 的 ConversationSession"""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+            conv_manager = ConversationManager(db_path)
+            session_id = conv_manager.create_session()
+            conv_manager.add_turn(session_id, "user", "Hello")
+            conv_manager.update_title(session_id, "Greeting")
+            conv_manager.update_summary(session_id, "User said hello")
+
+            session = conv_manager.get_session(session_id)
+            assert session is not None
+            assert session.title == "Greeting"
+            assert session.summary == "User said hello"
+
+            # Verify to_dict includes title/summary
+            d = session.to_dict()
+            assert d["title"] == "Greeting"
+            assert d["summary"] == "User said hello"
+
+    def test_schema_migration_is_idempotent(self):
+        """schema migration 重复执行不报错"""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+
+            # Create manager twice - second time should not error
+            conv_manager1 = ConversationManager(db_path)
+            session_id = conv_manager1.create_session()
+            conv_manager1.update_title(session_id, "Test")
+
+            # Second initialization triggers migration again
+            conv_manager2 = ConversationManager(db_path)
+            assert conv_manager2.get_title(session_id) == "Test"
+
+    def test_get_summary_nonexistent_session(self):
+        """对不存在的 session 查询 summary 返回 None"""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+            conv_manager = ConversationManager(db_path)
+
+            assert conv_manager.get_summary("nonexistent") is None
+
+    def test_get_title_nonexistent_session(self):
+        """对不存在的 session 查询 title 返回 None"""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = tmpdir + "/conversations.db"
+            conv_manager = ConversationManager(db_path)
+
+            assert conv_manager.get_title("nonexistent") is None

@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "SQLite schema migration patterns (ALTER TABLE ADD COLUMN)"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Graceful degradation for LLM summary/title generation failures"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Code standards, type hints, testing conventions"}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "Log levels for summary/title generation"}
+{"file": ".trellis/tasks/06-06-multi-turn-rag-phase-3-conversation-summarization-auto-session-title/prd.md", "reason": "PRD with requirements, decisions, and implementation plan"}

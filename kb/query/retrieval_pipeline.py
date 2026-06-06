@@ -316,6 +316,16 @@ class RetrievalPipeline:
             except Exception as e:
                 logger.warning(f"Failed to load conversation history: {e}")
 
+        # Load existing conversation summary for messages[]
+        conversation_summary = None  # type: Optional[str]
+        if self.conversation_manager is not None and effective_session_id:
+            try:
+                conversation_summary = self.conversation_manager.get_summary(
+                    effective_session_id
+                )
+            except Exception as e:
+                logger.warning(f"Failed to load conversation summary: {e}")
+
         try:
             # Stage 1: Query Expansion (with conversation context if available)
             # Query expander still uses flat text context (its prompt format differs)
@@ -398,6 +408,7 @@ class RetrievalPipeline:
                 context=retrieval_context,
                 options=options,
                 conversation_turns=conversation_turns if conversation_turns else None,
+                summary=conversation_summary,
             )
             stages_fired.append("answer_generation")
 
@@ -451,6 +462,43 @@ class RetrievalPipeline:
                 except Exception as e:
                     logger.warning(f"Failed to save conversation turns: {e}")
 
+                # Lazy summarization: check if old turns need to be summarized
+                if self.llm_available:
+                    try:
+                        rag_config = self.config.get("query", {}).get("rag", {})
+                        conv_config = rag_config.get("conversation", {})
+                        max_history_turns = conv_config.get(
+                            "history_turns_in_context", 5
+                        )
+
+                        all_turns = self.conversation_manager.get_all_turns(
+                            effective_session_id
+                        )
+                        if len(all_turns) > max_history_turns:
+                            summary = self._maybe_summarize(
+                                effective_session_id,
+                                all_turns,
+                                max_history_turns,
+                            )
+                            if summary:
+                                conversation_summary = summary
+                    except Exception as e:
+                        logger.warning(f"Failed to summarize conversation: {e}")
+
+                # Auto-generate title on first turn
+                if is_new_session or history_turns == 0:
+                    if self.llm_available:
+                        try:
+                            title = self._generate_title(question, answer)
+                            if title:
+                                self.conversation_manager.update_title(
+                                    effective_session_id, title
+                                )
+                        except Exception as e:
+                            logger.warning(
+                                f"Failed to generate conversation title: {e}"
+                            )
+
             elapsed = time.time() - pipeline_start
             logger.info(
                 f"Pipeline completed in {elapsed*1000:.1f}ms with stages: {stages_fired}"
@@ -494,12 +542,15 @@ class RetrievalPipeline:
         options = options or {}
 
         # --- Session management (same as run()) ---
+        is_new_session = False
         effective_session_id = session_id
         conversation_turns: List[ConversationTurn] = []
+        history_turns = 0
 
         if self.conversation_manager is not None:
             if not effective_session_id:
                 effective_session_id = self.conversation_manager.create_session()
+                is_new_session = True
 
             try:
                 rag_config = self.config.get("query", {}).get("rag", {})
@@ -508,8 +559,19 @@ class RetrievalPipeline:
                 conversation_turns = self.conversation_manager.get_recent_turns(
                     effective_session_id, limit=max_history_turns
                 )
+                history_turns = len(conversation_turns)
             except Exception as e:
                 logger.warning(f"Failed to load conversation history: {e}")
+
+        # Load existing conversation summary
+        conversation_summary = None  # type: Optional[str]
+        if self.conversation_manager is not None and effective_session_id:
+            try:
+                conversation_summary = self.conversation_manager.get_summary(
+                    effective_session_id
+                )
+            except Exception as e:
+                logger.warning(f"Failed to load conversation summary: {e}")
 
         try:
             # Stage 1: Query Expansion
@@ -588,6 +650,7 @@ class RetrievalPipeline:
                 system_prompt,
                 user_prompt,
                 conversation_turns if conversation_turns else None,
+                summary=conversation_summary,
             )
             kwargs = self._build_llm_kwargs(messages, options, stream=True)
 
@@ -628,6 +691,37 @@ class RetrievalPipeline:
                     )
                 except Exception as e:
                     logger.warning(f"Failed to save conversation turns: {e}")
+
+                # Lazy summarization
+                if self.llm_available:
+                    try:
+                        rag_cfg = self.config.get("query", {}).get("rag", {})
+                        conv_cfg = rag_cfg.get("conversation", {})
+                        max_hist = conv_cfg.get("history_turns_in_context", 5)
+
+                        all_turns = self.conversation_manager.get_all_turns(
+                            effective_session_id
+                        )
+                        if len(all_turns) > max_hist:
+                            self._maybe_summarize(
+                                effective_session_id, all_turns, max_hist
+                            )
+                    except Exception as e:
+                        logger.warning(f"Failed to summarize conversation: {e}")
+
+                # Auto-generate title on first turn
+                if is_new_session or history_turns == 0:
+                    if self.llm_available:
+                        try:
+                            title = self._generate_title(question, answer_text)
+                            if title:
+                                self.conversation_manager.update_title(
+                                    effective_session_id, title
+                                )
+                        except Exception as e:
+                            logger.warning(
+                                f"Failed to generate conversation title: {e}"
+                            )
 
             if stream_error is not None:
                 yield {"type": "error", "message": str(stream_error)}
@@ -1305,15 +1399,21 @@ class RetrievalPipeline:
         system_prompt: str,
         user_prompt: str,
         conversation_turns: Optional[List[ConversationTurn]] = None,
+        summary: Optional[str] = None,
     ) -> List[Dict[str, str]]:
         """Build multi-turn messages[] for LLM from structured conversation turns.
 
-        Constructs: [system, ...history user/assistant alternating, current user]
+        Constructs: [system, (summary if present), ...history user/assistant, current user]
+
+        When a conversation summary is provided, it is injected as a second system
+        message between the main system prompt and the history turns. This preserves
+        context from older turns that have been summarized.
 
         Args:
             system_prompt: System prompt content
             user_prompt: Current user prompt (with retrieval context + question)
             conversation_turns: Optional list of prior conversation turns
+            summary: Optional conversation summary from older turns
 
         Returns:
             List of message dicts with 'role' and 'content' keys
@@ -1321,6 +1421,13 @@ class RetrievalPipeline:
         messages: List[Dict[str, str]] = [
             {"role": "system", "content": system_prompt},
         ]
+        if summary:
+            messages.append(
+                {
+                    "role": "system",
+                    "content": "Previous conversation summary:\n" + summary,
+                }
+            )
         if conversation_turns:
             for turn in conversation_turns:
                 messages.append({"role": turn.role, "content": turn.content})
@@ -1424,6 +1531,7 @@ Please answer the question based on the above context."""
         options: Dict[str, Any],
         conversation_turns: Optional[List[ConversationTurn]] = None,
         template_name: Optional[str] = None,
+        summary: Optional[str] = None,
     ) -> Tuple[str, float]:
         """Stage 6: Generate answer using LLM with multi-turn messages[].
 
@@ -1433,6 +1541,7 @@ Please answer the question based on the above context."""
             options: Stage-specific options
             conversation_turns: Optional structured conversation turns for multi-turn
             template_name: Optional prompt template name to use
+            summary: Optional conversation summary from older turns
 
         Returns:
             Tuple of (answer string, confidence score)
@@ -1452,7 +1561,9 @@ Please answer the question based on the above context."""
         system_prompt, user_prompt = self._prepare_prompts(
             question, context, options, template_name
         )
-        messages = self._build_messages(system_prompt, user_prompt, conversation_turns)
+        messages = self._build_messages(
+            system_prompt, user_prompt, conversation_turns, summary=summary
+        )
 
         try:
             kwargs = self._build_llm_kwargs(messages, options, stream=False)
@@ -1473,6 +1584,163 @@ Please answer the question based on the above context."""
                 f"question='{question[:80]}', chunks={len(context.chunks)}"
             )
             return self._fallback_source_list(context)
+
+    def _generate_summary(
+        self,
+        old_turns: List[ConversationTurn],
+        existing_summary: Optional[str] = None,
+    ) -> str:
+        """Generate a summary of older conversation turns using LLM.
+
+        If an existing summary is provided, asks the LLM to merge the old
+        summary with the new turns into a single updated summary.
+
+        Args:
+            old_turns: Conversation turns to summarize
+            existing_summary: Optional previous summary to merge with
+
+        Returns:
+            Summary text, or existing_summary/empty string on failure
+        """
+        if not old_turns:
+            return existing_summary or ""
+
+        if not self.llm_available or litellm is None:
+            return existing_summary or ""
+
+        # Build the turns text
+        turns_text = []
+        for turn in old_turns:
+            role_label = "User" if turn.role == "user" else "Assistant"
+            turns_text.append(f"{role_label}: {turn.content}")
+        conversation_text = "\n".join(turns_text)
+
+        if existing_summary:
+            prompt = (
+                "Below is the previous summary of an earlier part of the conversation, "
+                "followed by newer conversation turns. "
+                "Merge them into a single concise summary (1-2 paragraphs) that "
+                "preserves all key topics, questions, and conclusions.\n\n"
+                f"Previous summary:\n{existing_summary}\n\n"
+                f"New turns:\n{conversation_text}\n\n"
+                "Updated summary:"
+            )
+        else:
+            prompt = (
+                "Summarize the following conversation into a concise paragraph "
+                "that preserves the key topics, questions asked, and conclusions "
+                "reached. Keep it under 200 words.\n\n"
+                f"Conversation:\n{conversation_text}\n\n"
+                "Summary:"
+            )
+
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that summarizes conversations concisely.",
+            },
+            {"role": "user", "content": prompt},
+        ]
+
+        try:
+            kwargs = self._build_llm_kwargs(messages, {}, stream=False)
+            kwargs["temperature"] = 0.1
+            kwargs["max_tokens"] = 300
+            response = litellm.completion(**kwargs)
+            summary = str(response.choices[0].message.content).strip()
+            logger.info(f"Generated conversation summary: {len(summary)} chars")
+            return summary
+        except Exception as e:
+            logger.warning(f"Failed to generate conversation summary: {e}")
+            return existing_summary or ""
+
+    def _maybe_summarize(
+        self,
+        session_id: str,
+        all_turns: List[ConversationTurn],
+        max_recent: int,
+    ) -> Optional[str]:
+        """Check if summarization is needed and generate/update summary.
+
+        Triggers summarization when the total number of turns exceeds
+        max_recent. Summarizes the older turns (beyond the recent window)
+        and saves the result to the database.
+
+        Args:
+            session_id: Conversation session ID
+            all_turns: All turns in the session
+            max_recent: Maximum number of recent turns to keep unsummarized
+
+        Returns:
+            Summary string if generated, None otherwise
+        """
+        if len(all_turns) <= max_recent:
+            return None
+
+        if self.conversation_manager is None:
+            return None
+
+        # Get turns that should be summarized (older than the recent window)
+        old_turns = all_turns[:-max_recent] if max_recent > 0 else all_turns
+
+        # Get existing summary to merge with
+        existing_summary = self.conversation_manager.get_summary(session_id)
+
+        summary = self._generate_summary(old_turns, existing_summary)
+        if summary:
+            self.conversation_manager.update_summary(session_id, summary)
+            logger.info(
+                f"Updated conversation summary for session {session_id}: "
+                f"{len(old_turns)} old turns summarized"
+            )
+
+        return summary
+
+    def _generate_title(self, question: str, answer: str) -> str:
+        """Generate a short title for a conversation session.
+
+        Uses the LLM to create a concise title (max 30 characters) based
+        on the first question and answer in the conversation.
+
+        Args:
+            question: The first user question
+            answer: The first assistant answer
+
+        Returns:
+            Title string, or truncated question on failure
+        """
+        if not self.llm_available or litellm is None:
+            return question[:30]
+
+        # Truncate answer to keep prompt short
+        answer_preview = answer[:200] if len(answer) > 200 else answer
+
+        prompt = (
+            "Generate a concise title (max 30 characters) for this conversation. "
+            "Reply with ONLY the title, no quotes or extra text.\n\n"
+            f"Question: {question}\n"
+            f"Answer: {answer_preview}"
+        )
+
+        messages = [
+            {"role": "system", "content": "You generate short conversation titles."},
+            {"role": "user", "content": prompt},
+        ]
+
+        try:
+            kwargs = self._build_llm_kwargs(messages, {}, stream=False)
+            kwargs["temperature"] = 0.1
+            kwargs["max_tokens"] = 30
+            response = litellm.completion(**kwargs)
+            title = str(response.choices[0].message.content).strip()
+            # Enforce max length
+            if len(title) > 30:
+                title = title[:30]
+            logger.debug(f"Generated conversation title: {title}")
+            return title
+        except Exception as e:
+            logger.warning(f"Failed to generate conversation title: {e}")
+            return question[:30]
 
     def _results_to_chunks(self, results: List[SearchResult]) -> List[RankedChunk]:
         """Convert SearchResult list to RankedChunk list."""

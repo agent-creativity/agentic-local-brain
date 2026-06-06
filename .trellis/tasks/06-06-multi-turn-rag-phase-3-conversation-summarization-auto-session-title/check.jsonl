@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "Verify schema migration safety"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Verify graceful degradation in LLM failure paths"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Verify code standards and test coverage"}
+{"file": ".trellis/tasks/06-06-multi-turn-rag-phase-3-conversation-summarization-auto-session-title/prd.md", "reason": "Verify acceptance criteria are met"}
