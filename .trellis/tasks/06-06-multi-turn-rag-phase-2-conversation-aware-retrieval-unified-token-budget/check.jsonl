@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Verify code standards, type hints, test coverage"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Verify graceful degradation in budget edge cases"}
+{"file": ".trellis/tasks/06-06-multi-turn-rag-phase-2-conversation-aware-retrieval-unified-token-budget/prd.md", "reason": "Verify acceptance criteria are met"}

@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Code standards, type hints, testing conventions for new methods"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Graceful degradation patterns for token budget edge cases"}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "Log level conventions for boost and budget calculation logs"}
+{"file": ".trellis/tasks/06-06-multi-turn-rag-phase-2-conversation-aware-retrieval-unified-token-budget/prd.md", "reason": "PRD with requirements, decisions, and implementation plan"}

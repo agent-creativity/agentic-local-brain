@@ -12,7 +12,7 @@ This module implements a pluggable retrieval pipeline that orchestrates multiple
 
 import logging
 import time
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 
 from kb.config import Config
 from kb.query.context_builder import (
@@ -161,6 +161,7 @@ class RetrievalPipeline:
         self.default_top_k = pipeline_config.get("top_k", 10)
         self.rerank_top_k = pipeline_config.get("rerank_top_k", 5)
         self.context_budget = pipeline_config.get("context_budget", 4000)
+        self.conversation_boost = pipeline_config.get("conversation_boost", 0.15)
 
         # Get RAG config for LLM generation
         rag_config = config.get("query", {}).get("rag", {})
@@ -357,6 +358,14 @@ class RetrievalPipeline:
                 stages_fired.append("reranking")
                 logger.debug(f"Reranked to {len(reranked_chunks)} chunks")
 
+            # Stage 3.5: Conversation Source Boost
+            prior_source_ids = self._extract_prior_source_ids(conversation_turns)
+            if prior_source_ids:
+                reranked_chunks = self._boost_conversation_sources(
+                    reranked_chunks, prior_source_ids
+                )
+                stages_fired.append("conversation_boost")
+
             # Stage 4: Context Enrichment (entities, topics)
             entities, topic_context, enriched_chunks = self._enrich_context(
                 question=question,
@@ -368,12 +377,16 @@ class RetrievalPipeline:
             if entities or topic_context:
                 stages_fired.append("context_enrichment")
 
-            # Stage 5: Context Building
+            # Stage 5: Context Building (dynamic token budget)
+            dynamic_budget = self._calculate_retrieval_budget(
+                conversation_turns if conversation_turns else [],
+                self.system_prompt,
+            )
             retrieval_context = self._build_context(
                 chunks=reranked_chunks,
                 entities=entities,
                 topic_context=topic_context,
-                budget=self.context_budget,
+                budget=dynamic_budget,
                 options=options,
             )
             stages_fired.append("context_building")
@@ -526,18 +539,30 @@ class RetrievalPipeline:
             if reranked_chunks != chunks:
                 stages_fired.append("reranking")
 
+            # Stage 3.5: Conversation Source Boost
+            prior_source_ids = self._extract_prior_source_ids(conversation_turns)
+            if prior_source_ids:
+                reranked_chunks = self._boost_conversation_sources(
+                    reranked_chunks, prior_source_ids
+                )
+                stages_fired.append("conversation_boost")
+
             # Stage 4: Context Enrichment
             entities, topic_context, enriched_chunks = self._enrich_context(
                 question=question, chunks=reranked_chunks, options=options
             )
             reranked_chunks = enriched_chunks
 
-            # Stage 5: Context Building
+            # Stage 5: Context Building (dynamic token budget)
+            dynamic_budget = self._calculate_retrieval_budget(
+                conversation_turns if conversation_turns else [],
+                self.system_prompt,
+            )
             retrieval_context = self._build_context(
                 chunks=reranked_chunks,
                 entities=entities,
                 topic_context=topic_context,
-                budget=self.context_budget,
+                budget=dynamic_budget,
                 options=options,
             )
             stages_fired.append("context_building")
@@ -1155,6 +1180,125 @@ class RetrievalPipeline:
             role_label = "User" if turn.role == "user" else "Assistant"
             parts.append(f"{role_label}: {turn.content}")
         return "\n\n".join(parts)
+
+    def _extract_prior_source_ids(
+        self,
+        conversation_turns: List[ConversationTurn],
+    ) -> Set[str]:
+        """Extract document IDs from prior conversation turns' sources.
+
+        Scans all conversation turns for source references and collects
+        their document IDs. Used for conversation-aware retrieval boosting.
+
+        Args:
+            conversation_turns: List of prior conversation turns.
+
+        Returns:
+            Set[str]: Set of document IDs referenced in prior turns.
+        """
+        source_ids: Set[str] = set()
+        for turn in conversation_turns:
+            if not turn.sources:
+                continue
+            for source in turn.sources:
+                if isinstance(source, dict):
+                    doc_id = source.get("id")
+                    if doc_id:
+                        source_ids.add(doc_id)
+        return source_ids
+
+    def _boost_conversation_sources(
+        self,
+        chunks: List[RankedChunk],
+        prior_source_ids: Set[str],
+        boost: Optional[float] = None,
+    ) -> List[RankedChunk]:
+        """Boost chunks that appeared in prior conversation turns.
+
+        For each chunk whose source document was referenced in prior
+        conversation turns, adds a score boost to improve continuity
+        in multi-turn conversations.
+
+        Args:
+            chunks: List of ranked chunks to potentially boost.
+            prior_source_ids: Set of document IDs from prior turns.
+            boost: Score boost to apply (defaults to self.conversation_boost).
+
+        Returns:
+            List[RankedChunk]: Chunks with boosted scores, re-sorted.
+        """
+        if not prior_source_ids or not chunks:
+            return chunks
+
+        effective_boost = boost if boost is not None else self.conversation_boost
+        boosted = False
+        for chunk in chunks:
+            if chunk.source in prior_source_ids:
+                chunk.final_score = min(1.0, chunk.final_score + effective_boost)
+                boosted = True
+
+        if boosted:
+            chunks.sort(key=lambda c: c.final_score, reverse=True)
+            logger.debug(
+                f"Applied conversation source boost ({effective_boost}) "
+                f"for {len(prior_source_ids)} prior source IDs"
+            )
+
+        return chunks
+
+    @staticmethod
+    def _estimate_text_tokens(text: str) -> int:
+        """Estimate token count using word-based heuristic.
+
+        Uses ~1.3 tokens per word, consistent with the heuristic
+        in HierarchicalContextBuilder._estimate_tokens().
+
+        Args:
+            text: Text to estimate tokens for.
+
+        Returns:
+            int: Estimated token count.
+        """
+        if not text:
+            return 0
+        return int(len(text.split()) * 1.3)
+
+    def _calculate_retrieval_budget(
+        self,
+        conversation_turns: List[ConversationTurn],
+        system_prompt: str,
+    ) -> int:
+        """Calculate dynamic retrieval token budget based on conversation length.
+
+        Computes how many tokens are available for retrieval context by
+        subtracting conversation history, system prompt, generation reserve,
+        and safety margin from the model's context window.
+
+        The result is capped at self.context_budget to never exceed the
+        configured maximum, and floored at 1000 to ensure minimum retrieval.
+
+        Args:
+            conversation_turns: Current conversation history turns.
+            system_prompt: System prompt text.
+
+        Returns:
+            int: Token budget available for retrieval context.
+        """
+        rag_config = self.config.get("query", {}).get("rag", {})
+        model_window = int(rag_config.get("model_context_window", 32000))
+
+        system_tokens = self._estimate_text_tokens(system_prompt)
+        conv_tokens = 0
+        if conversation_turns:
+            conv_tokens = sum(
+                self._estimate_text_tokens(t.content) for t in conversation_turns
+            )
+        generation_reserve = int(self.max_tokens)
+        safety_margin = 500
+
+        used = system_tokens + conv_tokens + generation_reserve + safety_margin
+        retrieval_budget = max(model_window - used, 1000)
+        return min(retrieval_budget, int(self.context_budget))
 
     def _build_messages(
         self,

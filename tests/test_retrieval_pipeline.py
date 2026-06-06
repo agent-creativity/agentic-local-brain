@@ -51,10 +51,16 @@ def _clear_pipeline_cache():
     _pipeline_cache.clear()
 
 
-def _make_mock_config():
-    """Create a mock Config with sensible defaults."""
+def _make_mock_config(**overrides):
+    """Create a mock Config with sensible defaults.
+
+    Args:
+        **overrides: Key-value pairs to override in the config dict.
+            Supports dotted keys like ``rag__model_context_window=8000``
+            which sets ``query.rag.model_context_window``.
+    """
     config = MagicMock()
-    config.get.side_effect = lambda *args, **kwargs: {
+    _config_data = {
         "query": {
             "pipeline": {"top_k": 5, "rerank_top_k": 3},
             "rag": {
@@ -67,6 +73,11 @@ def _make_mock_config():
             },
         },
     }
+    # Apply overrides to rag section
+    for key, value in overrides.items():
+        _config_data["query"]["rag"][key] = value
+
+    config.get.side_effect = lambda key, default=None: _config_data.get(key, default)
     config.to_dict.return_value = {}
     config.data_dir = "/tmp/test-data"
     return config
@@ -102,6 +113,9 @@ def _make_pipeline(config=None, **overrides):
     )
     pipeline.context_budget = (
         config.get("query", {}).get("rag", {}).get("context_budget", 4000)
+    )
+    pipeline.conversation_boost = (
+        config.get("query", {}).get("pipeline", {}).get("conversation_boost", 0.15)
     )
     pipeline.temperature = (
         config.get("query", {}).get("rag", {}).get("temperature", 0.3)
@@ -979,3 +993,275 @@ class TestRunStream:
 
         assert len(events) == 1
         assert events[0]["type"] == "error"
+
+
+# ─────────────────────────────────────────────
+# Test: Document ID Boost (Phase 2)
+# ─────────────────────────────────────────────
+
+
+class TestExtractPriorSourceIds:
+    """_extract_prior_source_ids() 提取前轮文档 ID"""
+
+    def test_extracts_ids_from_turns_with_sources(self):
+        """从有 sources 的 turns 中提取文档 ID"""
+        pipeline = _make_pipeline(_make_mock_config())
+        turns = [
+            ConversationTurn(
+                role="user",
+                content="What is BERT?",
+                sources=None,
+            ),
+            ConversationTurn(
+                role="assistant",
+                content="BERT is a language model.",
+                sources=[
+                    {"id": "doc-bert-1", "content": "...", "score": 0.9},
+                    {"id": "doc-bert-2", "content": "...", "score": 0.8},
+                ],
+            ),
+            ConversationTurn(
+                role="user",
+                content="How is it trained?",
+                sources=None,
+            ),
+            ConversationTurn(
+                role="assistant",
+                content="BERT uses masked language modeling.",
+                sources=[
+                    {"id": "doc-bert-2", "content": "...", "score": 0.85},
+                    {"id": "doc-train-1", "content": "...", "score": 0.7},
+                ],
+            ),
+        ]
+        ids = pipeline._extract_prior_source_ids(turns)
+        assert ids == {"doc-bert-1", "doc-bert-2", "doc-train-1"}
+
+    def test_turns_without_sources_returns_empty(self):
+        """无 sources 字段的 turns 返回空集合"""
+        pipeline = _make_pipeline(_make_mock_config())
+        turns = [
+            ConversationTurn(role="user", content="Hello"),
+            ConversationTurn(role="assistant", content="Hi there"),
+        ]
+        ids = pipeline._extract_prior_source_ids(turns)
+        assert ids == set()
+
+    def test_empty_turns_returns_empty(self):
+        """空 turns 列表返回空集合"""
+        pipeline = _make_pipeline(_make_mock_config())
+        ids = pipeline._extract_prior_source_ids([])
+        assert ids == set()
+
+    def test_source_dicts_without_id_key_skipped(self):
+        """source dict 缺少 id key 时被跳过"""
+        pipeline = _make_pipeline(_make_mock_config())
+        turns = [
+            ConversationTurn(
+                role="assistant",
+                content="Answer",
+                sources=[
+                    {"id": "valid-doc", "content": "..."},
+                    {"content": "no id here"},
+                    {"id": "", "content": "empty id"},
+                ],
+            ),
+        ]
+        ids = pipeline._extract_prior_source_ids(turns)
+        # Only "valid-doc" should be extracted; empty string id is falsy
+        assert ids == {"valid-doc"}
+
+
+class TestBoostConversationSources:
+    """_boost_conversation_sources() 对前轮文档 boost"""
+
+    def test_matching_chunks_get_boosted(self):
+        """匹配 prior source ID 的 chunk 被 boost"""
+        pipeline = _make_pipeline(_make_mock_config())
+        chunks = [
+            RankedChunk(content="A", source="doc-1", final_score=0.5),
+            RankedChunk(content="B", source="doc-2", final_score=0.4),
+            RankedChunk(content="C", source="doc-3", final_score=0.3),
+        ]
+        prior_ids = {"doc-1", "doc-3"}
+
+        result = pipeline._boost_conversation_sources(chunks, prior_ids)
+
+        # doc-1 boosted: 0.5 + 0.15 = 0.65
+        # doc-3 boosted: 0.3 + 0.15 = 0.45
+        # doc-2 unchanged: 0.4
+        assert result[0].source == "doc-1"
+        assert abs(result[0].final_score - 0.65) < 1e-6
+        assert result[1].source == "doc-3"
+        assert abs(result[1].final_score - 0.45) < 1e-6
+        assert result[2].source == "doc-2"
+        assert abs(result[2].final_score - 0.4) < 1e-6
+
+    def test_non_matching_chunks_unchanged(self):
+        """不匹配的 chunk 分数不变"""
+        pipeline = _make_pipeline(_make_mock_config())
+        chunks = [
+            RankedChunk(content="A", source="doc-1", final_score=0.5),
+            RankedChunk(content="B", source="doc-2", final_score=0.4),
+        ]
+        prior_ids = {"doc-999"}
+
+        result = pipeline._boost_conversation_sources(chunks, prior_ids)
+
+        assert result[0].final_score == 0.5
+        assert result[1].final_score == 0.4
+
+    def test_chunks_resorted_after_boost(self):
+        """boost 后重新排序"""
+        pipeline = _make_pipeline(_make_mock_config())
+        chunks = [
+            RankedChunk(content="A", source="doc-1", final_score=0.5),
+            RankedChunk(content="B", source="doc-2", final_score=0.4),
+            RankedChunk(content="C", source="doc-3", final_score=0.3),
+        ]
+        # Boost doc-3 so it jumps above doc-2
+        prior_ids = {"doc-3"}
+
+        result = pipeline._boost_conversation_sources(chunks, prior_ids)
+
+        # doc-1: 0.5 (unchanged), doc-3: 0.3+0.15=0.45, doc-2: 0.4
+        assert result[0].source == "doc-1"
+        assert result[1].source == "doc-3"
+        assert result[2].source == "doc-2"
+
+    def test_boost_capped_at_1_0(self):
+        """boost 后分数不超过 1.0"""
+        pipeline = _make_pipeline(_make_mock_config())
+        chunks = [
+            RankedChunk(content="A", source="doc-1", final_score=0.95),
+        ]
+        prior_ids = {"doc-1"}
+
+        result = pipeline._boost_conversation_sources(chunks, prior_ids)
+
+        assert result[0].final_score == 1.0
+
+    def test_custom_boost_value(self):
+        """自定义 boost 值生效"""
+        pipeline = _make_pipeline(_make_mock_config())
+        chunks = [
+            RankedChunk(content="A", source="doc-1", final_score=0.5),
+        ]
+        prior_ids = {"doc-1"}
+
+        result = pipeline._boost_conversation_sources(chunks, prior_ids, boost=0.3)
+
+        assert abs(result[0].final_score - 0.8) < 1e-6
+
+    def test_empty_prior_ids_returns_unchanged(self):
+        """空 prior_source_ids 时返回原始 chunks"""
+        pipeline = _make_pipeline(_make_mock_config())
+        chunks = _make_sample_chunks(3)
+        original_scores = [c.final_score for c in chunks]
+
+        result = pipeline._boost_conversation_sources(chunks, set())
+
+        assert [c.final_score for c in result] == original_scores
+
+
+# ─────────────────────────────────────────────
+# Test: Dynamic Token Budget (Phase 2)
+# ─────────────────────────────────────────────
+
+
+class TestEstimateTextTokens:
+    """_estimate_text_tokens() 静态方法测试"""
+
+    def test_estimates_tokens_from_words(self):
+        """word count * 1.3 的 token 估算"""
+        result = RetrievalPipeline._estimate_text_tokens("hello world foo bar")
+        # 4 words * 1.3 = 5.2 -> int = 5
+        assert result == 5
+
+    def test_empty_text_returns_zero(self):
+        """空文本返回 0"""
+        assert RetrievalPipeline._estimate_text_tokens("") == 0
+
+    def test_single_word(self):
+        """单词文本"""
+        assert RetrievalPipeline._estimate_text_tokens("hello") == 1
+
+
+class TestCalculateRetrievalBudget:
+    """_calculate_retrieval_budget() 动态 token 预算计算"""
+
+    def test_no_conversation_returns_config_budget(self):
+        """无对话历史时 budget 等于 config context_budget"""
+        pipeline = _make_pipeline(_make_mock_config())
+        # context_budget is 4000 (from mock config)
+        # model_context_window defaults to 32000
+        # system_prompt ~= few tokens
+        # conv_tokens = 0
+        # generation_reserve = 1000 (max_tokens)
+        # safety_margin = 500
+        # used = system_tokens + 0 + 1000 + 500 = ~1510
+        # retrieval_budget = 32000 - ~1510 = ~30490
+        # min(30490, 4000) = 4000 (capped by context_budget)
+        budget = pipeline._calculate_retrieval_budget([], pipeline.system_prompt)
+        assert budget == pipeline.context_budget
+
+    def test_long_conversation_shrinks_budget(self):
+        """长对话时 budget 缩减"""
+        config = _make_mock_config(model_context_window=8000)
+        pipeline = _make_pipeline(config)
+
+        # Create long conversation turns
+        long_turns = []
+        for i in range(10):
+            long_turns.append(
+                ConversationTurn(
+                    role="user",
+                    content="This is a very long question " * 50,
+                )
+            )
+            long_turns.append(
+                ConversationTurn(
+                    role="assistant",
+                    content="This is a detailed answer " * 50,
+                )
+            )
+
+        budget = pipeline._calculate_retrieval_budget(
+            long_turns, pipeline.system_prompt
+        )
+
+        # With large conversation, budget should be smaller than context_budget
+        assert budget < pipeline.context_budget
+
+    def test_minimum_budget_floor(self):
+        """budget 下限保护: 至少 1000 tokens"""
+        config = _make_mock_config(model_context_window=2000)
+        pipeline = _make_pipeline(config)
+
+        # Create massive conversation to exceed model window
+        huge_turns = [
+            ConversationTurn(
+                role="user",
+                content="word " * 5000,
+            ),
+        ]
+
+        budget = pipeline._calculate_retrieval_budget(
+            huge_turns, pipeline.system_prompt
+        )
+
+        # Floor at 1000, but also capped by context_budget
+        # max(2000 - huge, 1000) = 1000
+        # min(1000, 4000) = 1000
+        assert budget == 1000
+
+    def test_budget_never_exceeds_context_budget(self):
+        """budget 不超过配置的 context_budget"""
+        config = _make_mock_config(model_context_window=100000)
+        pipeline = _make_pipeline(config)
+        # context_budget = 4000, model_window = 100000
+
+        budget = pipeline._calculate_retrieval_budget([], pipeline.system_prompt)
+
+        # Even with huge model window, should not exceed context_budget
+        assert budget == pipeline.context_budget
