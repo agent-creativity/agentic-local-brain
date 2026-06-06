@@ -71,3 +71,36 @@ Refactored _generate_answer() to use proper multi-turn messages[] instead of fla
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: Multi-turn RAG Phase 2: conversation boost + token budget
+
+**Date**: 2026-06-06
+**Task**: Multi-turn RAG Phase 2: conversation boost + token budget
+**Branch**: `worktree-multi-turn-rag-phase1`
+
+### Summary
+
+Added document ID boost for multi-turn retrieval (prior turns' sources get +0.15 score boost). Added dynamic token budget that adapts retrieval context size based on conversation length (model_window - conversation - generation - margin). 49 tests pass (17 new).
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5eb9fa3` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
