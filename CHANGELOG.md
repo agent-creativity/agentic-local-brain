@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.10] - 2026-09-14
+
+### Fixed
+- 使用 openai 兼容模式（自定义端点）时，实体抽取、主题聚类、Wiki 编译、LLM 标签抽取会把请求发往 OpenAI 官方端点导致 key 认证失败（#2）
+- 修复 `Config` 加载时浅拷贝 `DEFAULT_CONFIG` 导致的配置污染：同进程内先加载的 `base_url`/`api_key` 会泄漏到后续创建的 `Config` 实例
+
 ## [0.8.9] - 2026-05-06
 
 ### Added

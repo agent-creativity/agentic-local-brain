@@ -17,7 +17,9 @@ set -euo pipefail
 # ── Paths ───────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-PUBLISH_STATIC="/home/admin/Work/localbrain-release-server/static"
+PUBLISH_STATIC="$PROJECT_DIR/../localbrain-release-server/static"
+
+
 
 # ── Version ─────────────────────────────────────────────────────────
 if [ -n "${1:-}" ]; then
