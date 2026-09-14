@@ -145,7 +145,11 @@ Important:
         provider = None
         if api_key:
             if provider_name == "litellm":
-                provider = LiteLLMProvider(api_key=api_key, model=model)
+                provider = LiteLLMProvider(
+                    api_key=api_key,
+                    model=model,
+                    api_base=llm_config.get("base_url") or None,
+                )
             elif provider_name == "dashscope":
                 litellm_model = model if "/" in model else f"dashscope/{model}"
                 provider = LiteLLMProvider(api_key=api_key, model=litellm_model)

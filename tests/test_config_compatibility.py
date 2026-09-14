@@ -14,6 +14,7 @@ Config 新老格式兼容测试
 7. Config 加载 + TagExtractor.from_config() 端到端验证
 """
 
+import copy
 import os
 import sys
 from pathlib import Path
@@ -345,7 +346,90 @@ llm:
 
 
 # ============================================================
-# 4. Config validate_services tests
+# 4. Config instance isolation
+# ============================================================
+
+class TestConfigIsolation:
+    """Config 实例之间不得通过模块级 DEFAULT_CONFIG 互相污染"""
+
+    def test_loading_config_does_not_mutate_default_config(self, tmp_path):
+        """加载配置不修改模块级 DEFAULT_CONFIG"""
+        import kb.config as config_module
+
+        before = copy.deepcopy(config_module.DEFAULT_CONFIG["llm"])
+        _make_config(tmp_path, LITELLM_CUSTOM_ENDPOINT_FORMAT.format(api_key="leaked-key"))
+
+        assert config_module.DEFAULT_CONFIG["llm"] == before
+
+    def test_later_config_does_not_inherit_earlier_values(self, tmp_path):
+        """先加载带 base_url/api_key 的配置，后续未定义这些字段的配置不应继承"""
+        _make_config(tmp_path, LITELLM_CUSTOM_ENDPOINT_FORMAT.format(api_key="leaked-key"))
+
+        second_dir = tmp_path / "second"
+        second_dir.mkdir()
+        second = _make_config(second_dir, DASHSCOPE_OLD_FORMAT.format(api_key="sk-own-key"))
+
+        llm = second.get("llm")
+        assert "base_url" not in llm
+        assert llm["api_key"] == "sk-own-key"
+
+
+# ============================================================
+# 5. litellm provider + custom base_url propagation (issue #2)
+# ============================================================
+
+# Web 设置页保存时 provider 一律写成 litellm（settings.py:338），自定义端点存在
+# base_url。若 from_config() 的 litellm 分支不传 api_base，litellm 会按 openai/
+# 前缀路由到官方 OpenAI 端点，导致 key 认证失败。
+LITELLM_PROCESSORS = [
+    ("kb.processors.entity_extractor", "EntityExtractor"),
+    ("kb.processors.tag_extractor", "TagExtractor"),
+    ("kb.processors.topic_clusterer", "TopicClusterer"),
+    ("kb.processors.wiki_compiler", "WikiCompiler"),
+]
+
+
+def _build_processor(module_path, class_name, config):
+    """Patch the module's LiteLLMProvider and run from_config(); return the mock class."""
+    import importlib
+
+    module = importlib.import_module(module_path)
+    with patch.object(module, "LiteLLMProvider") as mock_cls:
+        mock_cls.return_value = Mock()
+        getattr(module, class_name).from_config(config)
+        return mock_cls
+
+
+class TestLiteLLMProviderBaseUrlPropagation:
+    """provider=litellm 时 base_url 必须透传为 api_base（issue #2 回归测试）"""
+
+    @pytest.mark.parametrize("module_path,class_name", LITELLM_PROCESSORS)
+    def test_custom_base_url_passed_as_api_base(self, tmp_path, module_path, class_name):
+        """litellm + 自定义 base_url → LiteLLMProvider 收到 api_base"""
+        yaml_content = LITELLM_CUSTOM_ENDPOINT_FORMAT.format(api_key="lm-studio")
+        config = _make_config(tmp_path, yaml_content)
+
+        mock_cls = _build_processor(module_path, class_name, config)
+
+        mock_cls.assert_called_once()
+        kwargs = mock_cls.call_args.kwargs
+        assert kwargs["api_base"] == "http://localhost:11434/v1"
+        assert kwargs["model"] == "openai/qwen2.5:7b"
+
+    @pytest.mark.parametrize("module_path,class_name", LITELLM_PROCESSORS)
+    def test_absent_base_url_yields_none_api_base(self, tmp_path, module_path, class_name):
+        """litellm 未配置 base_url → api_base 为 None，官方端点行为不变"""
+        yaml_content = LITELLM_NEW_FORMAT.format(api_key="sk-official-key")
+        config = _make_config(tmp_path, yaml_content)
+
+        mock_cls = _build_processor(module_path, class_name, config)
+
+        mock_cls.assert_called_once()
+        assert mock_cls.call_args.kwargs["api_base"] is None
+
+
+# ============================================================
+# 5. Config validate_services tests
 # ============================================================
 
 class TestConfigValidateServices:

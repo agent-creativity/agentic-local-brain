@@ -165,7 +165,8 @@ class TestTagExtractor:
             extractor = TagExtractor.from_config(mock_config)
             mock_provider_class.assert_called_once_with(
                 api_key="test_api_key",
-                model="anthropic/claude-3-haiku"
+                model="anthropic/claude-3-haiku",
+                api_base=None
             )
             assert extractor is not None
 

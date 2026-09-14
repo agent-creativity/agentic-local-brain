@@ -5,6 +5,7 @@ Reads, parses, and manages knowledge base configuration files.
 Supports environment variable substitution and default configuration.
 """
 
+import copy
 import logging
 import os
 import re
@@ -180,7 +181,7 @@ class Config:
     def load(self) -> None:
         """Load configuration from file."""
         # Start from default configuration
-        self._config = DEFAULT_CONFIG.copy()
+        self._config = copy.deepcopy(DEFAULT_CONFIG)
 
         # If config file exists, read and merge
         if self._config_path.exists():

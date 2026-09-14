@@ -186,7 +186,11 @@ Return ONLY a JSON object in this exact format, no other text:
         # Create the appropriate instance based on provider type
         if provider_name == "litellm":
             # LiteLLM provider: model is already in "provider/model" format
-            provider = LiteLLMProvider(api_key=api_key, model=model)
+            provider = LiteLLMProvider(
+                api_key=api_key,
+                model=model,
+                api_base=llm_config.get("base_url") or None,
+            )
         elif provider_name == "dashscope":
             # Backward compatibility: auto-map old format to litellm "dashscope/model" format
             litellm_model = model if "/" in model else f"dashscope/{model}"
