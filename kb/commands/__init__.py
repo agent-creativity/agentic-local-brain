@@ -7,6 +7,7 @@ This package contains the refactored CLI command groups:
 - search: Search commands (semantic, keyword, rag, tags)
 - manage: Management commands (config, stats, tag, export, test, web)
 - backup: Backup commands (create, list, status, restore)
+- graph: Knowledge graph commands (search, show, expand, related, stats)
 """
 
 from kb.commands.init import init
@@ -14,5 +15,6 @@ from kb.commands.collect import collect
 from kb.commands.search import search
 from kb.commands.manage import config, stats, tag, export, test, web
 from kb.commands.backup import backup
+from kb.commands.graph import graph
 
-__all__ = ["init", "collect", "search", "config", "stats", "tag", "export", "test", "web", "backup"]
+__all__ = ["init", "collect", "search", "config", "stats", "tag", "export", "test", "web", "backup", "graph"]

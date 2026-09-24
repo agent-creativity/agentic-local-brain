@@ -8,7 +8,7 @@ from typing import Optional
 
 import click
 
-from kb.commands.utils import CONFIG_FILE
+from kb.commands.utils import CONFIG_FILE, _get_sqlite_storage
 from kb.config import Config
 
 
@@ -204,13 +204,3 @@ def search_tags(tags: tuple, match: str, limit: int) -> None:
         raise SystemExit(1)
     finally:
         storage.close()
-
-
-def _get_sqlite_storage():
-    """Get SQLiteStorage instance"""
-    from kb.storage.sqlite_storage import SQLiteStorage
-    
-    config = Config(CONFIG_FILE)
-    data_dir = __import__('pathlib').Path(config.get("data_dir", "~/.knowledge-base")).expanduser()
-    db_path = str(data_dir / "db" / "metadata.db")
-    return SQLiteStorage(db_path=db_path)
