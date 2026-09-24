@@ -25,6 +25,7 @@ from kb.commands.uninstall import uninstall
 from kb.commands.doctor import doctor
 from kb.commands.self_update import self_update
 from kb.commands.wiki import wiki
+from kb.commands.graph import graph
 
 
 @click.group(invoke_without_command=True)
@@ -67,6 +68,7 @@ cli.add_command(uninstall)
 cli.add_command(doctor)
 cli.add_command(self_update)
 cli.add_command(wiki)
+cli.add_command(graph)
 
 
 # Backward compatibility: keep old command names as aliases

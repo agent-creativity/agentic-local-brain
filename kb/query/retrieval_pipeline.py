@@ -485,22 +485,22 @@ class RetrievalPipeline:
         RRF combines multiple ranked lists by computing a fused score:
         RRF_score(d) = sum(1 / (k + rank_i(d))) for each ranker i
 
-        This method favors documents that appear in multiple lists and
-        appear at higher ranks, providing a robust fusion method.
+        Uses knowledge_id (document-level) as the fusion key so that
+        semantic search (chunk IDs) and keyword search (file paths) can
+        be properly merged for the same document.
 
         Args:
             result_lists: List of ranked result lists from different retrievers
             k: RRF constant (default 60, common in literature)
 
         Returns:
-            Dict mapping document ID to RRF score
+            Dict mapping knowledge_id to RRF score
         """
         scores: Dict[str, float] = {}
 
         for results in result_lists:
             for rank, result in enumerate(results, start=1):
-                # Get document ID from result
-                doc_id = result.id or result.metadata.get("source", "")
+                doc_id = self._resolve_knowledge_id(result)
                 if not doc_id:
                     continue
 
@@ -509,6 +509,166 @@ class RetrievalPipeline:
                 scores[doc_id] += 1.0 / (k + rank)
 
         return scores
+
+    @staticmethod
+    def _resolve_knowledge_id(result: SearchResult) -> str:
+        """Extract a document-level knowledge_id from a SearchResult.
+
+        Semantic search results carry knowledge_id in metadata (set during
+        indexing).  Keyword search results don't, so we fall back to
+        result.id / metadata["source"].
+        """
+        kid = result.metadata.get("knowledge_id")
+        if kid:
+            return kid
+        return result.id or result.metadata.get("source", "")
+
+    def _backfill_knowledge_ids(self, results: List[SearchResult]) -> None:
+        """Resolve file_path → knowledge.id for keyword search results.
+
+        Keyword search returns file paths as IDs rather than knowledge IDs.
+        This method batch-queries SQLite to fill in metadata["knowledge_id"]
+        so that RRF fusion keys align with semantic search results.
+
+        Modifies results in-place.  Results whose file_path cannot be
+        resolved keep their original id as the fallback fusion key.
+        """
+        # Collect file paths that need resolution
+        paths_to_resolve: Dict[str, List[SearchResult]] = {}
+        for result in results:
+            if result.metadata.get("knowledge_id"):
+                continue
+            fp = result.metadata.get("file_path", "")
+            if fp:
+                paths_to_resolve.setdefault(fp, []).append(result)
+
+        if not paths_to_resolve:
+            return
+
+        try:
+            from kb.storage.sqlite_storage import SQLiteStorage
+            storage_config = self.config.get("storage", {})
+            data_dir_str = self.config.get("data_dir", "~/.knowledge-base")
+            import os
+            from pathlib import Path
+            data_dir = Path(os.path.expanduser(data_dir_str))
+            db_path = str(data_dir / "db" / "metadata.db")
+
+            storage = SQLiteStorage(db_path=db_path)
+            try:
+                cursor = storage.conn.cursor()
+                # Batch query: resolve all file_paths in one go
+                placeholders = ",".join("?" for _ in paths_to_resolve)
+                cursor.execute(
+                    f"SELECT id, file_path FROM knowledge WHERE file_path IN ({placeholders})",
+                    list(paths_to_resolve.keys()),
+                )
+                for row in cursor.fetchall():
+                    kid, fp = row["id"], row["file_path"]
+                    for r in paths_to_resolve.get(fp, []):
+                        r.metadata["knowledge_id"] = kid
+                cursor.close()
+            finally:
+                storage.close()
+        except Exception as e:
+            logger.debug(f"knowledge_id backfill failed (non-fatal): {e}")
+
+    def _graph_retrieve(
+        self,
+        entity_names: List[str],
+        top_k: int = 20,
+    ) -> List[SearchResult]:
+        """Entity-linked graph retrieval channel.
+
+        Links query-extracted entity names to the knowledge graph, then
+        retrieves documents that mention those entities.  Documents are
+        scored by the number of matched entities weighted by log mention
+        count.
+
+        Args:
+            entity_names: Entity strings extracted during query expansion.
+            top_k: Maximum documents to return.
+
+        Returns:
+            List[SearchResult] ordered by score descending.
+        """
+        import math
+
+        cursor = self.graph_query.storage.conn.cursor()
+        try:
+            matched_entity_ids: List[int] = []
+            entity_weights: Dict[int, float] = {}
+
+            for name in entity_names:
+                # Exact match first (fast, indexed)
+                cursor.execute(
+                    "SELECT id, mention_count FROM entities WHERE name = ?",
+                    (name.lower(),),
+                )
+                rows = cursor.fetchall()
+
+                # Fall back to LIKE if no exact match
+                if not rows:
+                    cursor.execute(
+                        "SELECT id, mention_count FROM entities "
+                        "WHERE name LIKE ? OR display_name LIKE ? LIMIT 5",
+                        (f"%{name}%", f"%{name}%"),
+                    )
+                    rows = cursor.fetchall()
+
+                for row in rows:
+                    eid = row["id"]
+                    if eid not in entity_weights:
+                        matched_entity_ids.append(eid)
+                        entity_weights[eid] = math.log1p(row["mention_count"])
+
+            if not matched_entity_ids:
+                return []
+
+            # Get documents via entity_mentions
+            placeholders = ",".join("?" for _ in matched_entity_ids)
+            cursor.execute(
+                f"""SELECT em.knowledge_id, k.title, k.summary, k.source, k.content_type,
+                           GROUP_CONCAT(em.entity_id) as entity_ids
+                    FROM entity_mentions em
+                    JOIN knowledge k ON k.id = em.knowledge_id
+                    WHERE em.entity_id IN ({placeholders})
+                    GROUP BY em.knowledge_id
+                    ORDER BY COUNT(DISTINCT em.entity_id) DESC
+                    LIMIT ?""",
+                matched_entity_ids + [top_k],
+            )
+
+            results: List[SearchResult] = []
+            for row in cursor.fetchall():
+                # Score = sum of entity weights for matched entities
+                hit_eids = [int(x) for x in row["entity_ids"].split(",")]
+                score = sum(entity_weights.get(eid, 0.0) for eid in hit_eids)
+
+                content = row["summary"] or row["title"] or ""
+                results.append(SearchResult(
+                    id=row["knowledge_id"],
+                    content=content,
+                    metadata={
+                        "knowledge_id": row["knowledge_id"],
+                        "title": row["title"] or "",
+                        "source": row["source"] or "",
+                        "content_type": row["content_type"] or "",
+                        "retrieval_channel": "graph",
+                    },
+                    score=score,
+                ))
+
+            # Normalize scores to 0-1 range
+            if results:
+                max_score = max(r.score for r in results)
+                if max_score > 0:
+                    for r in results:
+                        r.score = r.score / max_score
+
+            return results
+        finally:
+            cursor.close()
 
     def _hybrid_retrieve(
         self,
@@ -552,7 +712,19 @@ class RetrievalPipeline:
             except Exception as e:
                 logger.warning(f"Semantic search failed: {e}")
 
-        # Step 3: Run keyword search on original query + entities
+        # Step 3: Entity-linked graph retrieval
+        if expanded_query.entities and self.graph_query is not None:
+            try:
+                graph_results = self._graph_retrieve(
+                    expanded_query.entities, top_k=top_k,
+                )
+                if graph_results:
+                    result_lists.append(graph_results)
+                    logger.debug(f"Graph retrieval found {len(graph_results)} results")
+            except Exception as e:
+                logger.warning(f"Graph retrieval failed: {e}")
+
+        # Step 4: Run keyword search on original query + entities
         if self.keyword_search:
             try:
                 # Combine original query with extracted entities for keyword search
@@ -566,6 +738,8 @@ class RetrievalPipeline:
                     limit=top_k,
                 )
                 if keyword_results:
+                    # Resolve file_path → knowledge_id for keyword results
+                    self._backfill_knowledge_ids(keyword_results)
                     result_lists.append(keyword_results)
                     logger.debug(f"Keyword search found {len(keyword_results)} results")
             except Exception as e:
@@ -576,18 +750,22 @@ class RetrievalPipeline:
             logger.warning("No results from any search method")
             return []
 
-        # Step 4: Apply Reciprocal Rank Fusion
+        # Step 5: Apply Reciprocal Rank Fusion (keyed by knowledge_id)
         rrf_scores = self._reciprocal_rank_fusion(result_lists)
 
-        # Step 5: Build result map for deduplication
+        # Step 6: Build result map keyed by knowledge_id, keeping the
+        # highest-scored result per document for content
         result_map: Dict[str, SearchResult] = {}
         for results in result_lists:
             for result in results:
-                doc_id = result.id or result.metadata.get("source", "")
-                if doc_id and doc_id not in result_map:
+                doc_id = self._resolve_knowledge_id(result)
+                if not doc_id:
+                    continue
+                existing = result_map.get(doc_id)
+                if existing is None or result.score > existing.score:
                     result_map[doc_id] = result
 
-        # Step 6: Convert to RankedChunks with RRF scores
+        # Step 7: Convert to RankedChunks with RRF scores
         chunks: List[RankedChunk] = []
         for doc_id, rrf_score in rrf_scores.items():
             if doc_id not in result_map:
@@ -603,7 +781,7 @@ class RetrievalPipeline:
             )
             chunks.append(chunk)
 
-        # Step 7: Sort by final_score (RRF score) descending
+        # Step 8: Sort by final_score (RRF score) descending
         chunks.sort(key=lambda x: x.final_score, reverse=True)
 
         elapsed = time.time() - start_time
