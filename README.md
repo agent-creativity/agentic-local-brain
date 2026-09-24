@@ -648,3 +648,7 @@ dist/
 ## License
 
 MIT
+
+## Discussion
+
+This project uses [GitHub Discussions](https://github.com/agent-creativity/agentic-local-brain/discussions) as its community forum. If you have any questions, ideas, or feedback, feel free to start a discussion there.

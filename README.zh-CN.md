@@ -642,3 +642,6 @@ dist/
 
 MIT
 
+## 讨论
+
+本项目使用 [GitHub Discussions](https://github.com/agent-creativity/agentic-local-brain/discussions) 作为社区交流的地方。如有任何疑问、想法或建议，欢迎在那里发起讨论。
